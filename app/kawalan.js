@@ -34,20 +34,52 @@
       <form id="oForm" hidden autocomplete="on"><div class="field"><input id="oEmail" type="email" placeholder="Emel pemilik" autocomplete="username" required></div>
       <div class="field" style="margin-top:6px"><input id="oPass" type="password" placeholder="Kata laluan akaun (bukan PIN dunia)" autocomplete="current-password" minlength="8" required></div>
       <div class="row" style="margin-top:8px"><button class="btn pri" type="submit">Log masuk</button><button class="btn" type="button" id="oReg">Daftar kali pertama</button></div>
+      <div class="gmsg" id="oMsg" style="margin-top:8px" hidden></div>
+      <div class="row" style="margin-top:4px"><button class="btn ghost" type="button" id="oResend" style="font-size:12px;padding:5px 9px">Hantar semula emel pengesahan</button><button class="btn ghost" type="button" id="oForgot" style="font-size:12px;padding:5px 9px">Lupa kata laluan</button></div>
       <small>Akaun ini membuktikan kau pemilik kepada pelayan. PIN dunia tetap rahsia kau dan tidak pernah dihantar.</small></form>`;
     card.appendChild(box);
     box.querySelector('#oOut')?.addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
     box.querySelector('#oShow')?.addEventListener('click', e => { e.target.closest('.row').hidden = true; box.querySelector('#oForm').hidden = false; box.querySelector('#oEmail').focus(); });
-    const cred = () => ({email:box.querySelector('#oEmail').value.trim(), password:box.querySelector('#oPass').value});
+    const cred = () => ({email:box.querySelector('#oEmail').value.trim().toLowerCase(), password:box.querySelector('#oPass').value});
+    // messages stay on the card (toasts disappear too quickly to read while filling in a form)
+    const say = (t, bad) => { const m = box.querySelector('#oMsg'); if(!m) return; m.hidden = false; m.className = 'gmsg' + (bad ? ' bad' : ''); m.textContent = t; };
+    const back = location.origin + location.pathname;
     box.querySelector('#oForm')?.addEventListener('submit', async e => { e.preventDefault();
-      const sub = e.submitter || box.querySelector('#oForm button[type=submit]'); sub.disabled = true; sub.textContent = 'Menyemak…';
+      const sub = e.submitter || box.querySelector('#oForm button[type=submit]'); sub.disabled = true; sub.textContent = 'Menyemak…'; say('Menyemak dengan pelayan…');
       const r = await sb.auth.signInWithPassword(cred());
-      if(r.error){ sub.disabled = false; sub.textContent = 'Log masuk'; return toast(r.error.message === 'Email not confirmed' ? 'Emel belum disahkan. Buka emel dari Supabase dan tekan pautan pengesahan dahulu.' : 'Log masuk gagal: ' + r.error.message, 'bad', 7000); }
-      await signedIn(r.data.session); });
-    box.querySelector('#oReg')?.addEventListener('click', async () => { const c = cred(); if(!c.email || c.password.length < 8) return toast('Isi emel dan kata laluan sekurang-kurangnya 8 aksara.', 'bad');
-      const r = await sb.auth.signUp({...c, options:{emailRedirectTo:location.origin + location.pathname}}); if(r.error) return toast('Pendaftaran gagal: ' + r.error.message, 'bad', 6000);
-      toast('Semak emel kau dan tekan pautan pengesahan, kemudian log masuk di sini.', 'ok', 9000); });
+      if(r.error){ sub.disabled = false; sub.textContent = 'Log masuk'; return say(authError(r.error), true); }
+      say('Berjaya.'); await signedIn(r.data.session); });
+    box.querySelector('#oReg')?.addEventListener('click', async () => { const c = cred();
+      if(!/^\S+@\S+\.\S+$/.test(c.email) || c.password.length < 8) return say('Isi emel yang betul dan kata laluan sekurang-kurangnya 8 aksara.', true);
+      say('Mendaftar…');
+      const r = await sb.auth.signUp({...c, options:{emailRedirectTo:back}}); if(r.error) return say(authError(r.error), true);
+      if(r.data.session) return signedIn(r.data.session);
+      if(r.data.user && Array.isArray(r.data.user.identities) && !r.data.user.identities.length) return say('Emel ini sudah didaftar. Tekan Log masuk. Kalau lupa kata laluan, tekan "Lupa kata laluan".', true);
+      say(`Emel pengesahan dihantar ke ${c.email}. Buka emel itu (semak juga folder Spam), tekan pautan pengesahan, kemudian kembali ke sini dan tekan Log masuk.`); });
+    box.querySelector('#oResend')?.addEventListener('click', async () => { const c = cred(); if(!c.email) return say('Isi emel dahulu.', true);
+      const r = await sb.auth.resend({type:'signup', email:c.email, options:{emailRedirectTo:back}}); say(r.error ? authError(r.error) : `Emel pengesahan dihantar semula ke ${c.email}. Semak juga folder Spam.`, !!r.error); });
+    box.querySelector('#oForgot')?.addEventListener('click', async () => { const c = cred(); if(!c.email) return say('Isi emel dahulu.', true);
+      const r = await sb.auth.resetPasswordForEmail(c.email, {redirectTo:back}); say(r.error ? authError(r.error) : `Pautan tukar kata laluan dihantar ke ${c.email}. Buka emel itu dan tekan pautannya; app akan minta kata laluan baharu.`, !!r.error); });
   };
+  function authError(e){
+    const c = e.code || '', m = e.message || '';
+    if(c === 'invalid_credentials' || /Invalid login credentials/i.test(m)) return 'Emel atau kata laluan salah. Kalau belum pernah daftar, tekan "Daftar kali pertama" dahulu.';
+    if(c === 'email_not_confirmed' || /not confirmed/i.test(m)) return 'Emel belum disahkan. Buka emel dari Supabase (semak folder Spam) dan tekan pautan pengesahan, atau tekan "Hantar semula emel pengesahan".';
+    if(/rate limit/i.test(c + m)) return 'Pelayan sudah menghantar terlalu banyak emel buat masa ini. Tunggu kira-kira sejam, kemudian cuba lagi.';
+    if(c === 'user_already_exists' || /already registered/i.test(m)) return 'Emel ini sudah didaftar. Tekan Log masuk.';
+    if(c === 'weak_password' || /password/i.test(m) && /least|weak|short/i.test(m)) return 'Kata laluan terlalu lemah. Guna sekurang-kurangnya 8 aksara dengan huruf dan nombor.';
+    if(/signups? not allowed|disabled/i.test(m)) return 'Pendaftaran emel ditutup dalam Supabase (Authentication → Sign In / Providers → Email).';
+    if(/fetch|network/i.test(m)) return 'Tiada sambungan ke pelayan. Semak internet kau.';
+    return 'Gagal: ' + m;
+  }
+  // a password-reset link signs the owner in with a recovery session: ask for the new password right away
+  sb.auth.onAuthStateChange(async (ev, sess) => {
+    if(ev !== 'PASSWORD_RECOVERY') return;
+    setTimeout(async () => { const pw = prompt('Kata laluan akaun baharu (sekurang-kurangnya 8 aksara, bukan PIN dunia):');
+      if(!pw || pw.length < 8) return toast('Kata laluan tidak ditukar.', 'bad');
+      const r = await sb.auth.updateUser({password:pw}); if(r.error) return toast(authError(r.error), 'bad', 8000);
+      toast('Kata laluan akaun ditukar.', 'ok'); await signedIn(sess); }, 800);
+  });
   // after signing in there is no page reload (that would load every 3D model again): switch identity in place
   async function signedIn(sess){
     E.uid = sess.user.id; E.email = sess.user.email || null; sb.realtime.setAuth(sess.access_token);
