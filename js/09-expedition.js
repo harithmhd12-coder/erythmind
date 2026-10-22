@@ -572,7 +572,11 @@ async function loadHiggsfield(){
   if(!THREE.GLTFLoader) return; const loader = new THREE.GLTFLoader();
   const list = Object.entries(man || {}); HF.total = list.length; hfChip();
   const load = (key, file) => new Promise(res => loader.load(file, g => res(g), undefined, () => res(null)));
+  // each model briefly blocks the page while it is parsed, so wait for a quiet moment: at the gate, until nobody
+  // has typed or tapped for a second; in the world, at least a couple of frames between models
+  const quiet = () => new Promise(res => { const go = () => (session || (performance.now() - lastActive > 1100 && !gateBusy)) ? res() : setTimeout(go, 200); setTimeout(go, session ? 60 : 150); });
   for(const [key, file] of list){
+    await quiet();
     const gltf = await load(key, file); HF.done++; hfChip(); if(!gltf) continue;
     try{ applyModel(key, gltf); }catch(err){ console.warn('model', key, err); }
   }

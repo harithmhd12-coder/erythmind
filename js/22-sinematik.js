@@ -66,7 +66,9 @@ const moonHalo = new THREE.Sprite(new THREE.SpriteMaterial({map:haloTex, blendin
 moonHalo.scale.setScalar(900); moonHalo.renderOrder = -9; scene.add(moonHalo);
 moon.material.color.setHex(0xfffbec);
 
+const gateEl = document.getElementById('gate');
 function renderWorld(dt){
+  if(!session && !gateEl.hidden) return;             // the gate covers the whole screen: leave the device free for typing
   if(!composer){ renderer.render(scene, camera); return; }
   const indoor = indoorLayer(player.layer), warm = player.layer === 4 || (player.layer === 2 && nivRegion(player.x, player.z) === 'gua') ? 1 : 0;
   gradePass.uniforms.night.value = indoor ? (player.layer === 5 ? .8 : .2) : nightLevel;

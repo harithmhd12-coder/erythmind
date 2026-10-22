@@ -37,11 +37,22 @@
     box.querySelector('#oShow')?.addEventListener('click', e => { e.target.closest('.row').hidden = true; box.querySelector('#oForm').hidden = false; box.querySelector('#oEmail').focus(); });
     const cred = () => ({email:box.querySelector('#oEmail').value.trim(), password:box.querySelector('#oPass').value});
     box.querySelector('#oForm')?.addEventListener('submit', async e => { e.preventDefault();
-      const r = await sb.auth.signInWithPassword(cred()); if(r.error) return toast('Log masuk gagal: ' + r.error.message, 'bad', 6000); location.reload(); });
+      const sub = e.submitter || box.querySelector('#oForm button[type=submit]'); sub.disabled = true; sub.textContent = 'Menyemak…';
+      const r = await sb.auth.signInWithPassword(cred());
+      if(r.error){ sub.disabled = false; sub.textContent = 'Log masuk'; return toast(r.error.message === 'Email not confirmed' ? 'Emel belum disahkan. Buka emel dari Supabase dan tekan pautan pengesahan dahulu.' : 'Log masuk gagal: ' + r.error.message, 'bad', 7000); }
+      await signedIn(r.data.session); });
     box.querySelector('#oReg')?.addEventListener('click', async () => { const c = cred(); if(!c.email || c.password.length < 8) return toast('Isi emel dan kata laluan sekurang-kurangnya 8 aksara.', 'bad');
       const r = await sb.auth.signUp({...c, options:{emailRedirectTo:location.origin + location.pathname}}); if(r.error) return toast('Pendaftaran gagal: ' + r.error.message, 'bad', 6000);
       toast('Semak emel kau dan tekan pautan pengesahan, kemudian log masuk di sini.', 'ok', 9000); });
   };
+  // after signing in there is no page reload (that would load every 3D model again): switch identity in place
+  async function signedIn(sess){
+    E.uid = sess.user.id; E.email = sess.user.email || null; sb.realtime.setAuth(sess.access_token);
+    const o = await sb.rpc('is_owner'); E.owner = !o.error && o.data === true; artifactOwner = E.owner;
+    await E.dbReload();
+    toast(E.owner ? 'Log masuk sebagai pemilik. Sekarang masukkan PIN dunia.' : 'Log masuk berjaya, tetapi emel ini bukan emel pemilik dalam setup.sql.', E.owner ? 'ok' : 'bad', 7000);
+    if(!session) renderGate(core ? 'unlock' : E.owner ? 'setup1' : 'inactive');
+  }
   // the gate pad must refuse while locked or blocked
   const basePad = padKey;
   padKey = function(k){ if(blocked()){ toast(why(), 'bad'); return; } return basePad(k); };
