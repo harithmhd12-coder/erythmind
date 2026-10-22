@@ -5,6 +5,6 @@
                    peraturan dalam supabase/setup.sql dan penyulitan PIN dalam peranti.
    JANGAN letak kunci "service_role" / "secret" di sini. */
 window.ERYTH_CONFIG = {
-  supabaseUrl: 'GANTI_DENGAN_PROJECT_URL',
-  supabaseKey: 'GANTI_DENGAN_ANON_KEY',
+  supabaseUrl: 'https://zjhbxtflbblmmsodcmlv.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqaGJ4dGZsYmJsbW1zb2RjbWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2NDI4MDQsImV4cCI6MjEwODIxODgwNH0.3aFASRIh8Yl-pp9cFAW-75RwQsl0jiQgWYReR50Tr1I',
 };
