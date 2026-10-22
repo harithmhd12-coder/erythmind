@@ -251,7 +251,7 @@ function usePower(id){
 }
 // remote effects from someone else's Haki (visual only)
 function remoteHaki(d, peerId){
-  if(d.k === 'gergasi') return;                              // the giant's own messages (20-gergasi.js)
+  if(d.k === 'gergasi' || d.k === 'saringan') return;        // the giant's and the entry trial's own messages (20, 23)
   const a = peers.get(peerId); if(a){ if(d.k === 'arm') a.hakiArm = 15; if(d.k === 'obs') a.hakiObs = 12; }
   const o = new THREE.Vector3(d.x, layerBase(d.l) + groundAt(d.x, d.z, d.l), d.z), dir = new THREE.Vector3(Math.sin(d.ry), 0, Math.cos(d.ry));
   POWER_HOOKS.forEach(f => f(d.k, o, false, a?.kind === 'owner', d.l));

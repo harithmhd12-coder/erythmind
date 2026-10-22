@@ -147,6 +147,7 @@ function surfaceAt(){
 function updatePlayer(dt){
   if(ride){ updateRide(dt); return; }
   if(seatTick(dt)) return;
+  if(sarBlock(dt)) return;
   me.g.visible = true;
   let ix = 0, iy = 0;
   if(session && $('#panel').hidden && !(HAKI.busy > 0)){

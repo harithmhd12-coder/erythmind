@@ -358,6 +358,20 @@ body.chatOpen #haki{top:38%}
 .zrow{cursor:pointer;padding:5px 6px;border-radius:6px}
 .zrow:hover,.zrow:focus-visible{background:rgba(111,243,255,.07)}
 
+/* Ujian Saringan */
+#sarHud{position:fixed;z-index:9;top:calc(var(--gt) + 4px);left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 340px));display:grid;gap:2px;padding:9px 14px;border-radius:12px;background:rgba(18,6,8,.9);border:1px solid #ff4f45;box-shadow:0 0 24px -8px #ff4f45;font:500 12.5px/1.35 var(--f-body);color:var(--ink);text-align:center}
+#sarHud.low{top:calc(var(--gt) + 70px)}
+#sarHud b{font:700 11.5px/1.2 var(--f-mono);letter-spacing:.1em;color:#ff7a6a} #sarHud em{font-style:normal;font:600 12px/1.3 var(--f-mono);color:#ffd27a} #sarHud .hp{font-style:normal;color:#ff4f45;letter-spacing:.12em}
+#sarCard{position:fixed;z-index:35;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;padding:22px 24px;border-radius:16px;background:rgba(10,12,22,.96);border:1px solid #ff4f45;box-shadow:0 0 60px -12px #ff4f45,0 30px 80px -20px #000;display:grid;gap:12px;animation:tin .3s ease-out}
+#sarCard .sc-eye{font:600 11px/1.3 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:#ff7a6a} #sarCard h2{margin:0;font:600 22px/1.2 var(--f-display)}
+#sarCard ol{margin:0;padding-left:20px;display:grid;gap:8px;font-size:14.5px;line-height:1.5} #sarCard ol b{color:#ffd27a;font-weight:600} #sarCard .sc-note{font-size:13.5px;color:#ffd1d1;padding:8px 10px;border-radius:9px;background:rgba(255,79,69,.12)}
+#sarCard .btn{justify-self:start}
+#sarSiren{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .4s}
+#sarSiren.on{opacity:1;animation:siren 1.5s linear infinite} #sarSiren.loud{animation-duration:.8s}
+@keyframes siren{0%,100%{box-shadow:inset 0 0 90px 10px rgba(255,30,30,.45)}50%{box-shadow:inset 0 0 90px 10px rgba(40,90,255,.45)}}
+#sarFist{position:fixed;z-index:8;right:calc(var(--gr) + 150px);bottom:calc(var(--gb) + 8px);width:84px;height:84px;border-radius:50%;border:2px solid #ff4f45;background:radial-gradient(circle at 50% 40%,#2a0a0e,#0a0204);color:#fff;font:800 12px/1 var(--f-display);display:grid;place-items:center;align-content:center;gap:4px;box-shadow:0 0 24px -4px #ff4f45}
+#sarFist b{font:700 12px/1 var(--f-mono);padding:2px 6px;border-radius:4px;background:#ff4f45;color:#120707} #sarFist.cool{opacity:.55}
+@media (max-width:720px), (max-height:560px){#sarHud{width:calc(100vw - 200px);padding:6px 10px;font-size:11px} #sarFist{right:var(--gr);bottom:calc(var(--gb) + 170px);width:70px;height:70px}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -450,6 +464,7 @@ body.chatOpen #haki{top:38%}
 <script src="js/20-gergasi.js" charset="utf-8"></script>
 <script src="js/21-duduk.js" charset="utf-8"></script>
 <script src="js/22-sinematik.js" charset="utf-8"></script>
+<script src="js/23-saringan.js" charset="utf-8"></script>
 <script src="app/kawalan.js"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
