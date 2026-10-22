@@ -579,12 +579,15 @@ function renderGate(state){
   else if(gateState === 'setup2'){ sub = 'Pembinaan Dunia · Langkah 2/2'; msg = 'Masukkan PIN sekali lagi untuk sahkan.'; pad = true; }
   else if(gateState === 'unlock'){ msg = wait ? `Terlalu banyak cubaan salah. Frontier Dome terkunci selama ${wait} saat lagi.` : 'Masukkan PIN untuk melepasi Frontier Dome. Pemilik dan tetamu guna pad yang sama.'; pad = !wait; }
   if(gateMsg) msg = gateMsg;
+  const loadingWorld = !HF.allDone;
+  if(loadingWorld){ pad = false; msg = HF.stage || (HF.total ? `Memuat dunia 3D: ${HF.done} daripada ${HF.total} model.` : 'Memuat dunia 3D…'); }
   g.innerHTML = `<div class="gcard" id="gcard"><h1>ERYTH<span>MIND</span></h1><div class="gsub">${sub}</div>
     <div class="gmsg ${gateMsg ? 'bad' : ''}">${esc(msg)}</div>
+    ${loadingWorld ? `<div class="bar" style="width:100%"><i style="width:${HF.stage ? 100 : HF.total ? Math.round(HF.done / HF.total * 100) : 3}%"></i></div><div class="note">Kali pertama mengambil masa lebih lama. Selepas itu dunia dimuat terus dari peranti.</div>` : ''}
     ${gateBusy ? '<div class="scan"></div><div class="gmsg">Bavar-373 sedang mengesahkan kunci…</div>' : ''}
     ${pad && !gateBusy ? `<div class="dots">${Array.from({length:Math.max(6, pinBuf.length)}, (_, i) => `<i class="${i < pinBuf.length ? 'f' : ''}"></i>`).join('')}</div>
     <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" data-k="${n}">${n}</button>`).join('')}<button type="button" class="del" data-k="del">PADAM</button><button type="button" data-k="0">0</button><button type="button" class="ok" data-k="ok">MASUK</button></div>` : ''}
-    ${gateState.startsWith('setup') ? '<div class="note warn">Tiada sesiapa boleh memulihkan PIN ini: bukan Claude, bukan Anthropic, bukan pemilik pelayan. Lupa PIN bermakna dunia ini hilang. Guna sekurang-kurangnya 8 digit dan buat sandaran.</div>' : ''}
+    ${gateState.startsWith('setup') && !loadingWorld ? '<div class="note warn">Tiada sesiapa boleh memulihkan PIN ini: bukan Claude, bukan Anthropic, bukan pemilik pelayan. Lupa PIN bermakna dunia ini hilang. Guna sekurang-kurangnya 8 digit dan buat sandaran.</div>' : ''}
     ${gateState === 'unlock' && store?.kind === 'local' ? '<div class="note">Mod tempatan: dunia ini hanya wujud dalam pelayar ini.</div>' : ''}
   </div>`;
   g.querySelectorAll('[data-k]').forEach(b => b.addEventListener('click', () => padKey(b.dataset.k)));
@@ -595,7 +598,7 @@ function gateKey(e){
   e.preventDefault();
 }
 async function padKey(k){
-  if(gateBusy || !['setup1','setup2','unlock'].includes(gateState)) return;
+  if(gateBusy || !HF.allDone || !['setup1','setup2','unlock'].includes(gateState)) return;
   if(gateState === 'unlock' && lockout().until > Date.now()) return;
   gateMsg = '';
   if(k === 'del'){ pinBuf = pinBuf.slice(0, -1); return renderGate(); }

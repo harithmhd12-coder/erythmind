@@ -567,17 +567,23 @@ addEventListener('keydown', e => {
 
 /* ================= loading Higgsfield models ================= */
 const DRONE_ROT = -Math.PI / 2;   // the Higgsfield drone faces +x; turn its camera to +z
+// The gate waits for this: every model is loaded and every material compiled before the PIN pad or login appears,
+// so typing never stutters and the first frame inside does not stall.
 async function loadHiggsfield(){
+  try{ await loadModelList(); }catch(e){ console.warn('models', e); }
+  HF.stage = 'Menyediakan grafik…'; if(!session) renderGate();
+  await new Promise(r => setTimeout(r, 40));
+  try{ renderer.compile(scene, camera); }catch(e){}
+  HF.stage = ''; HF.allDone = true; hfChip(); if(!session) renderGate();
+}
+async function loadModelList(){
   let man; try{ const r = await fetch('assets/manifest.json'); if(!r.ok) return; man = await r.json(); }catch(e){ return; }
   if(!THREE.GLTFLoader) return; const loader = new THREE.GLTFLoader();
   const list = Object.entries(man || {}); HF.total = list.length; hfChip();
-  const load = (key, file) => new Promise(res => loader.load(file, g => res(g), undefined, () => res(null)));
-  // each model briefly blocks the page while it is parsed, so wait for a quiet moment: at the gate, until nobody
-  // has typed or tapped for a second; in the world, at least a couple of frames between models
-  const quiet = () => new Promise(res => { const go = () => (session || (performance.now() - lastActive > 1100 && !gateBusy)) ? res() : setTimeout(go, 200); setTimeout(go, session ? 60 : 150); });
+  const load = (key, file) => new Promise(res => { const t = setTimeout(() => res(null), 45000); loader.load(file, g => { clearTimeout(t); res(g); }, undefined, () => { clearTimeout(t); res(null); }); });
   for(const [key, file] of list){
-    await quiet();
-    const gltf = await load(key, file); HF.done++; hfChip(); if(!gltf) continue;
+    await new Promise(r => setTimeout(r, 16));      // let the progress bar paint between models
+    const gltf = await load(key, file); HF.done++; hfChip(); if(!session) renderGate(); if(!gltf) continue;
     try{ applyModel(key, gltf); }catch(err){ console.warn('model', key, err); }
   }
 }

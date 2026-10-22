@@ -23,7 +23,7 @@
   const baseGate = renderGate;
   renderGate = function(state){
     baseGate(state);
-    const card = document.getElementById('gcard'); if(!card) return;
+    const card = document.getElementById('gcard'); if(!card || !HF.allDone) return;   // login appears once the world has loaded
     if(blocked()){ card.querySelector('.pad')?.remove(); card.querySelector('.dots')?.remove(); card.insertAdjacentHTML('beforeend', `<div class="gbanner">${esc(why())}</div>`); }
     const box = document.createElement('div'); box.className = 'oacc';
     if(E.email) box.innerHTML = `<small>${amOwner() ? 'Log masuk sebagai pemilik' : 'Akaun ini bukan akaun pemilik'}: ${esc(E.email)}</small><div class="row"><button class="btn ghost" type="button" id="oOut">Log keluar akaun</button></div>`;
