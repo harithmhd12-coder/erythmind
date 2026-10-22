@@ -22,7 +22,10 @@
   /* --- gate: owner account + lock/ban notice --- */
   const baseGate = renderGate;
   renderGate = function(state){
+    // keep what was typed in the login form if the gate redraws itself
+    const keep = document.getElementById('oForm') && !document.getElementById('oForm').hidden ? {e:$('#oEmail').value, p:$('#oPass').value, f:document.activeElement?.id} : null;
     baseGate(state);
+    if(keep) setTimeout(() => { const sh = $('#oShow'); if(!sh) return; sh.closest('.row').hidden = true; $('#oForm').hidden = false; $('#oEmail').value = keep.e; $('#oPass').value = keep.p; if(keep.f) document.getElementById(keep.f)?.focus(); });
     const card = document.getElementById('gcard'); if(!card || !HF.allDone) return;   // login appears once the world has loaded
     if(blocked()){ card.querySelector('.pad')?.remove(); card.querySelector('.dots')?.remove(); card.insertAdjacentHTML('beforeend', `<div class="gbanner">${esc(why())}</div>`); }
     const box = document.createElement('div'); box.className = 'oacc';

@@ -51,7 +51,7 @@ const joy = {id:null, x:0, y:0, ox:0, oy:0};
 const typing = () => { const a = document.activeElement; return a && /INPUT|TEXTAREA|SELECT/.test(a.tagName); };
 addEventListener('keydown', e => {
   lastActive = performance.now(); if(session) audioStart();
-  if(!$('#gate').hidden){ gateKey(e); return; }
+  if(!$('#gate').hidden){ if(!typing()) gateKey(e); return; }   // keys typed into the login form belong to the form, not the PIN pad
   if(e.key === 'Escape'){ if(!$('#panel').hidden){ closePanel(); e.preventDefault(); } return; }
   if(typing()) return;
   if(!$('#panel').hidden) return;
