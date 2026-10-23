@@ -94,7 +94,7 @@ function pick(x, y){
   ndc.set(x / innerWidth * 2 - 1, -y / innerHeight * 2 + 1); ray.setFromCamera(ndc, camera);
   if(player.layer === 4){ const slot = bookAtRay(ray); if(slot != null){ openBook(slot); return; } }
   if(player.layer === 5){ const slot = dementorAtRay(ray); if(slot != null){ openMemory(slot); return; } }
-  const hits = ray.intersectObjects(clickables.filter(o => { let p = o; while(p.parent && p.parent !== scene) p = p.parent; return p.visible; }), true); if(!hits.length) return;
+  const hits = ray.intersectObjects(clickables.filter(o => { for(let p = o; p && p !== scene; p = p.parent) if(!p.visible) return false; return true; }), true); if(!hits.length) return;
   let o = hits[0].object; while(o && !o.userData.info) o = o.parent; if(!o) return;
   const inf = o.userData.info;
   if(inf.holo){

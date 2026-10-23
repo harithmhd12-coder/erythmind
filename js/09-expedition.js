@@ -579,6 +579,7 @@ async function loadHiggsfield(){
 async function loadModelList(){
   let man; try{ const r = await fetch('assets/manifest.json'); if(!r.ok) return; man = await r.json(); }catch(e){ return; }
   if(!THREE.GLTFLoader) return; const loader = new THREE.GLTFLoader();
+  if(window.MeshoptDecoder) loader.setMeshoptDecoder(MeshoptDecoder);       // models are meshopt-compressed (about 40% smaller downloads)
   const list = Object.entries(man || {}); HF.total = list.length; hfChip();
   const load = (key, file) => new Promise(res => { const t = setTimeout(() => res(null), 45000); loader.load(file, g => { clearTimeout(t); res(g); }, undefined, () => { clearTimeout(t); res(null); }); });
   for(const [key, file] of list){

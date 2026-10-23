@@ -105,9 +105,10 @@ function placePX(on){
   const c = SAR.c; PX.forEach(p => { p.g.visible = on; if(!on) return; p.x = c.x + Math.cos(p.a) * (60 + p.i * 2); p.z = c.z + Math.sin(p.a) * (60 + p.i * 2); p.cd = 2.5 + p.i * .6; });
 }
 function setupPXModels(){
-  if(!SARM.px) return;
+  if(!SARM.px || (typeof Q !== 'undefined' && Q.tier <= 0)) return;     // Sangat rendah: the light box bodies only
   PX.forEach(p => { if(p.model) return;
     const root = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(SARM.px) : SARM.px.clone(); p.g.add(root); p.model = root; p.proc.g.visible = false;
+    root.traverse(o => { if(o.isMesh) o.castShadow = false; });
     root.traverse(o => { if(o.isBone && !p.head && /head$/i.test(o.name)) p.head = o; });
     if(SARM.pxWalk){ p.mixer = new THREE.AnimationMixer(root); p.act = p.mixer.clipAction(SARM.pxWalk); p.act.play(); } });
 }

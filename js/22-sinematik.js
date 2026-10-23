@@ -69,7 +69,7 @@ moon.material.color.setHex(0xfffbec);
 const gateEl = document.getElementById('gate');
 function renderWorld(dt){
   if(!session && !gateEl.hidden) return;             // the gate covers the whole screen: leave the device free for typing
-  if(!composer){ renderer.render(scene, camera); return; }
+  if(!composer || (typeof Q !== 'undefined' && Q.noPost)){ renderer.render(scene, camera); return; }
   const indoor = indoorLayer(player.layer), warm = player.layer === 4 || (player.layer === 2 && nivRegion(player.x, player.z) === 'gua') ? 1 : 0;
   gradePass.uniforms.night.value = indoor ? (player.layer === 5 ? .8 : .2) : nightLevel;
   gradePass.uniforms.warm.value = lerp(gradePass.uniforms.warm.value, warm, .05);
@@ -79,5 +79,5 @@ function renderWorld(dt){
   composer.render(dt);
   watchGfx(dt);
 }
-anims.push(() => { moonHalo.visible = moon.visible; moonHalo.position.copy(moon.position); moonHalo.material.opacity = moon.material.opacity * .9; });
+anims.push(() => { moonHalo.visible = moon.visible; moonHalo.position.copy(moon.position); moonHalo.scale.setScalar(900 * moon.scale.x); moonHalo.material.opacity = moon.material.opacity * .9; });
 buildComposer();

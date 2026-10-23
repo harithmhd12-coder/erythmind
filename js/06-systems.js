@@ -112,7 +112,7 @@ function updateEnvironment(dt, t){
   skyU.sunDir.value.copy(_sunV); skyU.glow.value = indoorLayer(player.layer) ? 0 : clamp(env.alt / 6 + .6, 0, 1) * (1 - weatherNow().grey);
   sky.position.copy(camera.position); stars.position.copy(camera.position);
   const moonDir = new THREE.Vector3(-_sunV.x, Math.max(.25, -_sunV.y), -_sunV.z).normalize();
-  moon.position.copy(camera.position).addScaledVector(moonDir, 2600); moon.visible = !indoorLayer(player.layer) && nightLevel > .2; moon.material.opacity = nightLevel;
+  const moonD = Math.min(2600, camera.far * .6); moon.position.copy(camera.position).addScaledVector(moonDir, moonD); moon.scale.setScalar(moonD / 2600);   // stays inside the far plane (24-prestasi.js) moon.visible = !indoorLayer(player.layer) && nightLevel > .2; moon.material.opacity = nightLevel;
   hemi.color.setHex(hs).multiplyScalar(.6 + env.light * .4); hemi.groundColor.setHex(hg); hemi.intensity = .16 + env.light * .44;
   const night = !indoorLayer(player.layer) && env.alt < -3;
   sun.color.setHex(night ? 0x8fa8ff : sunCol); sun.intensity = night ? .34 : env.light * (indoorLayer(player.layer) ? .8 : .92);
