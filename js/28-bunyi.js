@@ -39,9 +39,9 @@ async function loadSfx(){
   if(SFX.ready || !AU.ctx) return; SFX.ready = true;
   let man = {}; try{ const r = await fetch('assets/sfx/manifest.json'); if(r.ok) man = await r.json(); }catch(e){}
   SFX.files = man;
-  for(const [key, file] of Object.entries(man)){
+  await Promise.all(Object.entries(man).map(async ([key, file]) => {                // all at once: ready within a moment of the first tap
     try{ const ab = await (await fetch(file)).arrayBuffer(); SFX.buf[key] = await AU.ctx.decodeAudioData(ab); }catch(e){ console.warn('sfx', key, e); }
-  }
+  }));
 }
 // plays the file for `key`; at a world position it fades with distance from the camera. True when a file played.
 function playSfx(key, at, vol = 1){
