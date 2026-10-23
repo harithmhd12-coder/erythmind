@@ -503,8 +503,9 @@ raidPanelHtml = function(){
     ${rows ? `<ul class="facts">${rows}</ul>` : ''}${isOwner() ? '<div class="row"><button class="btn" id="drillInv" type="button">Latihan · serbuan mingguan</button></div>' : ''}`;
 };
 const _wireRaidPanelL = wireRaidPanel;
-wireRaidPanel = function(){ _wireRaidPanelL(); $('#drillInv')?.addEventListener('click', () => { if(LKS.inv.on) return toast('Serbuan sedang berlangsung.', 'bad'); closePanel(); startInvasion('latihan', true); net.room?.emit('serbuan', {d:1}).catch(() => {}); }); };
-(async () => { const r = await use('room'); if(r) r.on('serbuan', m => { if(m.isMe || LKS.inv.on) return; startInvasion('latihan', true); }, () => {}); })();
+wireRaidPanel = function(){ _wireRaidPanelL(); $('#drillInv')?.addEventListener('click', () => { if(LKS.inv.on) return toast('Serbuan sedang berlangsung.', 'bad'); closePanel(); startInvasion('latihan', true); net.room?.emit('haki', {k:'serbuan'}).catch(() => {}); }); };
+// a drill started by the owner reaches everyone in the room (it rides the 'haki' topic, k:'serbuan')
+(async () => { const r = await use('room'); if(r) r.on('haki', m => { if(m.isMe || LKS.inv.on || m.data?.k !== 'serbuan') return; startInvasion('latihan', true); }, () => {}); })();
 info(ADMS[7].g, 'Laksamana Marineford', 'Tujuh laksamana dan Fleet Admiral Garp menjaga Pangkalan Laut. Setiap minggu mereka menghalang lima penceroboh hebat.');
 EXPED.push({id:'laksamana', name:'Barisan Laksamana', sub:'Marineford · tujuh laksamana & Fleet Admiral', x:92, y:44, layer:0, to:[bx(BASE.back, 150), bz(BASE.back, 150)]});
 // Q / TUMBUK during the duel punches the admiral

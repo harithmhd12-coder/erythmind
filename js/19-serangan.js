@@ -120,7 +120,7 @@ function raidPanelHtml(){
     ${rows ? `<ul class="facts">${rows}</ul>` : ''}${isOwner() ? '<div class="row"><button class="btn" id="drill1" type="button">Latihan harian (250)</button><button class="btn danger" id="drill2" type="button">Latihan Ultimate Guard (1000)</button></div>' : ''}`;
 }
 function wireRaidPanel(){
-  const go = (n, mega) => { if(RAID.on) return toast('Serangan sedang berlangsung.', 'bad'); closePanel(); startRaid(n, mega, 'latihan', true); net.room?.emit('serangan', {n, mega}).catch(() => {}); };
+  const go = (n, mega) => { if(RAID.on) return toast('Serangan sedang berlangsung.', 'bad'); closePanel(); startRaid(n, mega, 'latihan', true); net.room?.emit('haki', {k:'serangan', n, mega}).catch(() => {}); };
   $('#drill1')?.addEventListener('click', () => go(250, false)); $('#drill2')?.addEventListener('click', () => go(1000, true));
 }
-(async () => { const r = await use('room'); if(r) r.on('serangan', m => { if(m.isMe || !m.data || RAID.on) return; const n = clamp(+m.data.n || 0, 1, 1000); startRaid(n, !!m.data.mega, 'latihan', true); }, () => {}); })();
+(async () => { const r = await use('room'); if(r) r.on('haki', m => { if(m.isMe || !m.data || m.data.k !== 'serangan' || RAID.on) return; const n = clamp(+m.data.n || 0, 1, 1000); startRaid(n, !!m.data.mega, 'latihan', true); }, () => {}); })();
