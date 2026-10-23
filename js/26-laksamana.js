@@ -32,6 +32,9 @@ const INV_DEF = [
   {id:'law', name:'Trafalgar Law', title:'Pakar Bedah · Bilik Biru', power:'bilik', kuasa:'Bilik Biru · Tukar Tempat', col:'#6fd8ff', h:6.5, hp:130, vs:['cahaya'], proc:{coat:0x14161c, pants:0x3a4a6a, shirt:0xe8e0d0, skin:0xd9a77f, hair:0x14100c}},
 ];
 const POWER_INFO = Object.fromEntries([...ADM_DEF, FLEET_DEF].map(d => [d.power, {name:d.kuasa, by:d.name, col:d.col}]));
+// the white transformation and the giant fist can sit in the same slot: alone, or as one key (first press transforms, the next ones throw the fist)
+POWER_INFO.gearputih = {name:'Gear Putih · Transformasi Awan Putih 30 s', by:'kuasa khas', col:'#ffffff', gear:true};
+POWER_INFO.gear5 = {name:'Gear Putih + Tumbukan Gergasi · tekan sekali transformasi, tekan lagi tumbuk', by:'kuasa khas', col:'#ffffff', gear:true};
 
 /* --- where they stand: the admirals' line on the crescent between Oris Plaza and the headquarters --- */
 const LINE_R = 163.5, FRONT_R = 162.5, INV_R = 118;           // the quay edge, in front of the troops in Oris Plaza
@@ -333,7 +336,7 @@ if(!POWER_INFO[KUASA.pick]) KUASA.pick = 'asal';
 POWERS.push({id:'laksamana', name:'Kuasa Laksamana', sub:'', key:KUASA.slot, cd:7}); HAKI.cd.laksamana = 0;
 function syncKuasaPower(){
   const P = POWERS.find(p => p.id === 'laksamana'), I = POWER_INFO[KUASA.pick];
-  P.key = KUASA.slot; P.name = I ? I.name.split(' · ')[0] : 'Kuasa Laksamana'; P.sub = I ? `${I.name} · daripada ${I.by}` : '';
+  P.key = KUASA.slot; P.name = I ? (KUASA.pick === 'gear5' ? (HAKI.gear > 0 ? 'Tumbukan Gergasi' : 'Gear Putih') : I.name.split(' · ')[0]) : 'Kuasa Laksamana'; P.sub = I ? `${I.name} · daripada ${I.by}` : '';
   const box = $('#haki'); if(box) box.dataset.key = '';
 }
 const _allowedPowersL = allowedPowers;
@@ -353,6 +356,7 @@ addEventListener('keydown', e => {
 SPECIAL_POWERS.laksamana = {
   use(){
     const p = KUASA.pick, I = POWER_INFO[p]; if(!I) return;
+    if(I.gear) return useGearSlot(p);
     const o = worldOfPlayer(), from = o.clone().setY(o.y + 2.2), fw = forward();
     // aim: an intruder in reach, else the giant, else straight ahead
     let to = null, foe = null;
@@ -366,6 +370,18 @@ SPECIAL_POWERS.laksamana = {
     toast(`${I.name.toUpperCase()} · kuasa ${I.by}.`, 'ok', 2200);
   },
 };
+// the slot carrying Gear Putih (and the giant fist): same effects, sounds and room messages as the visitors' own keys 5 and 6
+function useGearSlot(p){
+  const fist = p === 'gear5' && HAKI.gear > 0, id = fist ? 'tumbuk' : 'gearputih', o = worldOfPlayer(), dir = forward();
+  if(!fist && HAKI.gear > 0) return toast(`Gear Putih masih aktif (${HAKI.gear.toFixed(0)} s).`, 'ok', 1500);
+  SPECIAL_POWERS[id].use();
+  HAKI.cd.laksamana = fist ? 14 : p === 'gear5' ? 1.5 : 45;
+  POWER_HOOKS.forEach(f => f(id, o, true, true, player.layer));
+  net.room?.emit('haki', {k:id, x:+player.x.toFixed(1), z:+player.z.toFixed(1), ry:+player.ry.toFixed(2), l:player.layer}).catch(() => {});
+  if(fist) setTimeout(() => { const tx = o.x + dir.x * 70, tz = o.z + dir.z * 70;              // the fist lands 70 steps ahead
+    if(player.layer === 2 && Math.hypot(GIANT.x - tx, GIANT.z - tz) < 60) giantHit(p); }, 1950);
+  syncKuasaPower();
+}
 SPECIAL_POWERS.laksamanaFx = {remote(o, dir, a, d){ if(!POWER_FX[d.p] || d.l !== player.layer) return; POWER_FX[d.p](new THREE.Vector3(d.x, o.y + 2.2, d.z), new THREE.Vector3(d.tx, d.ty, d.tz), 1.2, null); }};
 // what an admiral power does where it lands: intruders, beasts, animals, and the giant
 function kuasaImpact(to, p, foe){
@@ -381,7 +397,7 @@ function giantHit(p){
   if(GIANT.state === 'tidur'){ wake('kuasa laksamana menghentamnya'); return; }
   if(GIANT.state === 'tunduk' || GIANT.state === 'pulang') return;
   GIANT.lksHits = (GIANT.lksHits || 0) + 1; shake = 1.6; flash('rgba(255,255,255,.7)');
-  if(GIANT.lksHits >= 3){ GIANT.lksHits = 0; if(GIANT.state === 'lemah'){ GIANT.state = 'amok'; if(GIANT.act) GIANT.act.timeScale = 1; } subdue(); toast(`${POWER_INFO[p].name.split(' · ')[0]} · Penjaga Gergasi tumbang dan melutut!`, 'ok', 4000); return; }
+  if(GIANT.lksHits >= 3){ GIANT.lksHits = 0; if(GIANT.state === 'lemah'){ GIANT.state = 'amok'; if(GIANT.act) GIANT.act.timeScale = 1; } subdue(); toast(`${p === 'gear5' ? 'Tumbukan Gergasi' : POWER_INFO[p].name.split(' · ')[0]} · Penjaga Gergasi tumbang dan melutut!`, 'ok', 4000); return; }
   if(GIANT.state !== 'lemah'){ GIANT.state = 'lemah'; GIANT.t = 0; GIANT.swingAnim = 0; const d = play('kneel', {loop:false, fade:.35}); GIANT.lemahHold = d ? d * .42 : 0; }
   else GIANT.t = 0;
   toast(`KENA! Penjaga Gergasi lemah dan terduduk 10 saat (${GIANT.lksHits}/3 · tiga kali dan dia tumbang).`, 'ok', 3500);
@@ -392,7 +408,7 @@ const SLOT_NAMES = {5:'Tambah sebagai kuasa 5 (semua kuasa asal kekal)', 1:'Gant
 const _gfxSettingsHtmlL = gfxSettingsHtml;
 gfxSettingsHtml = function(){
   const base = _gfxSettingsHtmlL(); if(!isOwner()) return base;
-  return base + `<h3>Kuasa Laksamana</h3><div class="field"><label for="kuasaSel">Kuasa</label><select id="kuasaSel"><option value="asal" ${KUASA.pick === 'asal' ? 'selected' : ''}>Tiada · kuasa aku kekal seperti asal</option>${Object.entries(POWER_INFO).map(([k, I]) => `<option value="${k}" ${KUASA.pick === k ? 'selected' : ''}>${esc(I.name)} (${esc(I.by)})</option>`).join('')}</select></div>
+  return base + `<h3>Pilihan kuasa (laksamana & kuasa khas)</h3><div class="field"><label for="kuasaSel">Kuasa</label><select id="kuasaSel"><option value="asal" ${KUASA.pick === 'asal' ? 'selected' : ''}>Tiada · kuasa aku kekal seperti asal</option>${Object.entries(POWER_INFO).map(([k, I]) => `<option value="${k}" ${KUASA.pick === k ? 'selected' : ''}>${esc(I.name)} (${esc(I.by)})</option>`).join('')}</select></div>
     <div class="field"><label for="kuasaSlot">Letak di</label><select id="kuasaSlot" ${KUASA.pick === 'asal' ? 'disabled' : ''}>${Object.entries(SLOT_NAMES).map(([k, n]) => `<option value="${k}" ${KUASA.slot === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="note">Haki Raja Agung (2) tidak boleh diganti: ia menundukkan gergasi dan menamatkan Ujian Saringan. Setiap kuasa laksamana boleh menjatuhkan Penjaga Gergasi: dua hentaman membuatnya terduduk 10 saat, hentaman ketiga membuatnya tumbang.</div>`;
 };
@@ -402,6 +418,10 @@ document.addEventListener('change', e => {
   if(e.target.id === 'kuasaSlot'){ KUASA.slot = e.target.value; LS.set('erythmind.kuasaSlot', KUASA.slot); syncKuasaPower(); toast(`Kuasa Laksamana di kekunci ${KUASA.slot}.`, 'ok', 2500); }
 });
 syncKuasaPower();
+
+// the Gear Putih + fist slot names itself after what the next press does
+let gearWas = false;
+anims.push(() => { if(KUASA.pick !== 'gear5') return; const g = HAKI.gear > 0; if(g !== gearWas){ gearWas = g; syncKuasaPower(); } });
 
 /* ================= models (Higgsfield), loaded after entry so the gate does not wait for them ================= */
 function applyLaksamanaModel(key, gltf){
@@ -453,4 +473,4 @@ wireRaidPanel = function(){ _wireRaidPanelL(); $('#drillInv')?.addEventListener(
 // a drill started by the owner reaches everyone in the room (it rides the 'haki' topic, k:'serbuan')
 (async () => { const r = await use('room'); if(r) r.on('haki', m => { if(m.isMe || LKS.inv.on || m.data?.k !== 'serbuan') return; startInvasion('latihan', true); }, () => {}); })();
 info(ADMS[7].g, 'Laksamana Marineford', 'Tujuh laksamana dan Fleet Admiral Garp menjaga Pangkalan Laut. Setiap minggu mereka menghalang lima penceroboh hebat.');
-EXPED.push({id:'laksamana', name:'Barisan Laksamana', sub:'Marineford · tujuh laksamana & Fleet Admiral', x:92, y:44, layer:0, to:[bx(BASE.back, 150), bz(BASE.back, 150)]});
+EXPED.push({id:'laksamana', name:'Barisan Laksamana', sub:'Marineford · tujuh laksamana & Fleet Admiral', x:92, y:44, layer:0, to:[bx(BASE.back, 172), bz(BASE.back, 172)]});        // on the quay, just behind the line (150 was the bay, at the foot of the brick wall)
