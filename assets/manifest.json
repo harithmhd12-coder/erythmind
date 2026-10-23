@@ -34,5 +34,7 @@
  "animBaring": "assets/anim-baring.gltf.json",
  "px": "assets/px.gltf.json",
  "puma": "assets/puma.gltf.json",
- "animPumaSwing": "assets/anim-puma-swing.gltf.json"
+ "animPumaSwing": "assets/anim-puma-swing.gltf.json",
+ "pokokRendang": "assets/pokok-rendang.gltf.json",
+ "pokokPain": "assets/pokok-pain.gltf.json"
 }

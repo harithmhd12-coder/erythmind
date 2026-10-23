@@ -75,7 +75,7 @@ function renderWorld(dt){
   gradePass.uniforms.warm.value = lerp(gradePass.uniforms.warm.value, warm, .05);
   gradePass.uniforms.time.value = performance.now() / 1000;
   gradePass.uniforms.res.value.set(innerWidth, innerHeight);
-  if(bloomPass){ if(indoor){ bloomPass.threshold = .8; bloomPass.strength = .5; } else { bloomPass.threshold = lerp(.84, .6, nightLevel); bloomPass.strength = lerp(.42, .75, nightLevel); } bloomPass.radius = .65; }
+  if(bloomPass){ if(indoor){ bloomPass.threshold = .8; bloomPass.strength = .5; } else { bloomPass.threshold = lerp(typeof REAL !== 'undefined' && REAL.envOn ? .95 : .84, .6, nightLevel); bloomPass.strength = lerp(.42, .75, nightLevel); } bloomPass.radius = .65; }
   composer.render(dt);
   watchGfx(dt);
 }

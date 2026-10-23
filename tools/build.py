@@ -79,8 +79,15 @@ def main():
         refs |= set(re.findall(r'assets/[A-Za-z0-9._-]+', f.read_text(encoding='utf-8')))
     shutil.rmtree(ROOT / 'assets', ignore_errors=True)
     (ROOT / 'assets').mkdir()
+    # whole asset folders a script loads by name (assets/tex/<name>.jpg)
+    for r in [r for r in refs if (SRC / r).is_dir()]:
+        shutil.copytree(SRC / r, ROOT / r)
+        refs |= {f'{r}/{f.name}' for f in (SRC / r).iterdir() if f.is_file()}
+        refs.discard(r)
     missing = []
     for r in sorted(refs):
+        if (ROOT / r).is_file():
+            continue
         s = SRC / r
         if s.is_file():
             shutil.copy2(s, ROOT / r)
@@ -89,12 +96,12 @@ def main():
 
     # service worker cache name follows the content, so phones pick up every update
     h = hashlib.sha256()
-    for f in sorted([ROOT / 'index.html', *(ROOT / 'js').glob('*.js'), *(ROOT / 'app').glob('*.js'), *(ROOT / 'assets').iterdir()]):
+    for f in sorted([ROOT / 'index.html', *(ROOT / 'js').glob('*.js'), *(ROOT / 'app').glob('*.js'), *(f for f in (ROOT / 'assets').rglob('*') if f.is_file())]):
         h.update(f.read_bytes())
     sw = ROOT / 'sw.js'
     sw.write_text(re.sub(r"const VER = '[^']*';", f"const VER = 'erythmind-{h.hexdigest()[:10]}';", sw.read_text(encoding='utf-8')), encoding='utf-8')
 
-    size = sum(f.stat().st_size for f in (ROOT / 'assets').iterdir()) / 1e6
+    size = sum(f.stat().st_size for f in (ROOT / 'assets').rglob('*') if f.is_file()) / 1e6
     print(f'Siap: index.html, {len(list((ROOT / "js").glob("*.js")))} fail js, {len(refs) - len(missing)} aset ({size:.1f} MB), sw {h.hexdigest()[:10]}')
     if missing:
         print('  aset tiada dalam sumber:', ', '.join(missing))
