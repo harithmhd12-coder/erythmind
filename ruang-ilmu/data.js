@@ -49,7 +49,7 @@ const KANDUNGAN = [
       'Meehl, P. E. (1956). Wanted — a good cookbook. American Psychologist, 11(6), 263–272.',
       'Dickson, D. H., & Kelly, I. W. (1985). The "Barnum effect" in personality assessment: A review of the literature. Psychological Reports, 57(2), 367–382.'
     ],
-    berkaitan: ['bias-pengesahan', 'menulis-untuk-berfikir'], pasangan: 'sng-americano'
+    berkaitan: ['bias-pengesahan', 'menulis-untuk-berfikir'], pasangan: 'classic'
   },
   {
     slug: 'bias-pengesahan',
@@ -118,7 +118,7 @@ const KANDUNGAN = [
       'Gollwitzer, P. M. (1999). Implementation intentions: Strong effects of simple plans. American Psychologist, 54(7), 493–503.',
       'Sirois, F., & Pychyl, T. (2013). Procrastination and the priority of short-term mood regulation. Social and Personality Psychology Compass, 7(2), 115–127.'
     ],
-    berkaitan: ['pengulangan-berjarak', 'kuasa-pertumbuhan-berganda'], pasangan: 'sng-spanish-latte'
+    berkaitan: ['pengulangan-berjarak', 'kuasa-pertumbuhan-berganda'], pasangan: 'caramel'
   },
   {
     slug: 'pengulangan-berjarak',
@@ -187,7 +187,7 @@ const KANDUNGAN = [
       'Rozenblit, L., & Keil, F. (2002). The misunderstood limits of folk science: An illusion of explanatory depth. Cognitive Science, 26(5), 521–562.',
       'Graham, P. (2022). Putting Ideas into Words. paulgraham.com.'
     ],
-    berkaitan: ['pengulangan-berjarak', 'bias-pengesahan'], pasangan: 'sng-spanish-latte'
+    berkaitan: ['pengulangan-berjarak', 'bias-pengesahan'], pasangan: 'caramel'
   },
   {
     slug: 'baitul-hikmah',
@@ -403,7 +403,7 @@ const KANDUNGAN = [
       'Ellis, M. (2004). The Coffee House: A Cultural History. Weidenfeld & Nicolson.',
       'Pendergrast, M. (2010). Uncommon Grounds: The History of Coffee and How It Transformed Our World. Basic Books.'
     ],
-    berkaitan: ['sains-espresso', 'baitul-hikmah'], pasangan: 'sng-liberica'
+    berkaitan: ['sains-espresso', 'baitul-hikmah'], pasangan: 'classic'
   },
   {
     slug: 'sains-espresso',
@@ -437,7 +437,7 @@ const KANDUNGAN = [
       'Illy, A., & Viani, R. (eds.) (2005). Espresso Coffee: The Science of Quality (2nd ed.). Elsevier Academic Press.',
       'Specialty Coffee Association. Coffee Brewing Control Chart dan garis panduan pengekstrakan.'
     ],
-    berkaitan: ['sejarah-kopi', 'kafein-dan-tidur'], pasangan: 'sng-americano'
+    berkaitan: ['sejarah-kopi', 'kafein-dan-tidur'], pasangan: 'mocha'
   },
   {
     slug: 'kafein-dan-tidur',
@@ -472,7 +472,7 @@ const KANDUNGAN = [
       'EFSA Panel on Dietetic Products, Nutrition and Allergies (2015). Scientific Opinion on the safety of caffeine. EFSA Journal, 13(5), 4102.',
       'Institute of Medicine (2001). Caffeine for the Sustainment of Mental Task Performance. National Academies Press.'
     ],
-    berkaitan: ['sains-espresso', 'pengulangan-berjarak'], pasangan: 'sng-decaf'
+    berkaitan: ['sains-espresso', 'pengulangan-berjarak'], pasangan: 'choc'
   },
   {
     slug: 'kuasa-pertumbuhan-berganda',
@@ -523,14 +523,63 @@ const EBUKU = [
   { slug: 'eb-turath', tajuk: 'Pengenalan Kitab Turath untuk Pembaca Baharu', ringkas: 'Kenali 10 kitab klasik dan cara mula membacanya dengan berpandu.', halaman: 64, harga: 'RM25', plus: true }
 ];
 
-/* Sip 'n Go Coffee. Harga ialah contoh untuk prototaip dan perlu disahkan. Kafein ialah anggaran. */
+/* Sip 'n Go Coffee & Bakery. Menu, harga, bahan dan kisah diambil daripada laman rasmi Sip 'n Go.
+   Gambar botol dan foto: media/sng/. */
+const SNG = {
+  nama: "Sip 'n Go Coffee & Bakery",
+  slogan: 'Dah ngopi ke belum hari ni?',
+  moto: '1 kopi sehari, 1 ilmu baru.',
+  ringkas: 'Kopi, matcha dan coklat buatan tangan dalam botol. Dibancuh segar, digoncang sebelum diminum, dan dibawa ke mana saja. Setiap botol datang bersama satu kad ilmu.',
+  lokasi: 'Taman Arked, Dengkil, Selangor',
+  peta: 'https://www.google.com/maps/search/?api=1&query=Taman+Arked+Dengkil+Selangor',
+  instagram: 'https://www.instagram.com/sipngocoffeebakery/',
+  ig: '@sipngocoffeebakery',
+  hashtag: '#SipnGo',
+  /* Nombor WhatsApp penerima order, format antarabangsa tanpa + (contoh 60123456789).
+     Kosong: WhatsApp akan meminta pengguna memilih penerima. */
+  whatsapp: '',
+  nilai: [
+    { h: 'Rasa yang jujur', p: 'Biji kopi dari Ethiopia, Colombia dan Brazil, susu segar, coklat premium Scrippo dan matcha Shizuko.' },
+    { h: 'Satu botol, satu ilmu', p: 'Setiap botol disertakan satu kad ilmu. Order 3 kopi, dapat 3 ilmu yang berbeza.' },
+    { h: 'Bawa ke mana saja', p: 'Macam Touch \'n Go yang dibawa ke mana-mana, cuma yang ini bawa kopi, bukan kad.' }
+  ],
+  kisah: [
+    { h: '2020, Kaherah', p: 'Dua pelajar yang suka buku, penulisan, pastri dan kopi. Kopi dihidang percuma untuk tetamu di rumah sewa.' },
+    { h: 'Roti boy dan donut', p: 'Kawan-kawan mula minta tempah. Sambutannya menggalakkan, tapi masa tak cukup.' },
+    { h: 'Fokus pada kopi', p: 'Kuliah, talaqqi dan program mahasiswa menuntut masa. Kami berehat dari pastri dan memilih kopi.' },
+    { h: 'Nama Farisi', p: 'Nama pena rakan kongsi kami. Lebih unik, dan itulah nama yang dikenali dalam kalangan pelajar Malaysia di Mesir.' },
+    { h: "Sip 'n Go", p: 'Lebih mudah diingat, dan sesuai dengan konsep kami: kopi dalam botol untuk dibawa ke mana-mana.' },
+    { h: 'Hari ini', p: 'Dari tempahan 30 botol dalam satu malam dengan moka pot, kepada tempahan 100 botol untuk sebuah syarikat.' }
+  ],
+  biji: [
+    { negara: 'Ethiopia', untuk: 'Classic Latte, Caramel Latte dan Rich Mocha.' },
+    { negara: 'Colombia', untuk: 'Classic Latte dan Caramel Latte.' },
+    { negara: 'Brazil', untuk: 'Classic Latte, Caramel Latte dan Rich Mocha.' }
+  ],
+  ulasan: [
+    { q: 'As a matcha lover, saya approved! … after dah campur ais, ya Allah sedap betul! Creamy dan tak manis tu paking love.', siapa: 'Pelanggan · Matcha Latte' },
+    { q: 'Balance well. Manis pun blend sekali, cam tak too manis, too pahit or too grassy. Just nice.', siapa: 'Pelanggan · Matcha Latte' },
+    { q: 'Saya bukan peminat latte, tapi saya suka dengan caramel latte yang awak bagi. Rasa manis berlemak plus ada hint of burnt sugar.', siapa: 'Pelanggan · Caramel Latte' }
+  ]
+};
+
+/* Kad Ilmu yang disertakan dengan setiap botol. */
+const KAD_ILMU = {
+  set: 'Set #1 · Rezeki Itu Milik Siapa',
+  kad: [
+    { kod: 'HR-001', huruf: 'A', teks: 'Ingat tau, bos tempat kita kerja tu cuma bayar gaji, tapi yang betul-betul bagi rezeki tu Allah.', dalil: 'Yā Razzāq — Wahai Yang Maha Pemberi Rezeki. (sebut ketika mula kerja)' },
+    { kod: 'HR-002', huruf: 'B', teks: 'Percaya tak, sebenarnya pagi ni kau dah ada seluruh dunia dalam tangan kau.', dalil: '“Sesiapa bangun pagi dalam keadaan aman, sihat, dan ada makanan hari itu — seolah dunia seluruhnya miliknya.” (HR Tirmizi, 2346)' },
+    { kod: 'HR-003', huruf: 'C', teks: 'Kadang-kadang rezeki tu datang berderap dari pintu yang kau tak expect langsung.', dalil: '“Dan sesiapa berserah diri kepada Allah, maka Allah cukuplah baginya.” — at-Talaq: 3' },
+    { kod: 'HR-004', huruf: 'D', teks: 'Ada banyak benda dalam hidup ni yang kita tak perasan pun, rupa-rupanya benda tu lah rezeki paling besar.', dalil: '“Dan sesiapa yang bersyukur, faedahnya itu terpulang kepada dirinya sendiri.” — Luqman: 12' }
+  ]
+};
+
+/* Menu. kategori: kopi | matcha | coklat. profil: ringan | manis | pekat. pasangan: bacaan Ruang Ilmu yang dipadankan. */
 const PRODUK = [
-  { id: 'sng-kopi-susu', nama: 'Kopi Susu Klasik', jenis: 'RTD · 250 ml', harga: 6.9, kafein: 90, ramuan: 'Kopi robusta-liberica, susu segar, gula tebu.', alergen: ['Susu'], nota: 'Lemak, manis sederhana. Rasa kopitiam dalam botol.', warna: '#b98a5e', pasangan: 'sejarah-kopi' },
-  { id: 'sng-spanish-latte', nama: 'Spanish Latte', jenis: 'RTD · 250 ml', harga: 8.9, kafein: 110, ramuan: 'Espresso arabika, susu segar, susu pekat manis.', alergen: ['Susu'], nota: 'Lembut dan berkrim. Teman menulis dan mengulang kaji.', warna: '#d9b48f', pasangan: 'menulis-untuk-berfikir' },
-  { id: 'sng-americano', nama: 'Americano Hitam', jenis: 'RTD · 250 ml', harga: 6.5, kafein: 130, ramuan: 'Espresso arabika, air. Tanpa gula.', alergen: [], nota: 'Bersih dan cerah. Untuk fikiran yang perlu tajam.', warna: '#3a2a1f', pasangan: 'sains-espresso' },
-  { id: 'sng-gula-apong', nama: 'Kopi Gula Apong', jenis: 'RTD · 250 ml', harga: 8.5, kafein: 95, ramuan: 'Kopi robusta, susu segar, gula apong (nipah) Sarawak.', alergen: ['Susu'], nota: 'Manis berasap gula nipah. Edisi tempatan.', warna: '#8a5a3b', pasangan: 'baitul-hikmah' },
-  { id: 'sng-mocha', nama: 'Mocha Koko', jenis: 'RTD · 250 ml', harga: 8.9, kafein: 85, ramuan: 'Espresso, susu segar, serbuk koko, gula.', alergen: ['Susu', 'Mungkin mengandungi soya'], nota: 'Koko pekat dengan hujung pahit. Mengambil nama dari pelabuhan Mokha.', warna: '#5b3a2a', pasangan: 'sejarah-kopi' },
-  { id: 'sng-decaf', nama: 'Kopi Susu Decaf', jenis: 'RTD · 250 ml', harga: 7.9, kafein: 5, ramuan: 'Kopi arabika nyahkafein, susu segar, gula tebu.', alergen: ['Susu'], nota: 'Untuk sesi bacaan malam tanpa mengganggu tidur.', warna: '#c9a27c', pasangan: 'kafein-dan-tidur' },
-  { id: 'sng-liberica', nama: 'Biji Liberica Johor', jenis: 'Biji panggang · 250 g', harga: 32, kafein: null, ramuan: '100% biji kopi Liberica dari Johor, panggangan sederhana.', alergen: [], nota: 'Aroma nangka dan kayu. Untuk dibancuh di rumah.', warna: '#6d4a32', pasangan: 'sejarah-kopi' },
-  { id: 'sng-kotak-rehat', nama: 'Kotak Coffee Break', jenis: '4 botol + 4 kad ilmu', harga: 29.9, kafein: null, ramuan: 'Kopi Susu Klasik, Spanish Latte, Americano Hitam, Kopi Gula Apong, dan 4 kad fakta bercetak.', alergen: ['Susu'], nota: 'Empat rehat 15 minit dalam satu kotak.', warna: '#a5362a', pasangan: null }
+  { id: 'classic', nama: 'Classic Latte', kategori: 'kopi', harga: 9, nota: 'Smooth, creamy, lightly fruity and not overly sweet.', bahan: ['Biji Ethiopia, Colombia & Brazil', 'Susu segar'], profil: 'ringan', warna: '#E2B67D', kafein: true, pasangan: 'sejarah-kopi', sebab: 'Biji dari tiga negara, untuk kisah kopi dari Yaman ke dunia.' },
+  { id: 'caramel', nama: 'Caramel Latte', kategori: 'kopi', harga: 11, nota: 'Creamy, rich caramel, perfectly balanced.', bahan: ['Biji Ethiopia, Colombia & Brazil', 'Susu segar'], profil: 'manis', warna: '#D49A55', kafein: true, pasangan: 'menulis-untuk-berfikir', sebab: 'Manis berlemak, teman untuk sesi menulis satu perenggan.' },
+  { id: 'mocha', nama: 'Rich Mocha', kategori: 'kopi', harga: 11, nota: 'Rich cocoa, balanced espresso & creamy finish.', bahan: ['Biji Ethiopia + Brazil', 'Coklat premium Scrippo', 'Susu segar'], profil: 'pekat', warna: '#9A6450', kafein: true, pasangan: 'sains-espresso', sebab: 'Espresso yang seimbang, untuk faham sains di sebalik secawan espresso.' },
+  { id: 'matcha', nama: 'Matcha Latte', kategori: 'matcha', harga: 11, nota: 'Smooth, creamy, and naturally umami.', bahan: ['Matcha Shizuko', 'Susu segar'], profil: 'ringan', warna: '#A9C96A', kafein: true, pasangan: 'pengulangan-berjarak', sebab: 'Tenang dan fokus, untuk sesi ulang kaji yang dijarakkan.' },
+  { id: 'straw', nama: 'Strawberry Matcha', kategori: 'matcha', harga: 12, nota: 'Smooth, creamy, and naturally umami, with chunky strawberry syrup.', bahan: ['Matcha Shizuko', 'Sirap strawberi berketul', 'Susu segar'], profil: 'manis', warna: '#C9D98E', kafein: true, pasangan: 'langit-biru', sebab: 'Hijau dan merah dalam satu botol, untuk soalan tentang warna langit.' },
+  { id: 'choc', nama: 'Artisanal Chocolate', kategori: 'coklat', harga: 9, nota: 'Rich chocolate with a creamy texture and bold, authentic flavor.', bahan: ['Coklat premium Scrippo', 'Susu segar'], profil: 'pekat', warna: '#8A5442', kafein: false, pasangan: 'kafein-dan-tidur', sebab: 'Tanpa kopi. Pilihan untuk bacaan waktu malam.' }
 ];

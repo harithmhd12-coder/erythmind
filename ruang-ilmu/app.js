@@ -49,6 +49,7 @@ let S = (() => {
   return asal();
 })();
 const simpan = () => { try { localStorage.setItem(KUNCI, JSON.stringify(S)); } catch (e) { /* abaikan */ } };
+Object.keys(S.troli).forEach(id => { if (!PROD[id]) delete S.troli[id]; });
 const rekodHari = () => (S.hari[hariIni()] ||= { saat: 0, aktif: false });
 const tandaAktif = () => { rekodHari().aktif = true; simpan(); };
 const tambahXP = (n, sebab) => { S.xp += n; tandaAktif(); toast(`+${n} XP · ${sebab}`); kemasPengepala(); };
@@ -123,13 +124,10 @@ function bukaModal(tajuk, isi) {
 const tutupModal = () => { $('#lapisan').innerHTML = ''; };
 
 /* ================= Komponen ================= */
-function botol(p) {
-  const w = p.warna;
-  if (p.jenis.startsWith('Biji')) return `<svg viewBox="0 0 100 120" aria-hidden="true"><path d="M24 22h52l6 88H18z" fill="${w}"/><path d="M24 22h52v8H24z" fill="#1b1410" opacity=".55"/><rect x="30" y="48" width="40" height="40" fill="#fffaf2"/><text x="50" y="64" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-style="italic" font-size="8" fill="#1b1410">Sip 'n Go</text><text x="50" y="76" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="4.6" fill="#1b1410">LIBERICA · 250G</text></svg>`;
-  if (p.id === 'sng-kotak-rehat') return `<svg viewBox="0 0 120 100" aria-hidden="true"><path d="M14 36h92v54H14z" fill="${w}"/><path d="M14 36 30 18h92l-16 18z" fill="#1b1410" opacity=".35"/><path d="M106 36 122 18v54l-16 18z" fill="#1b1410" opacity=".5"/><rect x="28" y="50" width="64" height="26" fill="#fffaf2"/><text x="60" y="62" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-style="italic" font-size="9" fill="#1b1410">Sip 'n Go</text><text x="60" y="71" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="4.6" fill="#1b1410">COFFEE BREAK · 4×</text></svg>`;
-  const kata = p.nama.split(' '); const b1 = kata.slice(0, Math.ceil(kata.length / 2)).join(' '), b2 = kata.slice(Math.ceil(kata.length / 2)).join(' ');
-  return `<svg viewBox="0 0 80 200" aria-hidden="true"><rect x="28" y="6" width="24" height="16" rx="3" fill="#1b1410"/><path d="M30 22h20v14c0 6 16 10 16 22v130a8 8 0 0 1-8 8H22a8 8 0 0 1-8-8V58c0-12 16-16 16-22z" fill="${w}"/><rect x="14" y="92" width="52" height="62" fill="#fffaf2"/><text x="40" y="112" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-style="italic" font-size="10" fill="#1b1410">Sip 'n Go</text><line x1="24" y1="119" x2="56" y2="119" stroke="#a5362a" stroke-width=".8"/><text x="40" y="130" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="5" fill="#1b1410">${esc(b1.toUpperCase())}</text><text x="40" y="138" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="5" fill="#1b1410">${esc(b2.toUpperCase())}</text><text x="40" y="148" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="4" fill="#6a625a">250 ML</text></svg>`;
-}
+const MEDIA = 'media/sng/';
+const kotakBotol = (p, kelas = '') => `<div class="botol ${kelas}" style="--tint:${p.warna}"><img src="${MEDIA}botol-${p.id}.webp" alt="Botol ${esc(p.nama)} Sip 'n Go" loading="lazy" decoding="async"></div>`;
+const PROFIL = { ringan: 'Ringan', manis: 'Manis', pekat: 'Pekat' };
+const KATEGORI_MENU = [{ id: 'kopi', n: 'Kopi' }, { id: 'matcha', n: 'Matcha' }, { id: 'coklat', n: 'Coklat' }];
 const fmtLencana = a => { const m = minit(a); return `<div class="lencana-format"><span>Baca ${m.baca} min</span><span>Dengar ${m.dengar} min</span><span>Lihat ${m.lihat} min</span>${selesai(a.slug) ? '<span class="cip selesai">Selesai</span>' : ''}</div>`; };
 const kadArtikel = (a, sampul = true) => `<article class="artikel-kad">
   ${sampul ? `<a class="sampul" href="#a.${a.slug}" data-kat="${esc(KAT[a.kategori]?.nama)}" tabindex="-1" aria-hidden="true"><span>${esc(a.bahagian[0]?.v || a.tajuk.split(' ').slice(0, 3).join(' '))}</span></a>` : ''}
@@ -397,18 +395,24 @@ V.utama = () => {
 };
 
 function jalurKopi() {
-  const pilih = ['sng-kopi-susu', 'sng-spanish-latte', 'sng-americano'].map(id => PROD[id]);
+  const pilih = ['classic', 'caramel', 'matcha'].map(id => PROD[id]);
   return `<section class="jalur-kopi" aria-label="Sip 'n Go Coffee"><div class="bekas">
     <div style="display:grid;gap:16px;align-content:start;min-width:0">
       <span class="eyebrow">Coffee Break · teman rehat</span>
-      <div class="sng-logo">Sip <span>'n</span> Go</div>
-      <p class="lede">Kopi siap minum untuk menemani sesi ilmu kau. Pilihan, bukan syarat: semua kandungan percuma kekal percuma.</p>
+      <a class="logo-sng" href="#kopi"><img src="${MEDIA}logo.webp" alt="Sip 'n Go Coffee & Bakery" width="520" height="422"></a>
+      <p class="lede">${esc(SNG.slogan)} Kopi, matcha dan coklat dalam botol, dibancuh segar di ${esc(SNG.lokasi)}. Setiap botol datang dengan satu kad ilmu.</p>
+      <p class="kecil-nota" style="color:var(--jalur-kelabu)">Pilihan, bukan syarat: semua kandungan percuma kekal percuma.</p>
       <div class="rehat-15"><b style="font-family:var(--serif);font-size:1.3rem">The 15-Minute Coffee Break</b><p>Lima minit membaca, lima minit mendengar atau menonton, lima minit refleksi.</p><a class="btn kecil" href="#rehat">Mula rehat 15 minit</a></div>
     </div>
-    <div style="display:grid;gap:20px;min-width:0"><div class="grid-produk">${pilih.map(kadProduk).join('')}</div><div><a class="btn garis" href="#kopi">Lihat kedai Sip 'n Go</a></div></div>
+    <div style="display:grid;gap:20px;min-width:0"><div class="grid-produk">${pilih.map(kadProduk).join('')}</div><div><a class="btn garis" href="#kopi">Lihat menu Sip 'n Go</a></div></div>
   </div></section>`;
 }
-const kadProduk = p => `<a class="produk-kad" href="#p.${p.id}"><div class="botol">${botol(p)}</div><h3>${esc(p.nama)}</h3><span class="meta"><span>${esc(p.jenis)}</span></span><span class="harga">${rm(p.harga)}</span></a>`;
+const kadProduk = p => `<div class="produk-kad">
+  <a href="#p.${p.id}" tabindex="-1" aria-hidden="true">${kotakBotol(p)}</a>
+  <h3><a href="#p.${p.id}">${esc(p.nama)}</a></h3>
+  <span class="meta"><span>${esc(KATEGORI_MENU.find(k => k.id === p.kategori).n)}</span><span>Profil rasa: ${PROFIL[p.profil]}</span></span>
+  <div class="produk-bawah"><span class="harga">${rm(p.harga)}</span><button class="btn kecil" data-act="tambah-satu" data-id="${p.id}" aria-label="Tambah ${esc(p.nama)} ke troli">Tambah</button></div>
+</div>`;
 
 V.surat = V.utama;
 
@@ -510,7 +514,7 @@ V.a = slug => {
     <section class="kotak" aria-label="Refleksi dan nota"><span class="eyebrow">${a.refleksi ? 'Soalan refleksi' : 'Nota peribadi'}</span>${a.refleksi ? `<h3>${esc(a.refleksi)}</h3>` : ''}<label class="sr" for="nota-${slug}">Nota peribadi</label><textarea id="nota-${slug}" rows="4" data-nota="${slug}" placeholder="Tulis jawapan atau nota kau. Disimpan secara automatik dan hanya kau yang boleh lihat.">${esc(S.nota[slug] || '')}</textarea><span class="kecil-nota" id="notaStatus">${S.nota[slug] ? 'Disimpan.' : ''}</span></section>
     <section style="display:grid;gap:12px;max-width:var(--lajur)"><span class="eyebrow">Sumber & rujukan</span><ol class="rujukan">${a.rujukan.map(r => `<li>${esc(r)}</li>`).join('')}</ol>
       <p class="kecil-nota">Kemas kini terakhir ${tarikh(a.kemas)}. Terjumpa kesilapan? <button class="pautan" data-act="lapor" data-slug="${slug}">Laporkan kesilapan</button>. Baca <a class="pautan" href="#tentang">standard editorial</a> kami.</p></section>
-    ${prod && !S.tetapan.sorokKopi ? `<aside class="teman-kopi" aria-label="Teman bacaan"><div class="botol">${botol(prod)}</div><p><b>Teman bacaan:</b> ${esc(prod.nama)} dari Sip 'n Go. ${esc(prod.nota)} <a class="pautan" href="#p.${prod.id}">Lihat</a> · <span>Pilihan, bukan syarat.</span></p></aside>` : ''}
+    ${prod && !S.tetapan.sorokKopi ? `<aside class="teman-kopi" aria-label="Teman bacaan">${kotakBotol(prod)}<p><b>Teman bacaan:</b> ${esc(prod.nama)} dari Sip 'n Go, ${rm(prod.harga)}. ${esc(prod.sebab)} <a class="pautan" href="#p.${prod.id}">Lihat botol</a> · <span>Pilihan, bukan syarat.</span></p></aside>` : ''}
     <section style="display:grid;gap:20px">
       ${lepas ? `<div class="kotak"><span class="eyebrow">Seterusnya dalam laluan "${esc(laluan.nama)}"</span><h3><a href="#a.${lepas}" style="text-decoration:none">${esc(cari(lepas).tajuk)} →</a></h3></div>` : ''}
       <span class="eyebrow">Jika kau minat ini, teroka ini pula</span>
@@ -551,19 +555,47 @@ V.v = slug => {
 };
 const m2 = a => minit(a).lihat;
 
+const KUIZ_MENU = { asas: null };
+const pilihMenu = (b, c) => b === 'kopi' ? (c === 'ringan' ? 'classic' : c === 'manis' ? 'caramel' : 'mocha') : b === 'matcha' ? (c === 'manis' ? 'straw' : 'matcha') : 'choc';
+function kotakKuizMenu(hasil) {
+  if (hasil) { const p = PROD[hasil]; return `<div class="kuiz-hasil">${kotakBotol(p)}<div style="display:grid;gap:10px;align-content:center;min-width:0"><span class="eyebrow">Cadangan kami</span><h3 style="font-size:1.7rem">${esc(p.nama)}</h3><span class="harga">${rm(p.harga)}</span><p style="color:var(--kelabu)">${esc(p.nota)}</p><div class="butang-format"><button class="btn kecil" data-act="tambah-satu" data-id="${p.id}">Tambah ke troli</button><button class="btn kecil garis" data-act="kuiz-menu" data-v="">Cuba lagi</button></div></div></div>`; }
+  if (!KUIZ_MENU.asas) return `<p class="meta"><span>Soalan 1 daripada 2</span></p><h3 class="soalan-menu">Anda teringin yang mana?</h3><div class="pilihan-menu">${KATEGORI_MENU.map(k => `<button data-act="kuiz-menu" data-v="${k.id}">${k.n}</button>`).join('')}</div>`;
+  return `<p class="meta"><span>Soalan 2 daripada 2</span></p><h3 class="soalan-menu">Macam mana rasa yang anda suka?</h3><div class="pilihan-menu"><button data-act="kuiz-rasa" data-v="ringan">Ringan dan tak terlalu manis</button><button data-act="kuiz-rasa" data-v="manis">Manis dan berkrim</button><button data-act="kuiz-rasa" data-v="pekat">Pekat dan kaw</button></div>`;
+}
+
 V.kopi = () => {
   const subjek = semua().filter(a => a.kopi);
-  return `<section class="jalur-kopi"><div class="bekas" style="grid-template-columns:1fr">
-    <div style="display:grid;gap:16px;max-width:52rem"><span class="eyebrow">Kedai Coffee Break</span><div class="sng-logo" style="font-size:clamp(3rem,9vw,6rem)">Sip <span>'n</span> Go Coffee</div>
-    <p class="lede">Kopi siap minum, biji kopi tempatan dan kotak rehat. Teman kepada pengalaman ilmu, bukan syarat untuk mengaksesnya.</p>
-    <div class="butang-format"><a class="btn" href="#rehat">Mula rehat 15 minit</a><a class="btn garis" href="#troli">Troli${kiraTroli() ? ` (${kiraTroli()})` : ''}</a>${S.pesanan.length ? `<a class="btn garis" href="#o.${S.pesanan[0].id}">Pesanan terakhir</a>` : ''}</div></div>
+  return `<section class="jalur-kopi"><div class="bekas hero-kopi">
+    <div style="display:grid;gap:18px;align-content:center;min-width:0">
+      <span class="eyebrow">${esc(SNG.nama)} · Dibancuh segar</span>
+      <a class="logo-sng besar" href="#kopi"><img src="${MEDIA}logo.webp" alt="Sip 'n Go Coffee & Bakery" width="520" height="422"></a>
+      <h1 class="h-besar" style="color:var(--jalur-dakwat)">${esc(SNG.slogan)}</h1>
+      <p class="lede">${esc(SNG.ringkas)}</p>
+      <div class="butang-format"><a class="btn" href="#kopi" data-act="ke-seksyen" data-id="menu">Lihat menu</a><a class="btn garis" href="#kopi" data-act="ke-seksyen" data-id="cari-menu">Cari menu anda</a><a class="btn garis" href="#troli">Troli${kiraTroli() ? ` (${kiraTroli()})` : ''}</a></div>
+    </div>
+    <figure class="foto-sng"><img src="${MEDIA}botol-mesin.webp" alt="Botol Caramel Latte, Rich Mocha dan Classic Latte Sip 'n Go di atas mesin espresso" loading="lazy" width="1600" height="1200"></figure>
   </div></section>
   <div class="bekas">
-    <section class="seksyen">${kepalaSeksyen('Menu', 'Pilih teman rehat kau', 'Harga contoh untuk prototaip. Ambil sendiri di kiosk atau hantar ke rumah.')}<div class="grid-produk">${PRODUK.map(kadProduk).join('')}</div></section>
-    <section class="seksyen">${kepalaSeksyen('Coffee + Knowledge', 'Padanan kopi dan bacaan', 'Setiap kopi dipadankan dengan satu bacaan. Minum sambil faham sesuatu yang baharu.')}
-      <ul class="senarai-baris">${PRODUK.filter(p => p.pasangan).map(p => { const a = cari(p.pasangan); return `<li><div class="baris" style="grid-template-columns:56px 1fr auto"><div class="botol" style="aspect-ratio:1">${botol(p)}</div><div class="tajuk-baris"><a href="#p.${p.id}">${esc(p.nama)}</a><span class="meta"><span>dengan</span><a href="#a.${a.slug}" style="color:var(--merah)">${esc(a.tajuk)}</a></span></div><span class="harga meta">${rm(p.harga)}</span></div></li>`; }).join('')}</ul></section>
-    <section class="seksyen">${kepalaSeksyen('Coffee as a subject', 'Ilmu tentang kopi', 'Sejarah, sains dan kesan kopi, ditulis dengan standard editorial yang sama.')}<div class="grid-artikel tiga">${subjek.map(a => kadArtikel(a)).join('')}</div></section>
-    <section class="seksyen">${kepalaSeksyen('Coffee Break Club', 'Kelab untuk peminum kopi yang suka membaca', 'Kotak bulanan, kandungan khas dan acara bersama penulis. Harga sedang diuji.', `<a class="btn garis" href="#ahli">Sertai senarai menunggu</a>`)}</section>
+    <section class="seksyen"><div class="tiga-nilai">${SNG.nilai.map(n => `<div class="blok-teks"><h3>${esc(n.h)}</h3><p>${esc(n.p)}</p></div>`).join('')}</div></section>
+    <section class="seksyen" id="menu">${kepalaSeksyen('Menu', '6 minuman, dari RM9', 'Tekan Tambah pada botol pilihan, kemudian checkout di WhatsApp. Order anda terus sampai ke chat kami.')}
+      ${[['kopi', 'Kopi'], ['matcha-coklat', 'Matcha & Coklat']].map(([k, n]) => `<h3 class="sub-menu">${n}</h3><div class="grid-produk">${PRODUK.filter(p => k === 'kopi' ? p.kategori === 'kopi' : p.kategori !== 'kopi').map(kadProduk).join('')}</div>`).join('')}</section>
+    <section class="seksyen" id="cari-menu">${kepalaSeksyen('Cari menu anda', 'Tak tahu nak pilih yang mana?', 'Jawab dua soalan. Kami cadangkan botol yang sesuai dengan anda.')}<div class="kotak kuiz-menu" id="kuizMenu">${kotakKuizMenu()}</div></section>
+    <section class="seksyen">${kepalaSeksyen('Kad Ilmu · ' + KAD_ILMU.set.split('·')[0].trim(), 'Setiap botol bawa satu ilmu.', `${KAD_ILMU.set.split('·')[1].trim()}. Kumpul kad A, B, C dan D untuk set penuh. Order 3 kopi, dapat 3 ilmu yang berbeza.`)}
+      <div class="grid-kad-ilmu">${KAD_ILMU.kad.map(k => `<article class="kad-ilmu"><div class="kad-ilmu-atas"><span>1 KOPI SEHARI, 1 ILMU BARU</span><b>${k.huruf}</b></div><p class="kad-ilmu-teks">${esc(k.teks)}</p><p class="kad-ilmu-dalil">${esc(k.dalil)}</p><span class="meta"><span>${esc(KAD_ILMU.set)}</span><span>${k.kod}</span></span></article>`).join('')}</div>
+      <p class="kecil-nota" style="padding-top:14px">Mahu lebih? Teroka bidang <a class="pautan" href="#teroka.agama">Agama &amp; Kerohanian</a> di Ruang Ilmu.</p></section>
+    <section class="seksyen">${kepalaSeksyen('Coffee + Knowledge', 'Padanan botol dan bacaan', 'Setiap botol dipadankan dengan satu bacaan Ruang Ilmu.')}
+      <ul class="senarai-baris">${PRODUK.map(p => { const a = cari(p.pasangan); return `<li><div class="baris baris-padan">${kotakBotol(p)}<div class="tajuk-baris"><a href="#p.${p.id}">${esc(p.nama)}</a><span class="meta"><span>dengan</span><a href="#a.${a.slug}" style="color:var(--merah)">${esc(a.tajuk)}</a></span><span class="kecil-nota">${esc(p.sebab)}</span></div><span class="harga meta">${rm(p.harga)}</span></div></li>`; }).join('')}</ul></section>
+    <section class="seksyen">${kepalaSeksyen('Peta biji', '3 negara dalam 1 botol.', `Classic Latte dan Caramel Latte guna biji Ethiopia, Colombia dan Brazil. Semuanya berakhir di ${esc(SNG.lokasi)}.`)}
+      <div class="peta-biji">${SNG.biji.map((b, i) => `<div><span class="meta"><span>0${i + 1}</span></span><h3>${esc(b.negara)}</h3><p>${esc(b.untuk)}</p></div>`).join('')}<div class="akhir-biji"><span class="meta"><span>Destinasi</span></span><h3>${esc(SNG.lokasi.split(',')[0])}</h3><p>${esc(SNG.lokasi.split(',').slice(1).join(',').trim())}</p></div></div></section>
+    <section class="seksyen">${kepalaSeksyen('Coffee as a subject', 'Ilmu tentang kopi', 'Sejarah, sains dan kesan kopi, ditulis dengan standard editorial Ruang Ilmu.')}<div class="grid-artikel tiga">${subjek.map(a => kadArtikel(a)).join('')}</div></section>
+    <section class="seksyen">${kepalaSeksyen('Kisah kami', 'Dari Kaherah ke botol anda.', "Dulu Farisi Coffee & Bakery, kini Sip 'n Go. Resipi, pembekal biji kopi dan cara bancuhan kekal sama.")}
+      <div class="kisah-sng"><figure class="foto-sng"><img src="${MEDIA}pengasas.webp" alt="Dua rakan kongsi di dapur dengan moka pot, pengisar tangan dan susu segar" loading="lazy" width="1600" height="1200"></figure>
+      <ol class="bab-kisah">${SNG.kisah.map((k, i) => `<li><span class="meta"><span>Bab ${i + 1}</span></span><b>${esc(k.h)}</b><p>${esc(k.p)}</p></li>`).join('')}</ol></div></section>
+    <section class="seksyen">${kepalaSeksyen('Kata pelanggan', 'Dibancuh dengan teliti.', '')}<div class="grid-ulasan">${SNG.ulasan.map(u => `<blockquote class="ulasan"><p>“${esc(u.q)}”</p><cite>${esc(u.siapa)}</cite></blockquote>`).join('')}</div></section>
+    <section class="seksyen">${kepalaSeksyen('Komuniti', 'Kongsi momen ngopi anda, tag kami.', `${esc(SNG.ig)} ${esc(SNG.hashtag)}`)}
+      <div class="grid-komuniti"><figure class="foto-sng"><img src="${MEDIA}kopi-buku.webp" alt="Botol Classic Latte dan Strawberry Matcha di atas meja dalam kapal terbang, di sebelah sebuah buku" loading="lazy" width="750" height="1000"></figure><figure class="foto-sng"><img src="${MEDIA}komuniti.webp" alt="Empat tangan memegang botol Rich Mocha dan Caramel Latte Sip 'n Go bersama" loading="lazy" width="1050" height="1400"></figure>
+      <div class="blok-teks" style="align-content:start"><h3>Lawati kami</h3><p><b>Lokasi:</b> ${esc(SNG.lokasi)}</p><p><a class="pautan" href="${SNG.peta}" target="_blank" rel="noopener">Buka di Google Maps →</a></p><p><b>Order:</b> tambah botol ke troli, kemudian checkout di WhatsApp.</p><p><a class="pautan" href="${SNG.instagram}" target="_blank" rel="noopener">Ikut ${esc(SNG.ig)} di Instagram →</a></p></div></div></section>
+    <section class="seksyen">${kepalaSeksyen('Coffee Break Club', 'Kelab untuk peminum kopi yang suka membaca', 'Botol bulanan, kandungan khas dan acara bersama penulis. Harga sedang diuji.', `<a class="btn garis" href="#ahli">Sertai senarai menunggu</a>`)}</section>
   </div>`;
 };
 const kiraTroli = () => Object.values(S.troli).reduce((t, n) => t + n, 0);
@@ -572,21 +604,22 @@ V.p = id => {
   const p = PROD[id]; if (!p) return V.tiada();
   const a = p.pasangan && cari(p.pasangan);
   return `<div class="bekas"><div class="produk-halaman">
-    <div class="botol">${botol(p)}</div>
-    <div style="display:grid;gap:18px;min-width:0">
+    ${kotakBotol(p, 'besar')}
+    <div style="display:grid;gap:18px;min-width:0;align-content:start">
       <a class="pautan" href="#kopi" style="font-weight:600">← Sip 'n Go Coffee</a>
-      <span class="eyebrow">${esc(p.jenis)}</span><h1 class="h-besar" style="font-size:clamp(2.2rem,5vw,3.4rem)">${esc(p.nama)}</h1>
+      <span class="eyebrow">${esc(KATEGORI_MENU.find(k => k.id === p.kategori).n)} · Profil rasa: ${PROFIL[p.profil]}</span><h1 class="h-besar" style="font-size:clamp(2.2rem,5vw,3.4rem)">${esc(p.nama)}</h1>
       <p class="lede">${esc(p.nota)}</p>
       <span style="font-family:var(--serif);font-size:1.8rem">${rm(p.harga)}</span>
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:stretch"><div class="kuantiti"><button data-act="kuantiti-produk" data-d="-1" aria-label="Kurang">−</button><span id="kuantitiProduk">1</span><button data-act="kuantiti-produk" data-d="1" aria-label="Tambah">+</button></div><button class="btn merah" data-act="tambah-troli" data-id="${p.id}">Tambah ke troli</button></div>
       <div class="jadual-bekas"><table class="jadual"><tbody>
-        <tr><th>Ramuan</th><td>${esc(p.ramuan)}</td></tr>
-        <tr><th>Alergen</th><td>${p.alergen.length ? esc(p.alergen.join(', ')) : 'Tiada alergen utama diisytiharkan'}</td></tr>
-        <tr><th>Kafein</th><td>${p.kafein == null ? 'Bergantung pada cara bancuhan' : `Anggaran ${p.kafein} mg sebotol`}${p.kafein > 100 ? ' · elakkan selepas awal petang' : ''}</td></tr>
-        <tr><th>Simpanan</th><td>${p.jenis.startsWith('RTD') ? 'Sejukkan pada 0–4°C. Minum dalam 3 hari selepas dibuka.' : 'Simpan di tempat kering dan sejuk.'}</td></tr>
-        ${a ? `<tr><th>Bacaan padanan</th><td><a class="pautan" href="#a.${a.slug}">${esc(a.tajuk)}</a></td></tr>` : ''}
+        <tr><th>Bahan</th><td>${p.bahan.map(esc).join('<br>')}</td></tr>
+        <tr><th>Alergen</th><td>Mengandungi susu (susu segar)</td></tr>
+        <tr><th>Kafein</th><td>${p.kafein ? `Ya, daripada ${p.kategori === 'matcha' ? 'matcha' : 'kopi'}` : 'Tanpa kopi'}</td></tr>
+        <tr><th>Cara minum</th><td>Goncang sebelum diminum. Lebih sedap dengan ais.</td></tr>
+        <tr><th>Bonus</th><td>Satu kad ilmu dalam setiap botol</td></tr>
+        ${a ? `<tr><th>Bacaan padanan</th><td><a class="pautan" href="#a.${a.slug}">${esc(a.tajuk)}</a><br><span class="kecil-nota">${esc(p.sebab)}</span></td></tr>` : ''}
       </tbody></table></div>
-      ${p.kafein > 100 ? `<p class="kecil-nota">Ingin tahu kenapa? Baca <a class="pautan" href="#a.kafein-dan-tidur">Kafein dan tidur</a>.</p>` : ''}
+      ${p.kafein && p.kategori === 'kopi' ? `<p class="kecil-nota">Minum petang? Baca <a class="pautan" href="#a.kafein-dan-tidur">Kafein dan tidur</a> dahulu.</p>` : ''}
     </div></div>
     <section class="seksyen">${kepalaSeksyen('Lagi dari Sip \'n Go', 'Pilihan lain', '')}<div class="grid-produk">${PRODUK.filter(x => x.id !== id).slice(0, 4).map(kadProduk).join('')}</div></section></div>`;
 };
@@ -596,42 +629,42 @@ function jumlahTroli() {
   const sub = baris.reduce((t, b) => t + b.p.harga * b.n, 0);
   return { baris, sub };
 }
+const mesejOrder = (baris, nama, nota) => {
+  let m = "Hai Sip 'n Go! Saya nak order:\n";
+  baris.forEach((b, i) => { m += `${i + 1}. ${b.p.nama} x${b.n} = RM ${(b.p.harga * b.n).toFixed(2)}\n`; });
+  m += `\nJumlah: RM ${baris.reduce((t, b) => t + b.p.harga * b.n, 0).toFixed(2)}\nNama: ${nama || '-'}`;
+  if (nota) m += `\nCatatan: ${nota}`;
+  return m;
+};
+const pautanWA = teks => `https://wa.me/${SNG.whatsapp || ''}?text=${encodeURIComponent(teks)}`;
+const TROLI = { nama: '', nota: '' };
 V.troli = () => {
   const { baris, sub } = jumlahTroli();
-  const hantar = TROLI.kaedah === 'hantar' ? 5 : 0;
-  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Sip 'n Go Coffee</span><h1>Troli</h1></header>
+  if (!TROLI.nama && S.akaun?.nama) TROLI.nama = S.akaun.nama;
+  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Sip 'n Go Coffee</span><h1>Troli anda</h1></header>
   ${baris.length ? `<div class="dua-lajur" style="padding-bottom:40px"><div style="min-width:0">
-    ${baris.map(b => `<div class="troli-baris"><div class="botol">${botol(b.p)}</div><div style="min-width:0;display:grid;gap:4px"><a href="#p.${b.p.id}" style="font-family:var(--serif);font-size:1.15rem;font-weight:600;text-decoration:none">${esc(b.p.nama)}</a><span class="meta"><span>${rm(b.p.harga)}</span>${b.p.alergen.length ? `<span>Alergen: ${esc(b.p.alergen.join(', '))}</span>` : ''}</span></div><div class="kuantiti"><button data-act="troli-ubah" data-id="${b.p.id}" data-d="-1" aria-label="Kurang">−</button><span>${b.n}</span><button data-act="troli-ubah" data-id="${b.p.id}" data-d="1" aria-label="Tambah">+</button></div></div>`).join('')}
-    <p style="padding-top:14px"><a class="pautan" href="#kopi">← Tambah lagi</a></p>
+    ${baris.map(b => `<div class="troli-baris">${kotakBotol(b.p)}<div style="min-width:0;display:grid;gap:4px"><a href="#p.${b.p.id}" style="font-family:var(--serif);font-size:1.15rem;font-weight:600;text-decoration:none">${esc(b.p.nama)}</a><span class="meta"><span>${rm(b.p.harga)} · ${rm(b.p.harga * b.n)}</span></span></div><div class="kuantiti"><button data-act="troli-ubah" data-id="${b.p.id}" data-d="-1" aria-label="Kurang">−</button><span>${b.n}</span><button data-act="troli-ubah" data-id="${b.p.id}" data-d="1" aria-label="Tambah">+</button></div></div>`).join('')}
+    <p style="padding-top:14px;display:flex;gap:18px;flex-wrap:wrap"><a class="pautan" href="#kopi">← Pilih botol lagi</a><button class="pautan" data-act="kosong-troli">Kosongkan troli</button></p>
   </div>
-  <form class="kotak" data-borang="bayar" style="align-content:start">
-    <h3>Butiran pesanan</h3>
-    <div class="pilihan-radio" role="radiogroup" aria-label="Cara terima">
-      <label><input type="radio" name="kaedah" value="ambil" ${TROLI.kaedah === 'ambil' ? 'checked' : ''} data-act="kaedah"> <span><b>Ambil sendiri</b><br><small class="kecil-nota">Kiosk Sip 'n Go. Sedia dalam 10 minit. Percuma.</small></span></label>
-      <label><input type="radio" name="kaedah" value="hantar" ${TROLI.kaedah === 'hantar' ? 'checked' : ''} data-act="kaedah"> <span><b>Penghantaran</b><br><small class="kecil-nota">Dalam kawasan 10 km. RM5.00.</small></span></label>
-    </div>
-    <div class="borang-grid dua"><div class="medan"><label for="pNama">Nama</label><input id="pNama" required autocomplete="name" value="${esc(S.akaun?.nama || '')}"></div><div class="medan"><label for="pTel">Telefon</label><input id="pTel" required inputmode="tel" autocomplete="tel" pattern="[0-9+\\-\\s]{9,15}" placeholder="012-345 6789"></div></div>
-    ${TROLI.kaedah === 'hantar' ? `<div class="medan"><label for="pAlamat">Alamat penghantaran</label><textarea id="pAlamat" rows="2" required autocomplete="street-address"></textarea></div>` : ''}
-    <div class="medan"><label for="pBayar">Kaedah bayaran</label><select id="pBayar"><option>FPX perbankan dalam talian</option><option>E-dompet</option><option>Kad debit / kredit</option>${TROLI.kaedah === 'ambil' ? '<option>Bayar di kiosk</option>' : ''}</select></div>
-    <div class="jumlah"><div><span>Jumlah kecil</span><span>${rm(sub)}</span></div><div><span>Penghantaran</span><span>${rm(hantar)}</span></div><div class="akhir"><span>Jumlah</span><span>${rm(sub + hantar)}</span></div></div>
-    <p class="amaran-demo">Mod demo: tiada bayaran sebenar dikenakan dan tiada butiran kad diminta. Gerbang pembayaran tempatan disambung semasa pelancaran.</p>
-    <button class="btn merah" type="submit">Buat pesanan · ${rm(sub + hantar)}</button>
-  </form></div>` : `<p class="kosong">Troli kosong. <a class="pautan" href="#kopi">Lihat menu Sip 'n Go</a></p>`}
-  ${S.pesanan.length ? `<section class="seksyen">${kepalaSeksyen('Pesanan', 'Pesanan terdahulu', '')}<ul class="senarai-baris">${S.pesanan.map(o => `<li><div class="baris"><span class="no">${tarikh(o.masa).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#o.${o.id}">${esc(o.id)}</a><span class="meta"><span>${o.item.map(i => `${i.n}× ${esc(PROD[i.id]?.nama)}`).join(', ')}</span></span></div><span class="meta">${rm(o.jumlah)}</span></div></li>`).join('')}</ul></section>` : ''}
+  <div class="kotak" style="align-content:start">
+    <h3>Checkout</h3>
+    <div class="medan"><label for="pNama">Nama</label><input id="pNama" required autocomplete="name" value="${esc(TROLI.nama)}" data-troli="nama"></div>
+    <div class="medan"><label for="pNota">Catatan (pilihan)</label><textarea id="pNota" rows="2" data-troli="nota" placeholder="Contoh: ambil petang ini, kurang manis">${esc(TROLI.nota)}</textarea></div>
+    <div class="jumlah"><div class="akhir"><span>Jumlah</span><span>${rm(sub)}</span></div></div>
+    <p class="kecil-nota">${baris.reduce((t, b) => t + b.n, 0)} botol, ${baris.reduce((t, b) => t + b.n, 0)} kad ilmu. Lokasi: ${esc(SNG.lokasi)}.</p>
+    <a class="btn merah" id="waCheckout" href="${pautanWA(mesejOrder(baris, TROLI.nama, TROLI.nota))}" target="_blank" rel="noopener">Checkout di WhatsApp</a>
+    <p class="kecil-nota" id="waStatus">WhatsApp dibuka dengan senarai order anda. Tekan Hantar dalam WhatsApp untuk sahkan.</p>
+  </div></div>` : `<p class="kosong">Troli masih kosong. <a class="pautan" href="#kopi">Pilih botol</a></p>`}
+  ${S.pesanan.length ? `<section class="seksyen">${kepalaSeksyen('Sejarah order', 'Order terdahulu', 'Order disahkan dalam WhatsApp. Senarai ini hanya rekod dalam peranti kau.')}<ul class="senarai-baris">${S.pesanan.map(o => `<li><div class="baris"><span class="no">${tarikh(o.masa).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#o.${o.id}">${o.item.map(i => `${i.n}× ${esc(PROD[i.id]?.nama || i.id)}`).join(', ')}</a><span class="meta"><span>${rm(o.jumlah)}</span></span></div><button class="btn kecil garis" data-act="pesan-semula" data-id="${o.id}">Order semula</button></div></li>`).join('')}</ul></section>` : ''}
   </div>`;
 };
-const TROLI = { kaedah: 'ambil' };
 
-const STATUS = o => o.kaedah === 'hantar' ? ['Pesanan diterima', 'Sedang disediakan', 'Dalam penghantaran', 'Telah dihantar'] : ['Pesanan diterima', 'Sedang disediakan', 'Sedia untuk diambil', 'Telah diambil'];
-const tahapPesanan = o => { const m = (Date.now() - o.masa) / 60000; return m < 1 ? 0 : m < 3 ? 1 : m < 8 ? 2 : 3; };
 V.o = id => {
   const o = S.pesanan.find(x => x.id === id); if (!o) return V.tiada();
-  const t = tahapPesanan(o); const st = STATUS(o);
-  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Pesanan ${esc(o.id)}</span><h1>${esc(st[t])}</h1><p class="lede">${o.kaedah === 'hantar' ? 'Penghantaran ke alamat kau.' : 'Ambil di kiosk Sip \'n Go dengan menunjukkan nombor pesanan.'}</p></header>
-  <div class="dua-lajur" style="padding-bottom:40px"><div class="kotak" style="min-width:0"><ol class="status-garis">${st.map((s, i) => `<li class="${i <= t ? 'siap' : ''}"><span><b>${esc(s)}</b>${i === 0 ? `<br><small class="kecil-nota">${new Date(o.masa).toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })}</small>` : ''}</span></li>`).join('')}</ol>
-    <p class="amaran-demo">Mod demo: status bergerak sendiri mengikut masa untuk menunjukkan aliran pesanan.</p>
-    <div class="butang-format"><button class="btn" data-act="pesan-semula" data-id="${o.id}">Pesan semula</button><a class="btn garis" href="#rehat">Mula rehat 15 minit sementara menunggu</a></div></div>
-  <div class="kotak" style="align-content:start;min-width:0"><h3>Ringkasan</h3>${o.item.map(i => `<div class="jumlah"><div><span>${i.n}× ${esc(PROD[i.id]?.nama)}</span><span>${rm(PROD[i.id].harga * i.n)}</span></div></div>`).join('')}<div class="jumlah"><div><span>Penghantaran</span><span>${rm(o.hantar)}</span></div><div class="akhir"><span>Jumlah</span><span>${rm(o.jumlah)}</span></div></div><span class="meta"><span>${esc(o.bayar)}</span><span>${esc(o.nama)}</span></span></div></div></div>`;
+  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Order · ${tarikh(o.masa)}</span><h1>Dihantar ke WhatsApp</h1><p class="lede">Sip 'n Go mengesahkan order, masa ambil dan bayaran terus dalam chat.</p></header>
+  <div class="dua-lajur" style="padding-bottom:40px"><div class="kotak" style="min-width:0"><h3>Mesej order</h3><pre class="mesej-wa">${esc(o.mesej || '')}</pre>
+    <div class="butang-format"><a class="btn" href="${pautanWA(o.mesej || '')}" target="_blank" rel="noopener">Buka WhatsApp semula</a><button class="btn garis" data-act="pesan-semula" data-id="${o.id}">Order semula</button><a class="btn garis" href="#rehat">Mula rehat 15 minit</a></div></div>
+  <div class="kotak" style="align-content:start;min-width:0"><h3>Ringkasan</h3>${o.item.map(i => `<div class="jumlah"><div><span>${i.n}× ${esc(PROD[i.id]?.nama || i.id)}</span><span>${PROD[i.id] ? rm(PROD[i.id].harga * i.n) : ''}</span></div></div>`).join('')}<div class="jumlah"><div class="akhir"><span>Jumlah</span><span>${rm(o.jumlah)}</span></div></div><span class="meta"><span>${esc(o.nama)}</span></span></div></div></div>`;
 };
 
 V.rehat = () => {
@@ -650,14 +683,14 @@ V.rehat = () => {
     <div class="medan" style="max-width:420px;width:100%;text-align:left"><label for="pilihRehat">Topik rehat ini</label><select id="pilihRehat" data-act="pilih-rehat">${semua().map(x => `<option value="${x.slug}" ${x.slug === a.slug ? 'selected' : ''}>${esc(x.tajuk)}</option>`).join('')}</select></div>
   </div>
   <section class="seksyen"><div style="max-width:var(--lajur);margin:0 auto;display:grid;gap:18px"><span class="eyebrow">${f < 3 ? `Fasa ${f + 1}: ${FASA[f].d}` : 'Selesai'}</span><h2 class="h-seksyen">${esc(a.tajuk)}</h2>${isi}</div></section>
-  ${S.tetapan.sorokKopi ? '' : `<section class="seksyen"><div style="max-width:var(--lajur);margin:0 auto;display:grid;gap:14px"><span class="eyebrow">Teman rehat (pilihan)</span><div class="grid-produk">${['sng-kopi-susu', 'sng-americano', 'sng-decaf'].map(i => kadProduk(PROD[i])).join('')}</div></div></section>`}</div>`;
+  ${S.tetapan.sorokKopi ? '' : `<section class="seksyen"><div style="max-width:var(--lajur);margin:0 auto;display:grid;gap:14px"><span class="eyebrow">Teman rehat (pilihan)</span><div class="grid-produk">${['classic', 'matcha', 'choc'].map(i => kadProduk(PROD[i])).join('')}</div></div></section>`}</div>`;
 };
 
 V.ahli = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Keahlian</span><h1>Berfikir lebih jelas. Belajar dengan tenang.</h1><p class="lede">Ilmu asas kekal percuma. Keahlian menyokong penulis dan penyemak, serta membuka koleksi yang lebih mendalam.</p></header>
   <section style="padding-bottom:40px"><div class="grid-pakej">
     <div class="pakej"><span class="eyebrow">Explorer</span><h3>Peneroka</h3><div class="nilai">Percuma</div><ul><li>Semua artikel, audio dan video asas</li><li>Simpanan, nota dan kemajuan</li><li>Laluan ilmu dan kuiz</li><li>Surat Ilmu mingguan</li></ul><a class="btn garis" href="#profil">${S.akaun ? 'Akaun aktif' : 'Mula percuma'}</a></div>
     <div class="pakej utama"><span class="eyebrow">Knowledge Plus</span><h3>Ilmu Plus</h3><div class="nilai">RM15 <small>/ bulan · harga sedang diuji</small></div><ul><li>Semua dalam Explorer</li><li>E-buku dan koleksi premium</li><li>Audio narator manusia dan muat turun luar talian</li><li>Laluan mendalam dan sesi soal jawab bulanan</li></ul><button class="btn merah" data-act="ahli" data-pakej="Knowledge Plus">${S.ahli === 'Knowledge Plus' ? 'Dalam senarai menunggu' : 'Sertai senarai menunggu'}</button></div>
-    <div class="pakej"><span class="eyebrow">Coffee Break Club</span><h3>Kelab Rehat Kopi</h3><div class="nilai">Diuji <small>/ bulan</small></div><ul><li>Semua dalam Knowledge Plus</li><li>Kotak kopi bulanan Sip 'n Go</li><li>Kandungan khas tentang kopi</li><li>Promosi ahli dan acara bersama penulis</li></ul><button class="btn garis" data-act="ahli" data-pakej="Coffee Break Club">${S.ahli === 'Coffee Break Club' ? 'Dalam senarai menunggu' : 'Sertai senarai menunggu'}</button></div>
+    <div class="pakej"><span class="eyebrow">Coffee Break Club</span><h3>Kelab Rehat Kopi</h3><div class="nilai">Diuji <small>/ bulan</small></div><ul><li>Semua dalam Knowledge Plus</li><li>Botol Sip 'n Go bulanan dengan set Kad Ilmu baharu</li><li>Kandungan khas tentang kopi</li><li>Promosi ahli dan acara bersama penulis</li></ul><button class="btn garis" data-act="ahli" data-pakej="Coffee Break Club">${S.ahli === 'Coffee Break Club' ? 'Dalam senarai menunggu' : 'Sertai senarai menunggu'}</button></div>
   </div><p class="kecil-nota" style="padding-top:14px">Pakej dan harga ialah hipotesis yang sedang diuji dengan pembaca. Tiada caj dikenakan semasa menyertai senarai menunggu.</p></section>
   <section class="seksyen"><div class="dua-kolum-teks">
     <div class="blok-teks"><h3>Adakah kandungan percuma akan kekal percuma?</h3><p>Ya. Artikel, audio dan video asas kekal percuma. Keahlian menambah koleksi, bukan mengunci yang sedia ada.</p></div>
@@ -705,7 +738,7 @@ V.profil = () => {
 
   ${nota.length ? `<section class="seksyen">${kepalaSeksyen('Nota', 'Nota dan refleksi kau', '')}<ul class="senarai-baris">${nota.map(([s, n]) => { const a = cari(s); return a ? `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><a href="#a.${s}">${esc(a.tajuk)}</a><span style="font-family:var(--serif);color:var(--kelabu)">${esc(n.slice(0, 220))}${n.length > 220 ? '…' : ''}</span></div></div></li>` : ''; }).join('')}</ul></section>` : ''}
 
-  ${S.pesanan.length ? `<section class="seksyen">${kepalaSeksyen('Sip \'n Go', 'Pesanan kopi', '', '<a class="pautan" href="#troli">Troli</a>')}<ul class="senarai-baris">${S.pesanan.slice(0, 5).map(o => `<li><div class="baris"><span class="no">${tarikh(o.masa).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#o.${o.id}">${esc(o.id)}</a><span class="meta"><span>${STATUS(o)[tahapPesanan(o)]}</span></span></div><button class="btn kecil garis" data-act="pesan-semula" data-id="${o.id}">Pesan semula</button></div></li>`).join('')}</ul></section>` : ''}
+  ${S.pesanan.length ? `<section class="seksyen">${kepalaSeksyen('Sip \'n Go', 'Pesanan kopi', '', '<a class="pautan" href="#troli">Troli</a>')}<ul class="senarai-baris">${S.pesanan.slice(0, 5).map(o => `<li><div class="baris"><span class="no">${tarikh(o.masa).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#o.${o.id}">${esc(o.id)}</a><span class="meta"><span>${rm(o.jumlah)} · dihantar ke WhatsApp</span></span></div><button class="btn kecil garis" data-act="pesan-semula" data-id="${o.id}">Order semula</button></div></li>`).join('')}</ul></section>` : ''}
 
   <section class="seksyen">${kepalaSeksyen('Tetapan', 'Pengalaman kau, peraturan kau', '')}<div class="tetapan-senarai">
     <div class="tetapan-baris"><div><b>Tema</b><small>Ikut sistem, terang atau gelap.</small></div><div class="segmen" role="group" aria-label="Tema">${[['sistem', 'Sistem'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div></div>
@@ -791,7 +824,7 @@ function kaki() {
     <div><h4>Format</h4><ul><li><a href="#baca">Baca</a></li><li><a href="#lihat">Lihat</a></li><li><a href="#dengar">Dengar</a></li><li><a href="#laluan">Laluan ilmu</a></li><li><a href="#teroka">Teroka & cari</a></li></ul></div>
     <div><h4>Sip 'n Go Coffee</h4><ul><li><a href="#kopi">Kedai</a></li><li><a href="#rehat">Rehat 15 minit</a></li><li><a href="#ahli">Coffee Break Club</a></li><li><a href="#troli">Troli & pesanan</a></li></ul></div>
     <div><h4>Ruang Ilmu</h4><ul><li><a href="#tentang">Tentang & standard editorial</a></li><li><a href="#ahli">Keahlian</a></li><li><a href="#studio">Studio editorial</a></li><li><button class="pautan" data-act="lapor" style="color:inherit;font-weight:400;text-decoration:none">Laporkan kesilapan</button></li><li><button class="pautan" data-act="privasi" style="color:inherit;font-weight:400;text-decoration:none">Privasi & terma</button></li></ul></div>
-    <p class="nota-kaki">Prototaip ${new Date().getFullYear()}. Kemajuan, nota, troli dan pesanan disimpan dalam peranti ini sahaja. Harga dan pakej ialah andaian yang sedang diuji. "Ruang Ilmu" ialah nama kerja.</p>
+    <p class="nota-kaki">Prototaip ${new Date().getFullYear()}. Kemajuan, nota dan troli disimpan dalam peranti ini sahaja. Menu dan harga daripada Sip \'n Go Coffee &amp; Bakery; pakej keahlian ialah andaian yang sedang diuji. "Ruang Ilmu" ialah nama kerja.</p>
   </div>`;
 }
 
@@ -943,8 +976,12 @@ A['tapis-pendek'] = () => { CARI.pendek = !CARI.pendek; render(); };
 A['kuantiti-produk'] = el => { const s = $('#kuantitiProduk'); s.textContent = Math.max(1, Math.min(20, +s.textContent + +el.dataset.d)); };
 A['tambah-troli'] = el => { const n = +($('#kuantitiProduk')?.textContent || 1); S.troli[el.dataset.id] = (S.troli[el.dataset.id] || 0) + n; simpan(); kemasPengepala(); toast(`${n}× ${PROD[el.dataset.id].nama} ditambah ke troli`); };
 A['troli-ubah'] = el => { const id = el.dataset.id; S.troli[id] = Math.max(0, (S.troli[id] || 0) + +el.dataset.d); if (!S.troli[id]) delete S.troli[id]; simpan(); render(); };
-A.kaedah = el => { if (TROLI.kaedah !== el.value) { TROLI.kaedah = el.value; const nama = $('#pNama')?.value, tel = $('#pTel')?.value; render(); if (nama) $('#pNama').value = nama; if (tel) $('#pTel').value = tel; } };
-A['pesan-semula'] = el => { const o = S.pesanan.find(x => x.id === el.dataset.id); if (!o) return; o.item.forEach(i => { S.troli[i.id] = (S.troli[i.id] || 0) + i.n; }); simpan(); location.hash = 'troli'; toast('Item pesanan lama ditambah ke troli'); };
+A['tambah-satu'] = el => { S.troli[el.dataset.id] = (S.troli[el.dataset.id] || 0) + 1; simpan(); kemasPengepala(); toast(`${PROD[el.dataset.id].nama} ditambah ke troli`); };
+A['kosong-troli'] = () => { S.troli = {}; simpan(); kemasPengepala(); render(); };
+A['kuiz-menu'] = el => { KUIZ_MENU.asas = el.dataset.v || null; $('#kuizMenu').innerHTML = kotakKuizMenu(); };
+A['kuiz-rasa'] = el => { $('#kuizMenu').innerHTML = kotakKuizMenu(pilihMenu(KUIZ_MENU.asas, el.dataset.v)); KUIZ_MENU.asas = null; };
+A['ke-seksyen'] = el => { $('#' + el.dataset.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+A['pesan-semula'] = el => { const o = S.pesanan.find(x => x.id === el.dataset.id); if (!o) return; o.item.forEach(i => { S.troli[i.id] = (S.troli[i.id] || 0) + i.n; }); simpan(); location.hash = 'troli'; toast('Botol order lama ditambah ke troli'); };
 A['rehat-togol'] = () => Rehat.togol();
 A['rehat-langkau'] = () => { Rehat.langkau(); render(); };
 A['rehat-set'] = () => { Rehat.set(); render(); };
@@ -974,6 +1011,16 @@ A['draf-maju'] = el => {
 A['draf-padam'] = el => { S.draf = S.draf.filter(d => d.id !== el.dataset.id); INDEKS = null; simpan(); render(); };
 
 document.addEventListener('click', e => {
+  const wa = e.target.closest('#waCheckout');
+  if (wa) {
+    const { baris, sub } = jumlahTroli();
+    if (!TROLI.nama.trim()) { e.preventDefault(); $('#waStatus').textContent = 'Isi nama dahulu supaya kami tahu order siapa.'; $('#pNama').focus(); return; }
+    const mesej = mesejOrder(baris, TROLI.nama.trim(), TROLI.nota.trim());
+    wa.href = pautanWA(mesej);
+    S.pesanan.unshift({ id: 'SNG-' + Math.random().toString(36).slice(2, 6).toUpperCase(), masa: Date.now(), item: baris.map(b => ({ id: b.p.id, n: b.n })), jumlah: sub, nama: TROLI.nama.trim(), mesej });
+    simpan(); $('#waStatus').innerHTML = `WhatsApp dibuka dengan senarai order anda. Tekan Hantar dalam WhatsApp untuk sahkan. <a class="pautan" href="#o.${S.pesanan[0].id}">Lihat rekod order</a>`;
+    return;
+  }
   if (e.target.classList?.contains('lapik')) { tutupModal(); return; }
   const t = e.target.closest('[data-act]');
   if (!$('.popover')?.contains(e.target) && !e.target.closest('[data-act="tetapan-baca"]')) $('.popover')?.remove();
@@ -992,6 +1039,8 @@ let notaT;
 document.addEventListener('input', e => {
   const s = e.target.dataset?.nota;
   if (s) { clearTimeout(notaT); const st = $('#notaStatus'); if (st) st.textContent = 'Menyimpan…'; notaT = setTimeout(() => { S.nota[s] = e.target.value; tandaAktif(); if (st) st.textContent = 'Disimpan.'; }, 500); return; }
+  const tr = e.target.dataset?.troli;
+  if (tr) { TROLI[tr] = e.target.value; const { baris } = jumlahTroli(); const w = $('#waCheckout'); if (w) w.href = pautanWA(mesejOrder(baris, TROLI.nama.trim(), TROLI.nota.trim())); return; }
   if (e.target.id === 'medanCari') { CARI.q = e.target.value; $('#hasilCari').innerHTML = hasilCari(CURR.v === 'teroka' ? CURR.p : ''); }
 });
 
@@ -1006,13 +1055,6 @@ document.addEventListener('submit', e => {
   if (jenis === 'cari') { CARI.q = $('#medanCari').value; $('#hasilCari').innerHTML = hasilCari(CURR.p); $('#hasilCari').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   if (jenis === 'lapor') { S.laporan.unshift({ jenis: f.dataset.jenis || $('#lJenis')?.value || 'Laporan', slug: f.dataset.slug || '', teks: $('#lTeks').value.trim(), masa: Date.now() }); simpan(); tutupModal(); toast('Terima kasih. Pasukan editorial akan menyemaknya.'); }
   if (jenis === 'akaun') { S.akaun = { nama: $('#aNama').value.trim(), emel: $('#aEmel').value.trim() }; simpan(); tutupModal(); toast(`Selamat datang, ${S.akaun.nama}.`); render(); }
-  if (jenis === 'bayar') {
-    const { baris, sub } = jumlahTroli(); if (!baris.length) return;
-    const hantar = TROLI.kaedah === 'hantar' ? 5 : 0;
-    const id = 'SNG-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-    S.pesanan.unshift({ id, masa: Date.now(), item: baris.map(b => ({ id: b.p.id, n: b.n })), hantar, jumlah: sub + hantar, kaedah: TROLI.kaedah, bayar: $('#pBayar').value, nama: $('#pNama').value.trim() });
-    S.troli = {}; simpan(); kemasPengepala(); location.hash = 'o.' + id;
-  }
   if (jenis === 'draf') {
     const id = f.dataset.id || Math.random().toString(36).slice(2, 8);
     let d = S.draf.find(x => x.id === id); if (!d) { d = { id, langkah: 0 }; S.draf.unshift(d); }
@@ -1025,8 +1067,6 @@ document.addEventListener('submit', e => {
   }
 });
 
-/* Status pesanan bergerak sendiri dalam mod demo. */
-setInterval(() => { if (CURR.v === 'o') { const y = scrollY; render(); window.scrollTo(0, y); } }, 20000);
 
 /* ================= App boleh dipasang ================= */
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__pasang = e; });
