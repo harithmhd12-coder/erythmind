@@ -12,6 +12,7 @@ const SFX = {buf:{}, files:{}, last:{}, muteUntil:0, ready:false};
 const SFX_NAMES = {
   kamusari:'Kamusari', raja:'Haki Raja Agung', obs:'Haki Pemerhatian', arm:'Haki Persenjataan', gearputih:'Gear Putih', tumbuk:'Tumbukan Gergasi',
   magma:'Magma (Akainu)', ais:'Ais (Aokiji)', cahaya:'Cahaya (Kizaru)', graviti:'Graviti (Fujitora)', hutan:'Hutan (Ryokugyu)', emas:'Gergasi Emas (Sengoku)', tebasan:'Pedang Hitam (Mihawk)', galaksi:'Tinju Galaksi (Garp)',
+  laser:'Laser PX-1 hingga PX-11 (Ujian Saringan)',
   naga:'Naga Biru (Kaido)', matahari:'Matahari & Petir (Big Mom)', gempa:'Gempa (Whitebeard)', gelap:'Kegelapan (Blackbeard)', bilik:'Bilik Biru (Law)',
 };
 
@@ -44,13 +45,13 @@ async function loadSfx(){
   }));
 }
 // plays the file for `key`; at a world position it fades with distance from the camera. True when a file played.
-function playSfx(key, at, vol = 1){
+function playSfx(key, at, vol = 1, {mute = true, gap = .7} = {}){
   const buf = SFX.buf[key]; if(!buf || !AU.ctx || AU.ctx.state !== 'running') return false;
   const now = performance.now(); if(now < (SFX.last[key] || 0)) return true;      // the same sound is not stacked while it is still going (eight admirals at once)
-  SFX.last[key] = now + buf.duration * 700;
+  SFX.last[key] = now + buf.duration * gap * 1000;
   let v = vol; if(at){ const d = camera.position.distanceTo(at); if(d > 600) return true; v *= Math.max(.08, 1 - d / 600); }
   const s = AU.ctx.createBufferSource(), g = AU.ctx.createGain(); s.buffer = buf; g.gain.value = v; s.connect(g); g.connect(AU.sfxG); s.start();
-  SFX.muteUntil = performance.now() + Math.min(buf.duration, 3) * 1000;      // the made-up sound of the same moment stays quiet
+  if(mute) SFX.muteUntil = performance.now() + Math.min(buf.duration, 3) * 1000;      // the made-up sound of the same moment stays quiet
   return true;
 }
 // while a recorded sound plays, the made-up effect sounds (not music, not ambience) hold back

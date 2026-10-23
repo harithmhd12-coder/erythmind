@@ -268,7 +268,7 @@ function tickStage1(dt, t){
     if(b.t < 1.15){ b.objs[0].position.copy(b.a); b.objs[0].scale.setScalar(.15 + b.t * .55); stretch(b.objs[1], b.a, b.b, .06 + b.t * .05); b.objs[1].material.opacity = .25 + .3 * Math.abs(Math.sin(b.t * 18)); return true; }
     if(!b.fired){ b.fired = true; scene.remove(b.objs[1]); const core = new THREE.Mesh(unitCyl, pxMat.core.clone()), glow = new THREE.Mesh(unitCyl, pxMat.glow.clone()); scene.add(core, glow); b.objs.push(core, glow);
       const far = b.a.clone().add(b.b.clone().sub(b.a).multiplyScalar(1.15)); b.b = far; stretch(core, b.a, far, .22); stretch(glow, b.a, far, .7); fireCheck(b);
-      if(AU.ctx) tone(900, {d:.3, v:.07, glide:200, type:'sawtooth', filt:3000}); }
+      if(!playSfx('laser', b.a, .85, {mute:false, gap:.3}) && AU.ctx) tone(900, {d:.3, v:.07, glide:200, type:'sawtooth', filt:3000}); }      // the recorded laser when there is one; the siren keeps going
     const k = (b.t - 1.15) / .32; b.objs[2].material.opacity = 1 - k; b.objs[3].material.opacity = .55 * (1 - k); b.objs[0].scale.setScalar(.8 * (1 - k) + .01);
     if(k >= 1){ b.objs.forEach(o => scene.remove(o)); return false; } return true;
   });
