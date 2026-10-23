@@ -1,10 +1,10 @@
 'use strict';
 /* ================= Ujian Saringan: the entry trial for every new visitor =================
    1. Siren at the Frontier Dome. Eleven giant guards, PX-1 to PX-11, hunt the visitor with mouth lasers: survive 45 s.
-   2. Their chief, Puma (always holding a hot coffee), swings his paw: the visitor is thrown into the
-      Arkib Memori Terburuk (Labirin Memori). (Taman Falsafah is no longer a destination.)
-   3. In the archive an admiral of Marineford is waiting (26-laksamana.js): beat him first, then give a worst
-      memory to 3 empty dementors, encrypted on the visitor's device for the owner only.
+   2. Their chief, Puma (always holding a hot coffee), swings his paw: the visitor is thrown into Marineford.
+   3. In an arena raised from the bay, the seven admirals and Fleet Admiral Garp fight them all at once
+      (27-gelanggang.js). Once all eight are down, the visitor is taken into the headquarters' Arkib Memori
+      Terburuk and gives a worst memory to 3 empty dementors, encrypted on their device for the owner only.
    4. A hypersonic capsule throws them into Lembah Nivelham; the giant wakes. A borrowed Tumbukan Gergasi knocks
       him down for 10 s: do it twice.
    5. Siren everywhere. Only the owner's Haki Raja Agung ends it (Bavar-373 plays a recording if the owner is away);
@@ -33,12 +33,13 @@ const STAGE_TXT = {
   2:{t:'Hayunan Puma', s:'Berdiri. Biarkan Puma menghayun tapak tangannya',
      p:['Ketua PX, <b>Puma</b>, datang dengan secawan kopi panas.',
         '<b>Jangan lari.</b> Berdiri dan biarkan Puma menghayun tapak tangannya kepada kau.',
-        'Sekali hayun, kau akan dicampak ke <b>Arkib Memori Terburuk</b>.']},
-  laksamana:{t:'Duel Laksamana', s:'Tumbuk laksamana 3 kali · elak bulatan merah',
-     p:['Kau tercampak ke tengah Arkib Memori Terburuk. Seorang <b>laksamana Marineford</b> menjaga pintunya.',
-        'Bila <b>bulatan merah</b> muncul di bawah kaki kau, kuasanya akan jatuh di situ dalam sesaat: <b>keluar dari bulatan</b> (W A S D / joystick, Shift untuk lari).',
-        'Dekati dia dan tekan <b>Q</b> atau butang TUMBUK. Kena <b>3 kali</b> dan dia membenarkan kau masuk ke Arkib.',
-        'Kau ada <b>5 nyawa</b>; kalau habis, duel bermula semula.']},
+        'Sekali hayun, kau akan dicampak ke <b>Marineford</b>.']},
+  laksamana:{t:'Gelanggang Marineford', s:'Habiskan nyawa 7 laksamana & Fleet Admiral Garp',
+     p:['Gelanggang besar naik dari teluk Marineford. <b>Ketujuh-tujuh laksamana</b> (Sederhana) dan <b>Fleet Admiral Garp</b> (Sukar) menyerang serentak. Setiap seorang ada <b>bar nyawa</b> di atas kepala.',
+        'Bila <b>bulatan merah</b> (oren untuk Garp) muncul di bawah kaki kau, kuasa akan jatuh di situ: <b>keluar dari bulatan</b> (W A S D / joystick, Shift lari).',
+        'Gerak tempur: <b>Q</b> tumbuk (3 kali berturut jadi tumbukan berat) · <b>R</b> tendangan pusing · <b>Space</b> elak (kebal seketika).',
+        'Kuasa: <b>5 · Gear Putih</b> (30 s, pukulan lebih kuat dan laju) · <b>6 · Tumbukan Gergasi</b> dalam Gear Putih · <b>3</b> Haki Pemerhatian (amaran lebih lama) · <b>4</b> Haki Persenjataan (separuh kecederaan).',
+        'Kalau nyawa kau habis, kau bangkit semula, tetapi lawan yang masih berdiri pulih sedikit. Tumbangkan kesemua lapan untuk masuk ke Arkib.']},
   buruk:{t:'Arkib Memori Terburuk', s:'Pilih 3 dementor kelabu · serahkan memori terburuk',
      p:['Kau dihantar ke Labirin Memori, tempat dementor menjaga memori terburuk.',
         'Pilih <b>3 dementor kelabu</b> (kosong). Klik atau tekan dementor itu, kemudian tulis satu memori terburuk kau untuknya.',
@@ -191,10 +192,11 @@ function stage2(){
 function stage3(){
   SAR.stage = 3; PX.forEach(p => p.g.visible = false); PUMA.g.visible = false; PUMA.state = 'off';
   if(SAR.dest === 'buruk'){
-    // thrown into the archive's central chamber, where an admiral waits
-    const x = MAZE.x - 6, z = MAZE.z + 6; setLayer(5); player.x = x; player.z = z; player.y = 0; player.ry = Math.PI * .75; cam.yaw = Math.PI * .75; cam.tdist = 24; cam.dist = 24; cam.pitch = .8; camera.position.set(x, MAZE.y + 20, z + 12);
+    // thrown into Marineford: the arena rises from the bay and all eight are waiting
+    arenaUp(true); const x = ARENA.x + Math.cos(BASE.back) * 12, z = ARENA.z + Math.sin(BASE.back) * 12;
+    setLayer(0); player.x = x; player.z = z; player.y = ARENA.y; player.ry = BASE.face + Math.PI / 2; cam.tdist = 30; cam.dist = 30; cam.pitch = .45; camera.position.set(x, ARENA.y + 22, z + 18);
     SAR.sub = 'laksamana'; hud(''); announce(3);
-    showCard('laksamana', () => startDuel());
+    showCard('laksamana', () => startFight());
   } else {
     const Z = ZONES.falsafah, x = Z.at[0], z = Z.at[1] + 12; setLayer(0); player.x = x; player.z = z; player.y = surfaceH(x, z); player.ry = Math.PI; cam.yaw = 0; camera.position.set(x, player.y + 10, z + 14);
     hud('Ilmu disimpan: 0 / 1'); announce(3);
@@ -202,6 +204,8 @@ function stage3(){
   }
 }
 function stage3Memori(){
+  // into the headquarters: the Arkib's central chamber
+  const x = MAZE.x - 6, z = MAZE.z + 6; flash('rgba(255,255,255,.9)'); sfx.whoosh(); setLayer(5); player.x = x; player.z = z; player.y = 0; player.ry = Math.PI * .75; cam.yaw = Math.PI * .75; cam.tdist = 24; cam.dist = 24; cam.pitch = .8; camera.position.set(x, MAZE.y + 20, z + 12);
   SAR.sub = 'memori'; hud('Dementor dipilih: 0 / 3');
   showCard('buruk', () => toast('Klik dementor kelabu untuk menyerahkan memori.', 'ok', 4000), SAR.admiral ? `Kau menewaskan ${esc(SAR.admiral)}.` : '');
 }
@@ -292,7 +296,7 @@ function tickStage2(dt, t){
       const dir = new THREE.Vector3(dx, 0, dz).normalize(), from = PUMA.hand ? PUMA.hand.getWorldPosition(new THREE.Vector3()) : worldOfPlayer().add(new THREE.Vector3(0, 2, 0));
       pawWave(from, dir); SAR.dest = 'buruk';
       SAR.fly = {t:0, dur:2.2, from:worldOfPlayer(), dir};
-      toast('Hayunan Puma! Kau dicampak ke Arkib Memori Terburuk…', 'ok', 3500);
+      toast('Hayunan Puma! Kau dicampak ke Marineford…', 'ok', 3500);
     }
     if(PUMA.t > PUMA.swingEnd + .4){ PUMA.state = 'drink'; pumaPlay('drink'); }
   }
@@ -447,7 +451,7 @@ function finishSaringan(how){
     if(!SAR.preview) net.room?.emit('haki', {k:'saringan', s:'lulus', n:session?.name || 'Tetamu', d:SAR.dest || ''}).catch(() => {});
     flash('rgba(111,243,255,.8)'); sfx.whoosh(); setLayer(1); player.x = LAB.x; player.z = LAB.z + 16; player.ry = Math.PI; cam.yaw = 0;
     SAR.on = false; SAR.finishing = false; hud(); sirenTick(0, 0);
-    sarCard.innerHTML = `<div class="sc-eye">Ujian Saringan · Lulus</div><h2>Selamat datang ke Labophase</h2><ol><li>Kau mengelak laser PX-1 hingga PX-11${SAR.hitsTaken ? ` (terkena ${SAR.hitsTaken} kali)` : ' tanpa terkena sekali pun'}.</li><li>Hayunan Puma mencampak kau ke Arkib Memori Terburuk${SAR.admiral ? `, dan kau menewaskan ${esc(SAR.admiral)}` : ''}.</li><li>Kau membuat Penjaga Gergasi terduduk ${SAR.knock} kali.</li><li>${how === 'rakaman' ? 'Rakaman' : ''} Haki Raja Agung Eryth Sayf menamatkan huru-hara dan menjemput kau ke sini.</li></ol><button class="btn pri" type="button" id="sarGo">Masuk</button>`;
+    sarCard.innerHTML = `<div class="sc-eye">Ujian Saringan · Lulus</div><h2>Selamat datang ke Labophase</h2><ol><li>Kau mengelak laser PX-1 hingga PX-11${SAR.hitsTaken ? ` (terkena ${SAR.hitsTaken} kali)` : ' tanpa terkena sekali pun'}.</li><li>Hayunan Puma mencampak kau ke Marineford${SAR.admiral ? `, dan kau menewaskan ${esc(SAR.admiral)} di gelanggang` : ''}.</li><li>Kau menyerahkan 3 memori terburuk kepada dementor di Arkib.</li><li>Kau membuat Penjaga Gergasi terduduk ${SAR.knock} kali.</li><li>${how === 'rakaman' ? 'Rakaman' : ''} Haki Raja Agung Eryth Sayf menamatkan huru-hara dan menjemput kau ke sini.</li></ol><button class="btn pri" type="button" id="sarGo">Masuk</button>`;
     sarCard.hidden = false; $('#sarGo').addEventListener('click', () => sarCard.hidden = true);
   }, 3500);
 }
@@ -507,7 +511,7 @@ lock = function(msg){ if(SAR.on){ SAR.on = false; SAR.fly = null; SAR.cap = null
     toast(`UJIAN SARINGAN · ${n} di peringkat terakhir. Tekan 2 · Haki Raja Agung untuk menghentikan huru-hara dan menjemputnya ke Labophase.`, 'bad', 12000); }
   else if(d.s === 'lulus'){ SAR.ownerWait.delete(n); toast(`${n} lulus Ujian Saringan dan kini di Labophase.`, 'ok', 5000); }
   else if(d.s === 1) toast(`${n} memulakan Ujian Saringan. Siren berbunyi di Frontier Dome.`, 'ok', 4000);
-  else if(d.s === 3) toast(`${n} dicampak Puma ke Arkib Memori Terburuk dan kini berduel dengan seorang laksamana.`, 'ok', 3500);
+  else if(d.s === 3) toast(`${n} dicampak Puma ke Marineford dan kini bertarung dengan semua laksamana di gelanggang.`, 'ok', 3500);
 }, () => {}); })();
 
 /* --- Bavar-373 panel: rehearse the trial, read visitors' results --- */

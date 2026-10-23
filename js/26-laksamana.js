@@ -9,11 +9,11 @@
    3. The owner may take any admiral's power (Tetapan · Kuasa Laksamana) as an extra slot or in place of one of the
       Haki slots; untouched, the owner's powers stay as they are. Every one of these powers can bring the Nivelham
       giant down.
-   4. The entry trial (23-saringan.js): after Puma's paw lands a visitor in the Arkib Memori Terburuk, an admiral is
-      waiting there; the visitor must beat him before giving memories to the dementors.
+   4. The entry trial: Puma's paw throws a visitor into Marineford, where all eight face them at once in an arena
+      raised from the bay (27-gelanggang.js).
    Adjusted from the reference: no alcohol for the dragon warlord, the pirate queen's clouds are weather, not stolen
    souls, and the golden giant is simply a giant of light, with no religious form. */
-const LKS = {chars:[], byId:{}, inv:{on:false}, history:LS.get('erythmind.serbuan', []), models:{}, loaded:false, duel:null};
+const LKS = {chars:[], byId:{}, inv:{on:false}, history:LS.get('erythmind.serbuan', []), models:{}, loaded:false};
 const ADM_DEF = [
   {id:'magma', name:'Laksamana Akainu', power:'magma', kuasa:'Magma · Tinju Gunung Berapi', col:'#ff5a1a', h:6.4, proc:{coat:0xf4f2ec, pants:0x6a1418, shirt:0x8a1c20, skin:0xc99a78, hair:0x1a1410}},
   {id:'ais', name:'Laksamana Aokiji', power:'ais', kuasa:'Ais · Zaman Ais', col:'#9fe8ff', h:6.9, proc:{coat:0xf4f2ec, pants:0xf0f0ea, shirt:0x7fb2ff, skin:0xb8865e, hair:0x14100c}},
@@ -44,7 +44,7 @@ function makeChar(def, side, i){
   const proc = makePerson(def.proc); proc.g.scale.setScalar(def.h / 3.1); g.add(proc.g);
   if(side === 'adm') mesh(new THREE.BoxGeometry(1.5, 1.3, .08), M(0xf4f2ec), 0, 1.55, -.34, proc.g, false);            // the white cape
   const c = Object.assign({}, def, {side, i, g, proc, x:0, z:0, ry:0, moving:false, model:null, mixer:null, act:null, wait:Math.random() * 4, tx:0, tz:0, cd:2 + Math.random() * 3, block:0, glow:null});
-  c.label = addLabel(`${esc(def.name)}<small>${esc(def.title || def.kuasa)}</small>`, 'zone', () => g.visible && (side === 'inv' || near(c, 120)) ? g.position.clone().setY(g.position.y + def.h + 1.3) : null, {color:def.col, max:side === 'inv' ? 420 : 120});
+  c.label = addLabel(`${esc(def.name)}<small>${esc(def.title || def.kuasa)}</small>`, 'zone', () => g.visible && !c.fight && (side === 'inv' || near(c, 120)) ? g.position.clone().setY(g.position.y + def.h + 1.3) : null, {color:def.col, max:side === 'inv' ? 420 : 120});
   LKS.chars.push(c); LKS.byId[def.id] = c; return c;
 }
 const near = (c, d) => Math.hypot(camera.position.x - c.x, camera.position.z - c.z) < d;
@@ -271,6 +271,7 @@ function tickInvasion(dt){
     }
   });
   ADMS.forEach(c => {
+    if(c.fight) return;                                      // busy with a visitor's trial in the arena
     const tgt = c.target && c.target.state === 'tempur' ? c.target : INVS.find(v => v.state === 'tempur');
     if(!tgt) return; c.ry = Math.atan2(tgt.x - c.x, tgt.z - c.z); c.cd -= dt;
     if(c.cd <= 0 && Math.hypot(c.tx - c.x, c.tz - c.z) < 3){ c.cd = (c.fleet ? 5 : 3.8) + Math.random() * 2.2; charAttack(c); const dmg = c.fleet ? 34 : 14 + Math.random() * 6;
@@ -295,7 +296,7 @@ const _lq = new THREE.Vector3();
 function tickChars(t, dt){
   const showBase = (player.layer === 0 || player.layer === 1) && Math.hypot(camera.position.x - BASE.x, camera.position.z - BASE.z) < 900;
   ADMS.forEach(c => {
-    if(c.duel) return;                                        // away in the Arkib for an entry trial
+    if(c.fight) return;                                       // in the arena for an entry trial (27-gelanggang.js)
     if(!LKS.inv.on){                                          // a slow patrol round their own post
       c.wait -= dt;
       if(c.wait <= 0 && Math.hypot(c.tx - c.x, c.tz - c.z) < 1){                     // a few steps along the quay and back
@@ -309,9 +310,9 @@ function tickChars(t, dt){
   });
   INVS.forEach(c => c.g.visible = LKS.inv.on && c.state !== 'pergi' && showBase);
   LKS.chars.forEach(c => {
-    if(c.duel && player.layer !== 5) c.g.visible = false;
+    if(c.fight) c.g.visible = player.layer === 0;
     if(!c.g.visible) return;
-    const y = c.duel ? MAZE.y : c.side === 'inv' ? (c.state === 'undur' ? 2 + (c.lift || 0) : Math.max(.5, lksGround(c.x, c.z)) + Math.sin(t * 1.4 + c.i) * .3) : lksGround(c.x, c.z);
+    const y = c.side === 'inv' ? (c.state === 'undur' ? 2 + (c.lift || 0) : Math.max(.5, lksGround(c.x, c.z)) + Math.sin(t * 1.4 + c.i) * .3) : lksGround(c.x, c.z);
     c.g.position.set(c.x, y, c.z); c.g.rotation.y = c.ry; if(c.state === 'undur') c.g.rotation.x += dt * 4; else c.g.rotation.x = 0;
     if(c.block > 0){ c.block -= dt; c.g.position.addScaledVector(_lq.set(-Math.sin(c.ry), 0, -Math.cos(c.ry)), c.block * 1.5); }
     if(near(c, 500)){ if(c.mixer){
@@ -342,7 +343,7 @@ const _renderHakiButtonsL = renderHakiButtons;
 renderHakiButtons = function(allowed){ _renderHakiButtonsL([...allowed].sort((x, y) => (POWERS.find(p => p.id === x)?.key || '9').localeCompare(POWERS.find(p => p.id === y)?.key || '9'))); };
 // the number key for the chosen slot goes to the admiral power (the Haki file looks keys up by the first match)
 addEventListener('keydown', e => {
-  if(!session || !isOwner() || !POWER_INFO[KUASA.pick] || e.key !== KUASA.slot || !$('#gate').hidden || !$('#panel').hidden || !$('#map').hidden || typing()) return;
+  if(!session || !isOwner() || !POWER_INFO[KUASA.pick] || e.key !== KUASA.slot || (typeof FIGHT !== 'undefined' && FIGHT.on) || !$('#gate').hidden || !$('#panel').hidden || !$('#map').hidden || typing()) return;
   e.preventDefault(); e.stopImmediatePropagation(); usePower('laksamana');
 }, true);
 SPECIAL_POWERS.laksamana = {
@@ -398,63 +399,6 @@ document.addEventListener('change', e => {
 });
 syncKuasaPower();
 
-/* ================= the entry trial: a duel with one admiral in the Arkib ================= */
-const duelRing = new THREE.Mesh(new THREE.RingGeometry(3.2, 4.2, 40), new THREE.MeshBasicMaterial({color:0xff3030, transparent:true, opacity:.6, side:THREE.DoubleSide, depthWrite:false})); duelRing.rotation.x = -Math.PI / 2; duelRing.visible = false; scene.add(duelRing);
-const DUEL_R = 4.2;
-function startDuel(){
-  const c = ADMS[Math.floor(Math.random() * 7)];
-  LKS.duel = {c, hits:0, hp:5, cd:3, warn:null, inv:0, fist:0, t:0};
-  c.duel = true; c.moving = false; c.g.visible = true; c.x = MAZE.x + 9; c.z = MAZE.z - 6; c.ry = Math.atan2(player.x - c.x, player.z - c.z);
-  SAR.admiral = c.name; sarFist.hidden = false;
-  bubbleFor('lksduel', () => c.g.position.clone().setY(c.g.position.y + c.h + .6), 'Arkib ini di bawah jagaan Marineford. Tunjukkan kau layak.', 'owner');
-  toast(`${c.name} (${c.kuasa}) menghalang jalan kau!`, 'bad', 3500); duelHud();
-}
-function duelHud(){ const D = LKS.duel; if(!D) return; hud(`<i class="hp">${'♥'.repeat(D.hp)}${'♡'.repeat(5 - D.hp)}</i> · ${D.c.name} kena ${D.hits} / 3`); }
-function endDuel(won){
-  const D = LKS.duel; if(!D) return; LKS.duel = null; duelRing.visible = false; sarFist.hidden = true;
-  const c = D.c; c.duel = false; c.x = c.home.x; c.z = c.home.z; c.tx = c.x; c.tz = c.z;
-  if(won) stage3Memori();
-}
-function duelPunch(){
-  const D = LKS.duel; if(!D || SAR.paused) return;
-  if(D.fist > 0) return toast(`Tumbukan Haki sedang dicas (${D.fist.toFixed(1)} s).`, 'bad', 1200);
-  const c = D.c, dx = c.x - player.x, dz = c.z - player.z, d = Math.hypot(dx, dz);
-  D.fist = 2.2; player.ry = Math.atan2(dx, dz); playClip('shout');
-  const o = worldOfPlayer().add(new THREE.Vector3(0, 1.6, 0)), tgt = charChest(c);
-  const f = new THREE.Mesh(lksBall(), new THREE.MeshStandardMaterial({color:0x14141a, metalness:.8, roughness:.3, emissive:0x3a0a2a})); f.scale.setScalar(.9);
-  addFx(f, .3, (m, k) => m.position.lerpVectors(o, d < 16 ? tgt : o.clone().add(new THREE.Vector3(dx, 0, dz).normalize().multiplyScalar(16)), k));
-  later(.3, () => {
-    if(!LKS.duel) return;
-    if(d < 16){ D.hits++; blockFx(c); boom(tgt.x, tgt.y, tgt.z, 0xff4f45, .8); shake = .6; if(AU.ctx) noiseHit({d:.3, v:.3, f:500, brown:true});
-      if(D.hits >= 3){ duelHud(); bubbleFor('lksduel', () => c.g.position.clone().setY(c.g.position.y + c.h + .6), 'Hm. Kau layak. Teruskan ke Arkib.', 'owner');
-        toast(`Kau menewaskan ${c.name}! Dia membenarkan kau masuk ke Arkib Memori Terburuk.`, 'ok', 4500); D.won = true; setTimeout(() => endDuel(true), 2600); }
-      else { toast(`Kena! ${c.name} terundur (${D.hits} / 3).`, 'ok', 1800); duelHud(); } }
-    else toast('Terlalu jauh. Dekati laksamana (bawah 16 langkah) sebelum menumbuk.', 'bad', 1800);
-  });
-}
-function tickDuel(dt){
-  const D = LKS.duel; if(!D || SAR.paused || D.won) return; const c = D.c; D.t += dt; D.fist = Math.max(0, D.fist - dt); D.inv = Math.max(0, D.inv - dt);
-  sarFist.classList.toggle('cool', D.fist > 0); sarFist.querySelector('b').textContent = D.fist > 0 ? D.fist.toFixed(1) : 'Q';
-  if(player.layer !== 5){ setLayer(5); player.x = MAZE.x - 6; player.z = MAZE.z + 6; }
-  // keep a fighting distance, circling
-  const dx = player.x - c.x, dz = player.z - c.z, d = Math.hypot(dx, dz) || 1, want = 11;
-  const side = Math.sin(D.t * .5) > 0 ? 1 : -1; let mx = (d - want) * dx / d * .6 + dz / d * side * 2.5, mz = (d - want) * dz / d * .6 - dx / d * side * 2.5;
-  const ml = Math.hypot(mx, mz); if(ml > .3){ const sp = Math.min(ml, 4 * dt), nx = c.x + mx / ml * sp, nz = c.z + mz / ml * sp; if(mazeWalkable(nx, nz)){ c.x = nx; c.z = nz; } c.moving = true; } else c.moving = false;
-  c.ry = Math.atan2(dx, dz);
-  // the attack: a red ring where you stand, then the power lands there
-  D.cd -= dt;
-  if(!D.warn && D.cd <= 0){ D.warn = {x:player.x, z:player.z, t:1.25}; duelRing.visible = true; duelRing.position.set(player.x, MAZE.y + .08, player.z); if(AU.ctx) tone(500, {d:.4, v:.04, glide:900, type:'square', filt:1500}); }
-  if(D.warn){ D.warn.t -= dt; duelRing.material.opacity = .35 + .35 * Math.abs(Math.sin(D.warn.t * 14)); duelRing.scale.setScalar(1 + (1.25 - D.warn.t) * .1);
-    if(D.warn.t <= 0){ const w = D.warn; D.warn = null; duelRing.visible = false; D.cd = 2.6 + Math.random() * 1.2;
-      const to = new THREE.Vector3(w.x, MAZE.y, w.z); charAttack(c); POWER_FX[c.power](charChest(c), to, .55, null, 'me');
-      later(c.power === 'graviti' ? 1.6 : c.power === 'magma' || c.power === 'emas' ? .9 : .6, () => {
-        if(!LKS.duel || LKS.duel.won || D.inv > 0) return;
-        if(Math.hypot(player.x - w.x, player.z - w.z) < DUEL_R){ D.hp--; D.inv = 1; flash('rgba(255,90,40,.6)'); shake = .8; SAR.hitsTaken++;
-          if(D.hp <= 0){ toast(`${c.name} menewaskan kau. Cuba lagi: keluar dari bulatan merah sebelum kuasa jatuh.`, 'bad', 4000); D.hp = 5; D.hits = 0; D.cd = 3; }
-          else toast(`Terkena ${c.kuasa.split(' · ')[0]}! Nyawa tinggal ${D.hp}.`, 'bad', 1800);
-          duelHud(); } }); } }
-}
-
 /* ================= models (Higgsfield), loaded after entry so the gate does not wait for them ================= */
 function applyLaksamanaModel(key, gltf){
   const c = LKS.byId[key]; if(!c || c.model) return;
@@ -490,12 +434,10 @@ async function loadLaksamana(){
 let invCheckT = 0;
 anims.push((t, dt) => {
   invCheckT -= dt; if(invCheckT <= 0){ invCheckT = 20; checkInv(); }
-  tickInvasion(dt); tickChars(t, dt); tickDuel(dt);
+  tickInvasion(dt); tickChars(t, dt);
 });
 const _startSessionL = startSession;
 startSession = function(s){ _startSessionL(s); setTimeout(loadLaksamana, 6000); setTimeout(checkInv, 4000); syncKuasaPower(); };
-const _lockL = lock;
-lock = function(msg){ if(LKS.duel) endDuel(false); return _lockL(msg); };
 const _raidPanelHtmlL = raidPanelHtml;
 raidPanelHtml = function(){
   const rows = LKS.history.slice(0, 6).map(h => `<li><b>${esc(fmtDate(h.key))}</b> 5/5 penceroboh dihalang${h.live ? '' : ' (semasa kau tiada)'} · 0 menembusi</li>`).join(''), nx = nextInv();
@@ -508,6 +450,3 @@ wireRaidPanel = function(){ _wireRaidPanelL(); $('#drillInv')?.addEventListener(
 (async () => { const r = await use('room'); if(r) r.on('haki', m => { if(m.isMe || LKS.inv.on || m.data?.k !== 'serbuan') return; startInvasion('latihan', true); }, () => {}); })();
 info(ADMS[7].g, 'Laksamana Marineford', 'Tujuh laksamana dan Fleet Admiral Garp menjaga Pangkalan Laut. Setiap minggu mereka menghalang lima penceroboh hebat.');
 EXPED.push({id:'laksamana', name:'Barisan Laksamana', sub:'Marineford · tujuh laksamana & Fleet Admiral', x:92, y:44, layer:0, to:[bx(BASE.back, 150), bz(BASE.back, 150)]});
-// Q / TUMBUK during the duel punches the admiral
-const _sarPunchL = sarPunch;
-sarPunch = function(){ if(SAR.on && SAR.stage === 3 && SAR.sub === 'laksamana') return duelPunch(); return _sarPunchL(); };

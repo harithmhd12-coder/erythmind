@@ -110,7 +110,8 @@ function driveAvatar(person, moving, speed, dt){
   }
   if(pose || !a.action){ if(a.idle) a.idle.weight = 0; a.mixer.update(dt); return; }
   if(a.idle){                                                 // the Blender idle (breathing, at ease) blends with the walk
-    const busy = HAKI.playing && HAKI.playing.a === a;        // a Haki clip owns the body while it plays
+    if(a.strikeT > 0){ a.strikeT -= dt; if(a.strikeT <= 0 && a.atk) a.atk.stop(); }
+    const busy = (HAKI.playing && HAKI.playing.a === a) || a.strikeT > 0;   // a Haki clip or a blow owns the body while it plays
     a.blend = lerp(a.blend ?? 0, moving ? 1 : 0, 1 - Math.exp(-dt * 8));
     a.action.weight = busy ? 0 : a.blend; a.idle.weight = busy ? 0 : 1 - a.blend;
     a.action.timeScale = moving ? clamp(speed / 7.5, .6, 2.4) : 1;
@@ -609,7 +610,7 @@ function applyModel(key, gltf){
   if(key === 'animShout'){ HAKI.clips.shout = prepareWalkClip(gltf.animations[0]); return; }
   if(key === 'pedang'){ setSwordModel(gltf); return; }
   if(key === 'avatar'){ const an = gltf.animations || [], walk = an.find(a => /jalan|walk/i.test(a.name)) || an[0], idle = an.find(a => /rehat|idle/i.test(a.name));
-    AV.src = gltf.scene; AV.clip = walk ? prepareWalkClip(walk) : null; AV.idle = idle || null; return; }
+    AV.src = gltf.scene; AV.clip = walk ? prepareWalkClip(walk) : null; AV.idle = idle || null; AV.atk = an.find(a => /serang|attack/i.test(a.name)) || null; return; }
   if(key === 'erythRecords'){
     const canon = canonical(gltf.scene, 1); const model = buildFrom(canon);
     const holder = grp(0, 0, -4, lab); holder.add(model); [halfA, halfB, brain].forEach(m => m.visible = false); bean.children.forEach(c => { if(c.isMesh) c.visible = false; });
