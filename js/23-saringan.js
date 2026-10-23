@@ -1,10 +1,10 @@
 'use strict';
 /* ================= Ujian Saringan: the entry trial for every new visitor =================
    1. Siren at the Frontier Dome. Eleven giant guards, PX-1 to PX-11, hunt the visitor with mouth lasers: survive 45 s.
-   2. Their chief, Puma (always holding a hot coffee), swings his paw: the visitor is sent at random to the
-      Arkib Memori Terburuk (Labirin Memori) or to Taman Falsafah.
-   3. In the archive: give a worst memory to 3 empty dementors. In the garden: keep one piece of knowledge or
-      inspiration that made them succeed. Both are encrypted on the visitor's device for the owner only.
+   2. Their chief, Puma (always holding a hot coffee), swings his paw: the visitor is thrown into the
+      Arkib Memori Terburuk (Labirin Memori). (Taman Falsafah is no longer a destination.)
+   3. In the archive an admiral of Marineford is waiting (26-laksamana.js): beat him first, then give a worst
+      memory to 3 empty dementors, encrypted on the visitor's device for the owner only.
    4. A hypersonic capsule throws them into Lembah Nivelham; the giant wakes. A borrowed Tumbukan Gergasi knocks
       him down for 10 s: do it twice.
    5. Siren everywhere. Only the owner's Haki Raja Agung ends it (Bavar-373 plays a recording if the owner is away);
@@ -33,7 +33,12 @@ const STAGE_TXT = {
   2:{t:'Hayunan Puma', s:'Berdiri. Biarkan Puma menghayun tapak tangannya',
      p:['Ketua PX, <b>Puma</b>, datang dengan secawan kopi panas.',
         '<b>Jangan lari.</b> Berdiri dan biarkan Puma menghayun tapak tangannya kepada kau.',
-        'Sekali hayun, kau akan dihantar secara rawak ke <b>Arkib Memori Terburuk</b> atau <b>Taman Falsafah</b>.']},
+        'Sekali hayun, kau akan dicampak ke <b>Arkib Memori Terburuk</b>.']},
+  laksamana:{t:'Duel Laksamana', s:'Tumbuk laksamana 3 kali · elak bulatan merah',
+     p:['Kau tercampak ke tengah Arkib Memori Terburuk. Seorang <b>laksamana Marineford</b> menjaga pintunya.',
+        'Bila <b>bulatan merah</b> muncul di bawah kaki kau, kuasanya akan jatuh di situ dalam sesaat: <b>keluar dari bulatan</b> (W A S D / joystick, Shift untuk lari).',
+        'Dekati dia dan tekan <b>Q</b> atau butang TUMBUK. Kena <b>3 kali</b> dan dia membenarkan kau masuk ke Arkib.',
+        'Kau ada <b>5 nyawa</b>; kalau habis, duel bermula semula.']},
   buruk:{t:'Arkib Memori Terburuk', s:'Pilih 3 dementor kelabu · serahkan memori terburuk',
      p:['Kau dihantar ke Labirin Memori, tempat dementor menjaga memori terburuk.',
         'Pilih <b>3 dementor kelabu</b> (kosong). Klik atau tekan dementor itu, kemudian tulis satu memori terburuk kau untuknya.',
@@ -54,7 +59,7 @@ const STAGE_TXT = {
         'Hanya <b>Haki Raja Agung Eryth Sayf</b> boleh menghentikannya. Pemilik telah dimaklumkan.',
         'Bertahan dan tunggu. Bila Haki Raja Agung tiba, kau akan dijemput ke <b>Labophase</b>.']},
 };
-const stageKey = () => SAR.stage === 3 ? SAR.dest : SAR.stage;
+const stageKey = () => SAR.stage === 3 ? (SAR.sub === 'laksamana' ? 'laksamana' : SAR.dest) : SAR.stage;
 function showCard(key, onGo, extra){
   const T = STAGE_TXT[key], n = SAR.stage;
   sarCard.innerHTML = `<div class="sc-eye">Ujian Saringan · Peringkat ${n} / 5</div><h2>${T.t}</h2>${extra ? `<div class="sc-note">${extra}</div>` : ''}<ol>${T.p.map(x => `<li>${x}</li>`).join('')}</ol><button class="btn pri" type="button" id="sarGo">Faham · Mula</button>`;
@@ -167,7 +172,7 @@ interactables.push(capInteract);
 function startSaringan(preview){
   if(SAR.on || !session) return;
   if(ride) endRide();
-  Object.assign(SAR, {on:true, preview:!!preview, stage:0, picks:[], ilmu:null, knock:0, hitsTaken:0, dest:null, fly:null, cap:null, beams:[], start:Date.now()});
+  Object.assign(SAR, {on:true, preview:!!preview, stage:0, picks:[], ilmu:null, knock:0, hitsTaken:0, dest:null, sub:null, admiral:null, fly:null, cap:null, beams:[], start:Date.now()});
   if(player.layer !== 0){ setLayer(0); player.x = 0; player.z = 16; player.y = surfaceH(0, 16); }
   stage1();
 }
@@ -185,14 +190,19 @@ function stage2(){
 function stage3(){
   SAR.stage = 3; PX.forEach(p => p.g.visible = false); PUMA.g.visible = false; PUMA.state = 'off';
   if(SAR.dest === 'buruk'){
-    const [x, z] = mzWorld(1, MAZE.G - 2); setLayer(5); player.x = x; player.z = z; player.y = 0; player.ry = Math.PI; cam.yaw = 0; cam.tdist = 22; cam.dist = 22; cam.pitch = .85; camera.position.set(x, MAZE.y + 20, z + 12);
-    hud('Dementor dipilih: 0 / 3'); announce(3);
-    showCard('buruk', () => toast('Klik dementor kelabu untuk menyerahkan memori.', 'ok', 4000));
+    // thrown into the archive's central chamber, where an admiral waits
+    const x = MAZE.x - 6, z = MAZE.z + 6; setLayer(5); player.x = x; player.z = z; player.y = 0; player.ry = Math.PI * .75; cam.yaw = Math.PI * .75; cam.tdist = 24; cam.dist = 24; cam.pitch = .8; camera.position.set(x, MAZE.y + 20, z + 12);
+    SAR.sub = 'laksamana'; hud(''); announce(3);
+    showCard('laksamana', () => startDuel());
   } else {
     const Z = ZONES.falsafah, x = Z.at[0], z = Z.at[1] + 12; setLayer(0); player.x = x; player.z = z; player.y = surfaceH(x, z); player.ry = Math.PI; cam.yaw = 0; camera.position.set(x, player.y + 10, z + 14);
     hud('Ilmu disimpan: 0 / 1'); announce(3);
     showCard('falsafah', () => openIlmuForm());
   }
+}
+function stage3Memori(){
+  SAR.sub = 'memori'; hud('Dementor dipilih: 0 / 3');
+  showCard('buruk', () => toast('Klik dementor kelabu untuk menyerahkan memori.', 'ok', 4000), SAR.admiral ? `Kau menewaskan ${esc(SAR.admiral)}.` : '');
 }
 function stage4(){
   SAR.stage = 4; hud('Naik kapsul'); announce(4);
@@ -279,9 +289,9 @@ function tickStage2(dt, t){
     if(!PUMA.model) PUMA.proc.arms[1].rotation.x = lerp(-2.6, .8, clamp(PUMA.t / PUMA.hitAt, 0, 1));
     if(PUMA.t >= PUMA.hitAt && !SAR.fly){
       const dir = new THREE.Vector3(dx, 0, dz).normalize(), from = PUMA.hand ? PUMA.hand.getWorldPosition(new THREE.Vector3()) : worldOfPlayer().add(new THREE.Vector3(0, 2, 0));
-      pawWave(from, dir); SAR.dest = Math.random() < .5 ? 'buruk' : 'falsafah';
+      pawWave(from, dir); SAR.dest = 'buruk';
       SAR.fly = {t:0, dur:2.2, from:worldOfPlayer(), dir};
-      toast(`Hayunan Puma! Kau dihantar ke ${SAR.dest === 'buruk' ? 'Arkib Memori Terburuk' : 'Taman Falsafah'}…`, 'ok', 3500);
+      toast('Hayunan Puma! Kau dicampak ke Arkib Memori Terburuk…', 'ok', 3500);
     }
     if(PUMA.t > PUMA.swingEnd + .4){ PUMA.state = 'drink'; pumaPlay('drink'); }
   }
@@ -324,6 +334,7 @@ function boardCapsule(){
 const _openMemory = openMemory;
 openMemory = function(slot){
   if(!(SAR.on && SAR.stage === 3 && SAR.dest === 'buruk')) return _openMemory(slot);
+  if(SAR.sub === 'laksamana') return toast('Tewaskan laksamana dahulu sebelum menyerahkan memori.', 'bad');
   if(SAR.picks.some(p => p.slot === slot)) return toast('Dementor ini sudah memegang memori kau. Pilih dementor kelabu yang lain.', 'bad');
   if(MZ.d[slot].entry) return toast('Dementor ini sudah memegang memori lain. Pilih dementor kelabu.', 'bad');
   const k = SAR.picks.length + 1;
@@ -381,7 +392,7 @@ async function sendResult(extra){
   if(SAR.preview || session?.role !== 'guest' || !store?.report) return;
   if(!myUid){ const u = await use('user'); myUid = u ? await u.id() : null; } if(!myUid) return;
   reportBuf = reportBuf || {name:session.name, events:[]}; reportBuf.name = session.name;
-  reportBuf.saringan = Object.assign(reportBuf.saringan || {}, {t:Date.now(), dest:SAR.dest, hits:SAR.hitsTaken}, extra);
+  reportBuf.saringan = Object.assign(reportBuf.saringan || {}, {t:Date.now(), dest:SAR.dest, hits:SAR.hitsTaken, adm:SAR.admiral || ''}, extra);
   await store.report(myUid, reportBuf).catch(() => {});
 }
 async function sealAndSend(){
@@ -435,7 +446,7 @@ function finishSaringan(how){
     if(!SAR.preview) net.room?.emit('haki', {k:'saringan', s:'lulus', n:session?.name || 'Tetamu', d:SAR.dest || ''}).catch(() => {});
     flash('rgba(111,243,255,.8)'); sfx.whoosh(); setLayer(1); player.x = LAB.x; player.z = LAB.z + 16; player.ry = Math.PI; cam.yaw = 0;
     SAR.on = false; SAR.finishing = false; hud(); sirenTick(0, 0);
-    sarCard.innerHTML = `<div class="sc-eye">Ujian Saringan · Lulus</div><h2>Selamat datang ke Labophase</h2><ol><li>Kau mengelak laser PX-1 hingga PX-11${SAR.hitsTaken ? ` (terkena ${SAR.hitsTaken} kali)` : ' tanpa terkena sekali pun'}.</li><li>Hayunan Puma menghantar kau ke ${SAR.dest === 'buruk' ? 'Arkib Memori Terburuk' : 'Taman Falsafah'}.</li><li>Kau membuat Penjaga Gergasi terduduk ${SAR.knock} kali.</li><li>${how === 'rakaman' ? 'Rakaman' : ''} Haki Raja Agung Eryth Sayf menamatkan huru-hara dan menjemput kau ke sini.</li></ol><button class="btn pri" type="button" id="sarGo">Masuk</button>`;
+    sarCard.innerHTML = `<div class="sc-eye">Ujian Saringan · Lulus</div><h2>Selamat datang ke Labophase</h2><ol><li>Kau mengelak laser PX-1 hingga PX-11${SAR.hitsTaken ? ` (terkena ${SAR.hitsTaken} kali)` : ' tanpa terkena sekali pun'}.</li><li>Hayunan Puma mencampak kau ke Arkib Memori Terburuk${SAR.admiral ? `, dan kau menewaskan ${esc(SAR.admiral)}` : ''}.</li><li>Kau membuat Penjaga Gergasi terduduk ${SAR.knock} kali.</li><li>${how === 'rakaman' ? 'Rakaman' : ''} Haki Raja Agung Eryth Sayf menamatkan huru-hara dan menjemput kau ke sini.</li></ol><button class="btn pri" type="button" id="sarGo">Masuk</button>`;
     sarCard.hidden = false; $('#sarGo').addEventListener('click', () => sarCard.hidden = true);
   }, 3500);
 }
@@ -492,7 +503,7 @@ lock = function(msg){ if(SAR.on){ SAR.on = false; SAR.fly = null; SAR.cap = null
     toast(`UJIAN SARINGAN · ${n} di peringkat terakhir. Tekan 2 · Haki Raja Agung untuk menghentikan huru-hara dan menjemputnya ke Labophase.`, 'bad', 12000); }
   else if(d.s === 'lulus'){ SAR.ownerWait.delete(n); toast(`${n} lulus Ujian Saringan dan kini di Labophase.`, 'ok', 5000); }
   else if(d.s === 1) toast(`${n} memulakan Ujian Saringan. Siren berbunyi di Frontier Dome.`, 'ok', 4000);
-  else if(d.s === 3) toast(`${n} dihantar Puma ke ${d.d === 'buruk' ? 'Arkib Memori Terburuk' : 'Taman Falsafah'}.`, 'ok', 3500);
+  else if(d.s === 3) toast(`${n} dicampak Puma ke Arkib Memori Terburuk dan kini berduel dengan seorang laksamana.`, 'ok', 3500);
 }, () => {}); })();
 
 /* --- Bavar-373 panel: rehearse the trial, read visitors' results --- */
@@ -500,7 +511,7 @@ const _onReports = onReports;
 onReports = function(list){ SAR.results = list.filter(r => r.saringan).map(r => ({name:r.name || 'Tetamu', ...r.saringan})).sort((a, b) => b.t - a.t); _onReports(list); };
 const _raidPanelHtml = raidPanelHtml;
 raidPanelHtml = function(){
-  const rows = SAR.results.slice(0, 20).map((r, i) => `<div class="item"><strong>${esc(r.name)} · ${r.lulus ? 'lulus' : 'belum tamat'}</strong><span>${esc(r.dest === 'buruk' ? 'Arkib Memori Terburuk' : r.dest === 'falsafah' ? 'Taman Falsafah' : '—')} · terkena laser ${r.hits || 0}× · ${esc(new Date(r.t).toLocaleString('ms-MY'))}</span>${r.box ? `<div class="row"><button class="btn" type="button" data-sarbox="${i}">Buka catatan tersulit</button></div><div id="sarOut${i}"></div>` : ''}</div>`).join('');
+  const rows = SAR.results.slice(0, 20).map((r, i) => `<div class="item"><strong>${esc(r.name)} · ${r.lulus ? 'lulus' : 'belum tamat'}</strong><span>${esc(r.dest === 'buruk' ? 'Arkib Memori Terburuk' : r.dest === 'falsafah' ? 'Taman Falsafah' : '—')} ${r.adm ? ` · menewaskan ${esc(r.adm)}` : ''} · terkena ${r.hits || 0}× · ${esc(new Date(r.t).toLocaleString('ms-MY'))}</span>${r.box ? `<div class="row"><button class="btn" type="button" data-sarbox="${i}">Buka catatan tersulit</button></div><div id="sarOut${i}"></div>` : ''}</div>`).join('');
   return _raidPanelHtml() + (isOwner() ? `<h3>Ujian Saringan</h3><div class="note">Setiap pelawat baharu melalui 5 peringkat pada kali pertama masuk. Catatan mereka disulitkan untuk kau sahaja.</div>
     <div class="row"><button class="btn" id="sarPrev" type="button">Pratonton ujian saringan</button></div>${rows ? `<div class="list">${rows}</div>` : '<div class="note">Belum ada keputusan.</div>'}` : '');
 };

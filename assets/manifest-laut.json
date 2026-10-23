@@ -1,0 +1,15 @@
+{
+ "garp": "assets/lks-garp.gltf.json",
+ "magma": "assets/lks-magma.gltf.json",
+ "ais": "assets/lks-ais.gltf.json",
+ "cahaya": "assets/lks-cahaya.gltf.json",
+ "graviti": "assets/lks-graviti.gltf.json",
+ "hutan": "assets/lks-hutan.gltf.json",
+ "emas": "assets/lks-emas.gltf.json",
+ "lengan": "assets/lks-lengan.gltf.json",
+ "kaido": "assets/lks-kaido.gltf.json",
+ "bigmom": "assets/lks-bigmom.gltf.json",
+ "whitebeard": "assets/lks-whitebeard.gltf.json",
+ "blackbeard": "assets/lks-blackbeard.gltf.json",
+ "law": "assets/lks-law.gltf.json"
+}

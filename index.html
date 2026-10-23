@@ -248,6 +248,11 @@ a.card{display:grid}
 #raid b{font:700 11.5px/1.2 var(--f-mono);letter-spacing:.12em;color:#ff6a5a}
 #raid small{font:500 10.5px/1.3 var(--f-mono);color:var(--mute)}
 #raid i{position:absolute;left:0;bottom:0;height:4px;background:linear-gradient(90deg,#ff4f45,#ffd23a)}
+#serbuan{position:fixed;z-index:8;top:calc(var(--gt) + 4px);left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 340px));display:grid;gap:3px;padding:10px 14px 14px;border-radius:12px;background:rgba(8,12,22,.9);border:1px solid #6ab8ff;box-shadow:0 0 24px -6px #6ab8ff;font:500 12px/1.35 var(--f-body);color:var(--ink);overflow:hidden}
+#serbuan b{font:700 11.5px/1.2 var(--f-mono);letter-spacing:.12em;color:#9fd0ff} #serbuan small{font:500 10.5px/1.3 var(--f-mono);color:var(--mute)}
+#serbuan i{position:absolute;left:0;bottom:0;height:4px;background:linear-gradient(90deg,#6ab8ff,#ffffff)} #serbuan.drill{border-style:dashed}
+#raid:not([hidden]) ~ #serbuan{top:calc(var(--gt) + 90px)}
+@media (max-width:720px), (max-height:560px){#serbuan{width:calc(100vw - 200px);padding:6px 10px 10px;font-size:11px} #serbuan small{display:none}}
 #raid.mega{border-color:#ffd23a;box-shadow:0 0 30px -4px #ffd23a;animation:megap 1.2s infinite} #raid.mega b{color:#ffd23a}
 @keyframes megap{50%{box-shadow:0 0 40px 0 #ff4f45}}
 @media (max-width:720px), (max-height:560px){#raid{width:calc(100vw - 200px);padding:6px 10px 10px;font-size:11px} #raid small{display:none}}
@@ -473,6 +478,7 @@ body:not(.glass) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!i
 <script src="js/23-saringan.js" charset="utf-8"></script>
 <script src="js/24-prestasi.js" charset="utf-8"></script>
 <script src="js/25-realistik.js" charset="utf-8"></script>
+<script src="js/26-laksamana.js" charset="utf-8"></script>
 <script src="app/kawalan.js"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>

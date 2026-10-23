@@ -75,7 +75,7 @@ def main():
 
     # only the assets the world actually loads
     refs = set()
-    for f in [SRC / 'erythmind.html', *sorted((SRC / 'js').glob('*.js')), SRC / 'assets' / 'manifest.json']:
+    for f in [SRC / 'erythmind.html', *sorted((SRC / 'js').glob('*.js')), *sorted((SRC / 'assets').glob('manifest*.json'))]:
         refs |= set(re.findall(r'assets/[A-Za-z0-9._-]+', f.read_text(encoding='utf-8')))
     shutil.rmtree(ROOT / 'assets', ignore_errors=True)
     (ROOT / 'assets').mkdir()
