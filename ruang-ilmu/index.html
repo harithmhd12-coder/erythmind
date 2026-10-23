@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ruang Ilmu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Baca, lihat dan dengar ilmu yang disemak, dengan Sip 'n Go Coffee sebagai teman rehat.">
+<meta name="theme-color" content="#fffefb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14110e" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Public+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="sr" href="#kandungan">Langkau ke kandungan</a>
+<div class="kemajuan-baca" id="kemajuanBaca" hidden></div>
+
+<header class="kepala">
+  <div class="bekas">
+    <a class="jenama" href="#utama" aria-label="Ruang Ilmu, halaman utama"><b>Ruang Ilmu<i>.</i></b><small>Ilmu + Coffee Break</small></a>
+    <nav class="nav" aria-label="Navigasi utama">
+      <a href="#baca" data-nav="baca">Baca</a>
+      <a href="#lihat" data-nav="lihat">Lihat</a>
+      <a href="#dengar" data-nav="dengar">Dengar</a>
+      <a href="#teroka" data-nav="teroka">Teroka</a>
+      <a href="#laluan" data-nav="laluan">Laluan Ilmu</a>
+      <a href="#kopi" data-nav="kopi">Coffee Break</a>
+      <a href="#ahli" data-nav="ahli">Keahlian</a>
+    </nav>
+    <div class="alat">
+      <a class="ikon-btn" href="#teroka" aria-label="Cari ilmu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></a>
+      <a class="ikon-btn" href="#troli" aria-label="Troli kopi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3v2M11 3v2M14 3v2"/></svg><span class="lencana-kira" id="kiraTroli" hidden>0</span></a>
+      <a class="ikon-btn" href="#profil" aria-label="Profil dan peta ilmu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a>
+      <a class="btn kecil btn-langgan" href="#surat">Langgan percuma</a>
+    </div>
+  </div>
+</header>
+
+<main id="kandungan" tabindex="-1"></main>
+
+<footer class="kaki" id="kaki"></footer>
+
+<nav class="tabbar" aria-label="Navigasi app">
+  <a href="#utama" data-tab="utama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"/></svg>Utama</a>
+  <a href="#teroka" data-tab="teroka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>Teroka</a>
+  <a href="#dengar" data-tab="dengar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="5" height="6" rx="1.5"/><rect x="16" y="14" width="5" height="6" rx="1.5"/></svg>Dengar</a>
+  <a href="#kopi" data-tab="kopi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3v2M11 3v2M14 3v2"/></svg>Kopi</a>
+  <a href="#profil" data-tab="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profil</a>
+</nav>
+
+<div class="pemain" id="pemain" hidden></div>
+<div id="lapisan"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
