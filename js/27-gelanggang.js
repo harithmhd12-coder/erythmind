@@ -14,7 +14,7 @@ const LVL = {
   sederhana:{name:'SEDERHANA', hp:140, dmg:11, every:[4.6, 6.8], tele:1.3, r:4.6, speed:5, dist:[18, 30], col:'#ffd23a'},
   sukar:{name:'SUKAR', hp:380, dmg:22, every:[3.0, 4.2], tele:1.0, r:6.8, speed:7, dist:[11, 18], col:'#ff4f45'},
 };
-const IMPACT = {magma:.9, ais:.7, cahaya:.75, graviti:1.6, hutan:.8, emas:1.5, lengan:.55, galaksi:.5};
+const IMPACT = {magma:.9, ais:.7, cahaya:.75, graviti:1.6, hutan:.8, emas:1.5, tebasan:.5, galaksi:.5};
 const FIGHT = {on:false, foes:[], hp:100, max:100, t:0, warns:[], fist:0, kick:0, dodge:0, inv:0, combo:0, comboT:0, lastHit:0, won:false, falls:0, dash:null};
 
 /* --- the arena: stone floor, rings, a glowing rim and pylons; it rises from the bay and sinks again --- */

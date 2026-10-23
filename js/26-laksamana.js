@@ -1,7 +1,7 @@
 'use strict';
 /* ================= Laksamana Marineford: seven admirals and a fleet admiral guard the Pangkalan Laut =================
    1. The guard: seven admirals stand watch on the crescent in front of the headquarters and patrol it; the fleet
-      admiral holds the centre. Magma, Ais, Cahaya, Graviti, Hutan, Gergasi Emas and Lengan Hitam, led by the
+      admiral holds the centre. Magma, Ais, Cahaya, Graviti, Hutan, Gergasi Emas and the black sword of Mihawk, led by the
       Tinju Galaksi of the fleet admiral.
    2. Every week (Saturday 21:00 MYT) five great intruders cross the bay: the Blue Dragon warlord, the pirate queen
       with her sun and thunder clouds, the old quake captain, the darkness pirate and the surgeon of the blue Room.
@@ -21,14 +21,14 @@ const ADM_DEF = [
   {id:'graviti', name:'Laksamana Fujitora', power:'graviti', kuasa:'Graviti · Meteor Graviti', col:'#b07aff', h:6.3, proc:{coat:0xf4f2ec, pants:0x3a2458, shirt:0x4a2a6a, skin:0xb8865e, hair:0x1a1410}},
   {id:'hutan', name:'Laksamana Ryokugyu', power:'hutan', kuasa:'Hutan · Akar Belit Rimba', col:'#5fd06a', h:6.5, proc:{coat:0xf4f2ec, pants:0x2a4a2a, shirt:0x3a5a2a, skin:0xc99a78, hair:0x3a6a2a}},
   {id:'emas', name:'Laksamana Sengoku', power:'emas', kuasa:'Gergasi Emas · Gelombang Tapak Emas', col:'#ffc23a', h:6.4, proc:{coat:0xf4f2ec, pants:0x1a1c24, shirt:0xd8b040, skin:0xc99a78, hair:0x3a3a3a}},
-  {id:'lengan', name:'Laksamana Zephyr', power:'lengan', kuasa:'Lengan Hitam · Tumbukan Penghancur', col:'#8a8aa8', h:6.6, proc:{coat:0xf4f2ec, pants:0x1a1c24, shirt:0x22242c, skin:0xc99a78, hair:0x6a5a8a}},
+  {id:'mihawk', name:'Laksamana Mihawk', power:'tebasan', kuasa:'Pedang Hitam · Tebasan Terbang', col:'#c0485a', h:6.5, proc:{coat:0x4a1820, pants:0x14141a, shirt:0x1a1a1e, skin:0xc99a78, hair:0x101010}},
 ];
 const FLEET_DEF = {id:'garp', name:'Fleet Admiral Garp', power:'galaksi', kuasa:'Tinju Galaksi', col:'#ffffff', h:7.2, fleet:true, proc:{coat:0xf4f2ec, pants:0xf0f0ea, shirt:0x2a8a8a, skin:0xc99a78, hair:0x9a9a9a}};
 const INV_DEF = [
   {id:'kaido', name:'Kaido', title:'Maharaja Naga Biru', power:'naga', kuasa:'Nafas Naga Biru · Gada Petir', col:'#6ab8ff', h:13, hp:170, vs:['magma', 'hutan'], proc:{coat:0x4a2a6a, pants:0x2a1a3a, shirt:0xe8e0d0, skin:0xc99a78, hair:0x14100c}},
   {id:'bigmom', name:'Big Mom', title:'Ratu Lanun · Awan Matahari & Petir', power:'matahari', kuasa:'Awan Matahari · Awan Petir', col:'#ff7ab0', h:12, hp:160, vs:['ais', 'emas'], proc:{coat:0xd02a2a, pants:0xd02a2a, shirt:0xf4f2ec, skin:0xe0b090, hair:0xff8ac0}},
-  {id:'whitebeard', name:'Whitebeard', title:'Kapten Gempa', power:'gempa', kuasa:'Gempa · Gelembung Gegaran', col:'#f4f6fa', h:12, hp:180, vs:['garp'], proc:{coat:0xf4f2ec, pants:0x1a1c24, shirt:0x22242c, skin:0xc99a78, hair:0xf4f4f4}},
-  {id:'blackbeard', name:'Blackbeard', title:'Lanun Kegelapan', power:'gelap', kuasa:'Kegelapan · Lubang Hitam', col:'#8a5aff', h:7, hp:150, vs:['graviti', 'lengan'], proc:{coat:0x1a1a22, pants:0x2a2a30, shirt:0xe8e0d0, skin:0x8a6a4a, hair:0x0a0a0a}},
+  {id:'whitebeard', name:'Whitebeard', title:'Kapten Gempa', power:'gempa', kuasa:'Gempa · Gelembung Gegaran', col:'#f4f6fa', h:12, hp:180, vs:['garp', 'mihawk'], proc:{coat:0xf4f2ec, pants:0x1a1c24, shirt:0x22242c, skin:0xc99a78, hair:0xf4f4f4}},
+  {id:'blackbeard', name:'Blackbeard', title:'Lanun Kegelapan', power:'gelap', kuasa:'Kegelapan · Lubang Hitam', col:'#8a5aff', h:7, hp:150, vs:['graviti'], proc:{coat:0x1a1a22, pants:0x2a2a30, shirt:0xe8e0d0, skin:0x8a6a4a, hair:0x0a0a0a}},
   {id:'law', name:'Trafalgar Law', title:'Pakar Bedah · Bilik Biru', power:'bilik', kuasa:'Bilik Biru · Tukar Tempat', col:'#6fd8ff', h:6.5, hp:130, vs:['cahaya'], proc:{coat:0x14161c, pants:0x3a4a6a, shirt:0xe8e0d0, skin:0xd9a77f, hair:0x14100c}},
 ];
 const POWER_INFO = Object.fromEntries([...ADM_DEF, FLEET_DEF].map(d => [d.power, {name:d.kuasa, by:d.name, col:d.col}]));
@@ -143,13 +143,17 @@ const POWER_FX = {
     });
     if(AU.ctx){ tone(220, {d:1.4, v:.08, glide:440}); tone(330, {t:.1, d:1.2, v:.06}); }
   },
-  // Lengan Hitam: a black armoured fist fired like a shell
-  lengan(from, to, s, hit){
-    const g = new THREE.Group(), f = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, 2), new THREE.MeshStandardMaterial({color:0x14141a, metalness:.9, roughness:.25, emissive:0x2a0a3a, emissiveIntensity:.5})), aura = new THREE.Mesh(lksBall(), addMat(0x6a2aff, .35));
-    aura.scale.setScalar(1.6); g.add(f, aura); g.scale.setScalar(1.8 * s); const a = from.clone().setY(from.y + 2);
-    addFx(g, .55, (o, k) => { o.position.lerpVectors(a, to, k); o.lookAt(to); if(Math.random() < .8) bolt(o.position.clone(), o.position.clone().add(new THREE.Vector3((Math.random() - .5) * 4, (Math.random() - .5) * 4, (Math.random() - .5) * 4)), Math.random() < .5 ? 0x6a2aff : 0x14141a, .6, .08); });
-    later(.55, () => { impactAt(to, 0x6a2aff, 1.3 * s); hit && hit(); });
-    lksSound('whoosh');
+  // Pedang Hitam: one stroke of the great black sword sends a huge crescent slash flying, cutting the ground as it goes
+  tebasan(from, to, s, hit){
+    const a = from.clone().setY(from.y + 1.5), dir = _lv.subVectors(to, a).setY(0).normalize().clone(), len = a.distanceTo(to), W = 14 * s;
+    const slash = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.TorusGeometry(W / 2, .35 * s, 6, 40, Math.PI), addMat(0xffffff, .95)), edge = new THREE.Mesh(new THREE.TorusGeometry(W / 2, 1.2 * s, 6, 40, Math.PI), addMat(0x3aff9a, .45)), dark = new THREE.Mesh(new THREE.TorusGeometry(W / 2 + .8 * s, .9 * s, 6, 40, Math.PI), new THREE.MeshBasicMaterial({color:0x050608, transparent:true, opacity:.75, depthWrite:false}));
+    slash.add(dark, edge, core); slash.rotation.order = 'YXZ';
+    addFx(slash, .45, (o, k) => { o.position.copy(a).addScaledVector(dir, len * k); o.rotation.set(0, Math.atan2(dir.x, dir.z) + Math.PI / 2, -.5); o.scale.setScalar(.6 + k * .6);
+      if(Math.random() < .7){ const p = o.position.clone(); p.y = to.y + .2; const c = new THREE.Mesh(new THREE.PlaneGeometry(.6 * s, 3 * s), new THREE.MeshBasicMaterial({color:0x0a0a0c, transparent:true, opacity:.8, side:THREE.DoubleSide, depthWrite:false})); c.rotation.set(-Math.PI / 2, 0, Math.atan2(dir.x, dir.z)); c.position.copy(p); addFx(c, 2.5, (q, k2) => q.material.opacity = .8 * (1 - k2)); } });
+    later(.45, () => { const cut = new THREE.Mesh(new THREE.PlaneGeometry(W * 1.4, .9 * s), addMat(0xffffff, .9)); cut.material.side = THREE.DoubleSide; cut.position.copy(to).setY(to.y + 4 * s); cut.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI / 2;
+      addFx(cut, .35, (q, k) => { q.scale.set(1 + k, 1 - k * .8, 1); q.material.opacity = .9 * (1 - k); }); impactAt(to, 0x3aff9a, 1.2 * s); flash('rgba(255,255,255,.35)'); hit && hit(); });
+    if(AU.ctx){ noiseHit({d:.35, v:.25, f:5000, type:'highpass'}); tone(1800, {d:.4, v:.05, glide:300, type:'sawtooth', filt:4000}); }
   },
   // Tinju Galaksi: the fleet admiral's fist, a shock that throws a galaxy of sparks
   galaksi(from, to, s, hit){

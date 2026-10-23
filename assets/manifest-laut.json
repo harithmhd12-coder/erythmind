@@ -6,10 +6,10 @@
  "graviti": "assets/lks-graviti.gltf.json",
  "hutan": "assets/lks-hutan.gltf.json",
  "emas": "assets/lks-emas.gltf.json",
- "lengan": "assets/lks-lengan.gltf.json",
  "kaido": "assets/lks-kaido.gltf.json",
  "bigmom": "assets/lks-bigmom.gltf.json",
  "whitebeard": "assets/lks-whitebeard.gltf.json",
  "blackbeard": "assets/lks-blackbeard.gltf.json",
- "law": "assets/lks-law.gltf.json"
+ "law": "assets/lks-law.gltf.json",
+ "mihawk": "assets/lks-mihawk.gltf.json"
 }
