@@ -115,7 +115,8 @@ function setupPXModels(){
     const root = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(SARM.px) : SARM.px.clone(); p.g.add(root); p.model = root; p.proc.g.visible = false;
     root.traverse(o => { if(o.isMesh) o.castShadow = false; });
     root.traverse(o => { if(o.isBone && !p.head && /head$/i.test(o.name)) p.head = o; });
-    if(SARM.pxWalk){ p.mixer = new THREE.AnimationMixer(root); p.act = p.mixer.clipAction(SARM.pxWalk); p.act.play(); } });
+    if(SARM.pxWalk){ p.mixer = new THREE.AnimationMixer(root); p.act = p.mixer.clipAction(SARM.pxWalk); p.act.play();
+      if(SARM.pxIdle){ p.idle = p.mixer.clipAction(SARM.pxIdle); p.idle.play(); p.act.weight = 0; } } });
 }
 
 /* --- Puma --- */
@@ -455,7 +456,9 @@ function finishSaringan(how){
 anims.push((t, dt) => {
   const vis = SAR.on && player.layer === 0 && (SAR.stage === 1 || SAR.stage === 2);
   PX.forEach(p => { if(!p.g.visible) return; p.g.position.set(p.x, surfaceH(p.x, p.z), p.z); p.g.rotation.y = p.ry;
-    if(p.mixer){ p.act.timeScale = p.moving ? .85 : 0; if(vis) p.mixer.update(dt); } else animatePerson(p.proc, p.moving, dt, 6); });
+    if(p.mixer){ if(p.idle){ p.blend = lerp(p.blend || 0, p.moving ? 1 : 0, 1 - Math.exp(-dt * 6)); p.act.weight = p.blend; p.idle.weight = 1 - p.blend; p.act.timeScale = .85; }      // walk and the Blender idle
+      else p.act.timeScale = p.moving ? .85 : 0;
+      if(vis) p.mixer.update(dt); } else animatePerson(p.proc, p.moving, dt, 6); });
   if(PUMA.g.visible){ PUMA.g.position.set(PUMA.x, surfaceH(PUMA.x, PUMA.z), PUMA.z); PUMA.g.rotation.y = PUMA.ry; if(PUMA.mixer && vis) PUMA.mixer.update(dt); else if(!PUMA.model) animatePerson(PUMA.proc, PUMA.state === 'walk', dt, 4); }
   if(CAP.visible){ CAP.engine.material.color.setHSL(.58, 1, .6 + Math.sin(t * 20) * .15); if(SAR.stage === 4 && !SAR.cap) CAP.position.y += Math.sin(t * 2) * .01; }
   sarHud.classList.toggle('low', !bossEl.hidden || !$('#raid').hidden);      // make room for the giant's or a raid's banner
@@ -479,7 +482,8 @@ addEventListener('keydown', e => { if(e.code === 'KeyQ' && SAR.on && !typing() &
 const _applyModel = applyModel;
 applyModel = function(key, gltf){
   const fix = root => root.traverse(o => { if(o.isMesh){ o.castShadow = true; o.frustumCulled = false; [].concat(o.material).forEach(m => { if('metalness' in m){ m.metalness = Math.min(m.metalness ?? 0, .2); } if(m.map && 'emissive' in m){ m.emissiveMap = m.map; m.emissive = new THREE.Color(0xffffff); m.emissiveIntensity = .28; m.needsUpdate = true; } }); } });
-  if(key === 'px'){ fix(gltf.scene); fitAvatar(gltf.scene, PX_H); SARM.px = gltf.scene; if(gltf.animations?.[0]) SARM.pxWalk = prepareWalkClip(gltf.animations[0]); if(SAR.on) setupPXModels(); return; }
+  if(key === 'px'){ fix(gltf.scene); fitAvatar(gltf.scene, PX_H); SARM.px = gltf.scene; const an = gltf.animations || [], walk = an.find(a => /jalan|walk/i.test(a.name)) || an[0];
+    if(walk) SARM.pxWalk = prepareWalkClip(walk); SARM.pxIdle = an.find(a => /rehat|idle/i.test(a.name)) || null; if(SAR.on) setupPXModels(); return; }
   if(key === 'puma'){ fix(gltf.scene); fitAvatar(gltf.scene, PUMA_H); SARM.puma = gltf.scene; if(gltf.animations?.[0]) SARM.pumaDrink = gltf.animations[0]; return; }
   if(key === 'animPumaSwing'){ SARM.pumaSwing = gltf.animations?.[0] || null; return; }
   return _applyModel(key, gltf);

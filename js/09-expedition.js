@@ -84,7 +84,8 @@ function attachAvatar(person, tint){
   person.g.add(holder);
   const mixer = new THREE.AnimationMixer(root); let action = null;
   if(AV.clip){ action = mixer.clipAction(AV.clip); action.play(); action.timeScale = 0; }
-  person.av = {holder, mixer, action, t:0};
+  const idle = AV.idle ? mixer.clipAction(AV.idle) : null; if(idle){ idle.play(); action.weight = 0; }
+  person.av = {holder, mixer, action, idle, t:0};
 }
 function fitAvatar(root, height){
   // skinned meshes report bind-pose bounds, so measure the skeleton instead
@@ -107,8 +108,14 @@ function driveAvatar(person, moving, speed, dt){
     if(clip){ a.poseAct = a.mixer.clipAction(clip); a.poseAct.reset().fadeIn(.35).play(); }
     if(a.action) a.action.weight = clip ? 0 : 1;
   }
-  if(pose || !a.action){ a.mixer.update(dt); return; }
-  if(moving){ a.action.timeScale = clamp(speed / 7.5, .6, 2.4); }
+  if(pose || !a.action){ if(a.idle) a.idle.weight = 0; a.mixer.update(dt); return; }
+  if(a.idle){                                                 // the Blender idle (breathing, at ease) blends with the walk
+    const busy = HAKI.playing && HAKI.playing.a === a;        // a Haki clip owns the body while it plays
+    a.blend = lerp(a.blend ?? 0, moving ? 1 : 0, 1 - Math.exp(-dt * 8));
+    a.action.weight = busy ? 0 : a.blend; a.idle.weight = busy ? 0 : 1 - a.blend;
+    a.action.timeScale = moving ? clamp(speed / 7.5, .6, 2.4) : 1;
+  }
+  else if(moving){ a.action.timeScale = clamp(speed / 7.5, .6, 2.4); }
   else { a.action.timeScale = 0; a.action.time = lerp(a.action.time, 0, .15); }
   a.mixer.update(dt);
 }
@@ -601,7 +608,8 @@ function applyModel(key, gltf){
   if(key === 'animJudgment'){ HAKI.clips.judgment = prepareWalkClip(gltf.animations[0]); return; }
   if(key === 'animShout'){ HAKI.clips.shout = prepareWalkClip(gltf.animations[0]); return; }
   if(key === 'pedang'){ setSwordModel(gltf); return; }
-  if(key === 'avatar'){ AV.src = gltf.scene; AV.clip = gltf.animations?.length ? prepareWalkClip(gltf.animations[0]) : null; return; }
+  if(key === 'avatar'){ const an = gltf.animations || [], walk = an.find(a => /jalan|walk/i.test(a.name)) || an[0], idle = an.find(a => /rehat|idle/i.test(a.name));
+    AV.src = gltf.scene; AV.clip = walk ? prepareWalkClip(walk) : null; AV.idle = idle || null; return; }
   if(key === 'erythRecords'){
     const canon = canonical(gltf.scene, 1); const model = buildFrom(canon);
     const holder = grp(0, 0, -4, lab); holder.add(model); [halfA, halfB, brain].forEach(m => m.visible = false); bean.children.forEach(c => { if(c.isMesh) c.visible = false; });

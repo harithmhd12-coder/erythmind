@@ -264,7 +264,7 @@ function tickInvasion(dt){
       if(d > 1.5){ const sp = Math.min(d, 14 * dt); c.x += dx / d * sp; c.z += dz / d * sp; c.moving = true; c.ry = Math.atan2(dx, dz); } else { c.moving = false; c.state = 'tempur'; }
       const foe = ADMS.filter(a => c.vs.includes(a.id))[(I.t / 7 | 0) % c.vs.length] || ADMS[7];
       if(c.state === 'tempur'){ c.ry = Math.atan2(foe.x - c.x, foe.z - c.z); c.cd -= dt;
-        if(c.cd <= 0){ c.cd = 4.5 + Math.random() * 2.5; castFx(c.power, charChest(c), charFeet(foe), c.h / 9, () => blockFx(foe)); } }
+        if(c.cd <= 0){ c.cd = 4.5 + Math.random() * 2.5; charAttack(c); castFx(c.power, charChest(c), charFeet(foe), c.h / 9, () => blockFx(foe)); } }
     } else if(c.state === 'undur'){
       c.out += dt; c.x += c.flyDir.x * dt * 60; c.z += c.flyDir.z * dt * 60; c.lift = Math.sin(Math.min(1, c.out / 3) * Math.PI) * 40;
       if(c.out > 3.5){ c.state = 'pergi'; c.g.visible = false; boom(c.x, 2, c.z, 0xffffff, 2); }
@@ -273,7 +273,7 @@ function tickInvasion(dt){
   ADMS.forEach(c => {
     const tgt = c.target && c.target.state === 'tempur' ? c.target : INVS.find(v => v.state === 'tempur');
     if(!tgt) return; c.ry = Math.atan2(tgt.x - c.x, tgt.z - c.z); c.cd -= dt;
-    if(c.cd <= 0 && Math.hypot(c.tx - c.x, c.tz - c.z) < 3){ c.cd = (c.fleet ? 5 : 3.8) + Math.random() * 2.2; const dmg = c.fleet ? 34 : 14 + Math.random() * 6;
+    if(c.cd <= 0 && Math.hypot(c.tx - c.x, c.tz - c.z) < 3){ c.cd = (c.fleet ? 5 : 3.8) + Math.random() * 2.2; charAttack(c); const dmg = c.fleet ? 34 : 14 + Math.random() * 6;
       castFx(c.power, charChest(c), charFeet(tgt), 1, () => invDamage(tgt, dmg, c.name)); }
   });
   const left = INVS.filter(c => c.state === 'datang' || c.state === 'tempur').length;
@@ -314,7 +314,10 @@ function tickChars(t, dt){
     const y = c.duel ? MAZE.y : c.side === 'inv' ? (c.state === 'undur' ? 2 + (c.lift || 0) : Math.max(.5, lksGround(c.x, c.z)) + Math.sin(t * 1.4 + c.i) * .3) : lksGround(c.x, c.z);
     c.g.position.set(c.x, y, c.z); c.g.rotation.y = c.ry; if(c.state === 'undur') c.g.rotation.x += dt * 4; else c.g.rotation.x = 0;
     if(c.block > 0){ c.block -= dt; c.g.position.addScaledVector(_lq.set(-Math.sin(c.ry), 0, -Math.cos(c.ry)), c.block * 1.5); }
-    if(near(c, 500)){ if(c.mixer){ c.act.timeScale = c.moving ? .9 : 0; c.mixer.update(dt); } else if(!c.model) animatePerson(c.proc, c.moving, dt, 5);
+    if(near(c, 500)){ if(c.mixer){
+        if(c.acts?.idle){ if(c.anim === 'atk'){ c.atkT -= dt; if(c.atkT <= 0) setAnim(c, c.moving ? 'walk' : 'idle'); } else setAnim(c, c.moving ? 'walk' : 'idle'); }
+        else c.act.timeScale = c.moving ? .9 : 0;
+        c.mixer.update(dt); } else if(!c.model) animatePerson(c.proc, c.moving, dt, 5);
       else { c.model.rotation.z = c.moving ? Math.sin(t * 6 + c.i) * .05 : 0; c.model.position.y = c.moving ? Math.abs(Math.sin(t * 6 + c.i)) * .15 : 0; } }     // a model without a skeleton sways as it walks
   });
 }
@@ -443,7 +446,7 @@ function tickDuel(dt){
   if(!D.warn && D.cd <= 0){ D.warn = {x:player.x, z:player.z, t:1.25}; duelRing.visible = true; duelRing.position.set(player.x, MAZE.y + .08, player.z); if(AU.ctx) tone(500, {d:.4, v:.04, glide:900, type:'square', filt:1500}); }
   if(D.warn){ D.warn.t -= dt; duelRing.material.opacity = .35 + .35 * Math.abs(Math.sin(D.warn.t * 14)); duelRing.scale.setScalar(1 + (1.25 - D.warn.t) * .1);
     if(D.warn.t <= 0){ const w = D.warn; D.warn = null; duelRing.visible = false; D.cd = 2.6 + Math.random() * 1.2;
-      const to = new THREE.Vector3(w.x, MAZE.y, w.z); POWER_FX[c.power](charChest(c), to, .55, null, 'me');
+      const to = new THREE.Vector3(w.x, MAZE.y, w.z); charAttack(c); POWER_FX[c.power](charChest(c), to, .55, null, 'me');
       later(c.power === 'graviti' ? 1.6 : c.power === 'magma' || c.power === 'emas' ? .9 : .6, () => {
         if(!LKS.duel || LKS.duel.won || D.inv > 0) return;
         if(Math.hypot(player.x - w.x, player.z - w.z) < DUEL_R){ D.hp--; D.inv = 1; flash('rgba(255,90,40,.6)'); shake = .8; SAR.hitsTaken++;
@@ -456,9 +459,22 @@ function tickDuel(dt){
 function applyLaksamanaModel(key, gltf){
   const c = LKS.byId[key]; if(!c || c.model) return;
   const root = gltf.scene; root.traverse(o => { if(o.isMesh){ o.castShadow = true; o.frustumCulled = false; [].concat(o.material).forEach(m => { if('metalness' in m) m.metalness = Math.min(m.metalness ?? 0, .2); if(m.map && 'emissive' in m){ m.emissiveMap = m.map; m.emissive = new THREE.Color(0xffffff); m.emissiveIntensity = .22; } }); } });
-  fitAvatar(root, c.h); c.g.add(root); c.model = root; c.proc.g.visible = false;
-  if(gltf.animations?.[0]){ c.mixer = new THREE.AnimationMixer(root); c.act = c.mixer.clipAction(prepareWalkClip(gltf.animations[0])); c.act.play(); c.act.timeScale = 0; }
+  fitAvatar(root, c.h); c.g.add(root); c.model = root; c.proc.g.visible = false; c.clips = gltf.animations || [];
+  // clips from the Blender pass: Jalan (walk), Rehat (breathing idle), Serang (attack); older files carry the walk only
+  const clip = re => (gltf.animations || []).find(a => re.test(a.name));
+  const walk = clip(/jalan|walk/i) || gltf.animations?.[0], idle = clip(/rehat|idle/i), atk = clip(/serang|attack/i);
+  if(walk){ c.mixer = new THREE.AnimationMixer(root); c.act = c.mixer.clipAction(prepareWalkClip(walk));
+    c.acts = {walk:c.act, idle:idle && c.mixer.clipAction(idle), atk:atk && c.mixer.clipAction(atk)};
+    if(c.acts.atk){ c.acts.atk.setLoop(THREE.LoopOnce, 1); c.acts.atk.clampWhenFinished = true; }
+    if(c.acts.idle){ c.acts.idle.play(); c.anim = 'idle'; } else { c.act.play(); c.act.timeScale = 0; c.anim = 'walk'; } }
 }
+// cross-fade between walk, idle and the attack swing
+function setAnim(c, s){
+  const A = c.acts; if(!A || c.anim === s || !A[s]) return;
+  const from = A[c.anim], to = A[s]; to.reset(); to.timeScale = 1; to.play(); if(from) from.crossFadeTo(to, s === 'atk' ? .12 : .3, false); c.anim = s;
+  if(s === 'atk') c.atkT = to.getClip().duration;
+}
+function charAttack(c){ if(c.acts?.atk) setAnim(c, 'atk'); }
 async function loadLaksamana(){
   if(LKS.loaded || !THREE.GLTFLoader) return; LKS.loaded = true;
   let man; try{ const r = await fetch('assets/manifest-laut.json'); if(!r.ok) return; man = await r.json(); }catch(e){ return; }
