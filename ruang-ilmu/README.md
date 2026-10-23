@@ -12,7 +12,7 @@ Satu kod, dua bentuk: website responsif di komputer, dan app boleh dipasang di t
 | §4 Kategori & metadata | 6 bidang, 14 bahan contoh lengkap dengan penulis, penyemak, tahap, tag, tarikh kemas kini, sumber dan bahan berkaitan |
 | §5 Reka bentuk pengalaman | Halaman utama: teruskan penerokaan, cadangan, bidang, koleksi kurator, satu ilmu untuk hari ini, audio, Coffee Break, baru diterbitkan. Teroka tanpa daftar |
 | §6 Explore Loop | Laluan ilmu, peta ilmu peribadi, ritual harian 5/10/20 minit, XP untuk kefahaman (bukan masa skrin), 8 lencana, siri hari dengan hari rehat dan boleh dimatikan, kawalan kekerapan peringatan |
-| §7 Integrasi kopi | Data dan gambar sebenar Sip 'n Go Coffee & Bakery: 6 menu botol (RM9–12), kuiz "Cari menu anda", Kad Ilmu Set #1, peta biji, kisah dari Kaherah, ulasan, lokasi Taman Arked Dengkil; troli dengan checkout di WhatsApp; padanan botol + bacaan; Coffee as a Subject; The 15-Minute Coffee Break; pilihan sembunyikan promosi kopi |
+| §7 Integrasi kopi | Data dan gambar sebenar Sip 'n Go Coffee & Bakery: 6 menu botol (RM9–12), kuiz "Cari menu anda", Kad Ilmu Set #1, peta biji, ulasan, lokasi Taman Arked Dengkil; troli dengan checkout di WhatsApp; padanan botol + bacaan; Coffee as a Subject; The 15-Minute Coffee Break; pilihan sembunyikan promosi kopi |
 | §8 Model pendapatan | Pakej Explorer / Knowledge Plus / Coffee Break Club dengan senarai menunggu (uji kesanggupan membayar), e-buku |
 | §10 Sistem editorial | Studio: draf, aliran kerja 7 langkah, semakan metadata minimum sebelum terbit, laporan kesilapan pembaca |
 | §11, §12 | Halaman Tentang: misi, prinsip, standard editorial, peranan komuniti, pelan 12 bulan |

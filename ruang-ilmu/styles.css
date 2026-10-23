@@ -475,13 +475,6 @@ a:hover > .peta-nod, a:focus > .peta-nod { r: 12; }
 .peta-biji h3 { font-size: 1.5rem; }
 .peta-biji p { color: var(--kelabu); font-size: .93rem; }
 .peta-biji .akhir-biji h3 { color: var(--merah); }
-.kisah-sng { display: grid; gap: 32px; }
-@media (min-width: 900px) { .kisah-sng { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; } .kisah-sng .foto-sng { position: sticky; top: 90px; } }
-.kisah-sng .foto-sng { aspect-ratio: 4 / 3; max-width: 100%; }
-.bab-kisah { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--dakwat); }
-.bab-kisah li { display: grid; gap: 4px; padding: 16px 0; border-bottom: 1px solid var(--garis); }
-.bab-kisah b { font-family: var(--serif); font-size: 1.3rem; }
-.bab-kisah p { color: var(--kelabu); }
 .grid-ulasan { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
 .ulasan { margin: 0; border-left: 3px solid var(--sng-latte); padding: 4px 0 4px 18px; display: grid; gap: 10px; }
 .ulasan p { font-family: var(--serif); font-size: 1.15rem; line-height: 1.45; }
