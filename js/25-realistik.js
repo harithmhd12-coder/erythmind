@@ -8,7 +8,9 @@
    Trees: photo-modelled shade trees on the island and snowy pines in Nivelham replace the cone trees. Sederhana and Tinggi.
    View: V (or the Kamera button) switches between third person and first person. In first person you look through
      your own eyes, the body is hidden and your sword is in hand. Drag to look around, as before. */
-const REAL = {tex:{}, env:null, envT:0, envOn:false, trees:{}, view:LS.get('erythmind.view', 'tps')};
+const REAL = {tex:{}, env:null, envT:0, envOn:false, trees:{}, view:LS.get('erythmind.view', 'tps'), phone:matchMedia('(pointer:coarse)').matches};
+// phones: one texture read per ground instead of two (a second, larger copy breaks up the tiling on big screens)
+const TPICK = REAL.phone ? 'texture2D(t, uv).rgb' : 'mix(texture2D(t, uv).rgb, texture2D(t, uv * .21 + .43).rgb, .3)';
 const texLoader = new THREE.TextureLoader();
 function realTex(name){
   if(REAL.tex[name]) return REAL.tex[name];
@@ -22,7 +24,7 @@ function worldTexture(mat, name, scale, keep){
   mat.onBeforeCompile = sh => {
     weathered(sh); Object.assign(sh.uniforms, mat.userData.wt);
     sh.fragmentShader = 'uniform sampler2D wTex; uniform float wScale; uniform float wKeep;\n' + sh.fragmentShader.replace('#include <color_fragment>',
-      '#include <color_fragment>\n{ vec3 tc = mix(texture2D(wTex, vWP.xz * wScale).rgb, texture2D(wTex, vWP.xz * wScale * .23 + .37).rgb, .3); diffuseColor.rgb = mix(tc, diffuseColor.rgb, wKeep); }');
+      '#include <color_fragment>\n{ vec3 tc = ' + (REAL.phone ? 'texture2D(wTex, vWP.xz * wScale).rgb' : 'mix(texture2D(wTex, vWP.xz * wScale).rgb, texture2D(wTex, vWP.xz * wScale * .23 + .37).rgb, .3)') + '; diffuseColor.rgb = mix(tc, diffuseColor.rgb, wKeep); }');
   };
   mat.customProgramCacheKey = () => 'wtex'; mat.needsUpdate = true;
 }
@@ -30,7 +32,7 @@ function worldTexture(mat, name, scale, keep){
 /* --- terrain: six photographic grounds, chosen by the painted colour, season tint kept --- */
 const TERRAIN_GLSL = `
   uniform sampler2D tGrass, tRock, tSand, tSnow, tPave; varying vec3 vTW; varying vec3 vBase;
-  vec3 tpick(sampler2D t, vec2 uv){ return mix(texture2D(t, uv).rgb, texture2D(t, uv * .21 + .43).rgb, .3); }
+  vec3 tpick(sampler2D t, vec2 uv){ return ${TPICK}; }
   float tw(vec3 c, vec3 r){ vec3 d = c - r; return exp(-dot(d, d) * 40.); }`;
 function terrainTexture(mat, mesh_, baseArr){
   const g = mesh_.geometry; if(!g.attributes.baseCol) g.setAttribute('baseCol', new THREE.BufferAttribute(Float32Array.from(baseArr || g.attributes.color.array), 3));
@@ -77,7 +79,7 @@ const _updateEnvironment = updateEnvironment;
 updateEnvironment = function(dt, t){
   _updateEnvironment(dt, t);
   const want = REAL.on && Q.tier >= 2 && !indoorLayer(player.layer);
-  if(want){ REAL.envT -= dt; if(!REAL.envOn || REAL.envT <= 0){ REAL.envT = 6; refreshEnv(); REAL.envOn = true; envIntensity(); } hemi.intensity *= .45; sun.intensity *= .9; }
+  if(want){ REAL.envT -= dt; if(!REAL.envOn || REAL.envT <= 0){ REAL.envT = REAL.phone ? 30 : 6; refreshEnv(); REAL.envOn = true; envIntensity(); } hemi.intensity *= .45; sun.intensity *= .9; }
   else if(REAL.envOn){ scene.environment = null; REAL.envOn = false; }
 };
 
@@ -109,7 +111,7 @@ function forestSwap(list, model, height){
   if(!model || list.some(x => !x)) return;
   const [trunk, ...crowns] = list;
   if(!trunk.userData.orig) trunk.userData.orig = {geo:trunk.geometry, mat:trunk.material, counts:crowns.map(c => c.count)};
-  const want = Q.tier >= 2;
+  const want = Q.tier >= 3 || (Q.tier >= 2 && !REAL.phone);     // 420 photo trees are too many for a phone
   if(want && !trunk.userData.real){ const geo = model.geo.clone(); geo.translate(0, -1.5, 0); trunk.geometry = geo; trunk.material = model.mat; crowns.forEach(c => c.count = 0); trunk.userData.real = true; }
   else if(!want && trunk.userData.real){ trunk.geometry.dispose(); const o = trunk.userData.orig; trunk.geometry = o.geo; trunk.material = o.mat; crowns.forEach((c, i) => c.count = o.counts[i]); trunk.userData.real = false; }
 }
@@ -123,7 +125,7 @@ function nivForest(){
 const _applyModelR = applyModel;
 applyModel = function(key, gltf){
   if(key === 'pokokRendang'){ REAL.trees.broad = treeGeometry(gltf, 9.5, 2.6); return; }
-  if(key === 'pokokPain'){ REAL.trees.pine = treeGeometry(gltf, 11, 1.5); return; }
+  if(key === 'pokokPain'){ REAL.trees.pine = treeGeometry(gltf, 11, 2.3); return; }
   return _applyModelR(key, gltf);
 };
 
@@ -184,6 +186,8 @@ const _applyTierR = applyTier;
 applyTier = function(){ _applyTierR(); applyRealism(); };
 let realT = 0;
 anims.push((t, dt) => { realT -= dt; if(realT <= 0){ realT = 2; applyRealism(); } });
+// smooth ground shows the shadow map's own grain as stripes (shadow acne): push the shadow test off the surface by about one shadow texel
+anims.push(() => { const c = sun.shadow.camera; sun.shadow.bias = -.0005; sun.shadow.normalBias = (c.right - c.left) / sun.shadow.mapSize.x * 1.6; });
 // the leaves' own light fades with the daylight, so the forest does not glow at night
 anims.push(() => { const k = .12 * (1 - nightLevel * .85); Object.values(REAL.trees).forEach(t => { if(t && t.mat) t.mat.emissiveIntensity = k; }); });
 applyRealism();

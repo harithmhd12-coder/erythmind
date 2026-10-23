@@ -9,7 +9,7 @@
       computers, and moves one step at a time from the measured frame rate. Lower steps reduce resolution, turn off
       shadows and the film pass, and refresh labels and the minimap less often. */
 const Q_NAMES = {auto:'Auto · ikut kelajuan peranti', 3:'Tinggi', 2:'Sederhana', 1:'Rendah', 0:'Sangat rendah'};
-const Q = {pick:LS.get('erythmind.q', 'auto'), tier:matchMedia('(pointer:coarse)').matches ? 1 : 2, frames:0, acc:0, slow:0, fast:0, lab:0};
+const Q = {pick:LS.get('erythmind.q', 'auto'), tier:matchMedia('(pointer:coarse)').matches ? 1 : 2, frames:0, acc:0, slow:0, fast:0, lab:0, drops:{}};
 if(Q.pick !== 'auto') Q.tier = +Q.pick;
 
 /* --- per-layer containers inside the surface group --- */
@@ -89,10 +89,10 @@ function applyTier(){
 }
 function setQuality(pick){
   Q.pick = pick; LS.set('erythmind.q', pick);
-  if(pick !== 'auto') Q.tier = +pick; Q.slow = Q.fast = 0; applyTier();
+  if(pick !== 'auto') Q.tier = +pick; Q.slow = Q.fast = 0; Q.drops = {}; applyTier();
   toast(`Kualiti grafik: ${Q_NAMES[pick]}${pick === 'auto' ? ` (sekarang ${Q_NAMES[Q.tier]})` : ''}.`, 'ok', 2500);
 }
-// Auto: measure real frames; step down after 3 s below 40 fps, step up after 8 s above 57 fps
+// Auto: measure real frames; step down after 2 s below 40 fps, step up after 12 s above 57 fps
 // real time, not the clamped game step: at 8 fps the game clock runs slow, the wall clock does not
 function autoTune(){
   const now = performance.now(); if(!Q.t0 || document.hidden || !session){ Q.t0 = now; Q.frames = 0; return; }
@@ -100,9 +100,11 @@ function autoTune(){
   const fps = Q.frames / span; Q.frames = 0; Q.t0 = now; Q.fps = fps;
   if(Q.pick !== 'auto') return;
   const top = matchMedia('(pointer:coarse)').matches ? 2 : 3;
-  if(fps < 24 && Q.tier > 0){ Q.tier--; Q.slow = 0; Q.fast = 0; applyTier(); return; }      // clearly struggling: step down every second
-  if(fps < 40){ Q.slow++; Q.fast = 0; if(Q.slow >= 2 && Q.tier > 0){ Q.tier--; Q.slow = 0; applyTier(); } }
-  else if(fps > 57){ Q.fast++; Q.slow = 0; if(Q.fast >= 8 && Q.tier < top){ Q.tier++; Q.fast = 0; applyTier(); } }
+  // a step that proved too heavy is not tried again this session: going back and forth swaps whole forests and shaders, which is itself a stutter
+  const down = () => { Q.drops[Q.tier] = (Q.drops[Q.tier] || 0) + 1; Q.tier--; Q.slow = 0; Q.fast = 0; applyTier(); };
+  if(fps < 24 && Q.tier > 0){ down(); return; }      // clearly struggling: step down every second
+  if(fps < 40){ Q.slow++; Q.fast = 0; if(Q.slow >= 2 && Q.tier > 0) down(); }
+  else if(fps > 57){ Q.fast++; Q.slow = 0; if(Q.fast >= 12 && Q.tier < top && !Q.drops[Q.tier + 1]){ Q.tier++; Q.fast = 0; applyTier(); } }
   else { Q.slow = 0; Q.fast = 0; }
 }
 

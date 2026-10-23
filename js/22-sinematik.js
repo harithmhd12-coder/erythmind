@@ -37,8 +37,10 @@ function buildComposer(){
   composer = null; bloomPass = null; gradePass = null;
   if(gfxMode === 'mati' || !canPost) return;
   const w = innerWidth, h = innerHeight, gl2 = renderer.capabilities.isWebGL2;
-  const opt = {format:THREE.RGBAFormat, type:gl2 ? THREE.HalfFloatType : THREE.UnsignedByteType};
-  const rt = gl2 && THREE.WebGLMultisampleRenderTarget ? Object.assign(new THREE.WebGLMultisampleRenderTarget(w, h, opt), {samples:4}) : new THREE.WebGLRenderTarget(w, h, opt);
+  // stencil on means a 24-bit depth buffer: three.js otherwise gives an off-screen target only 16 bits, and the ground layers
+  // (grass over the island, roads over the grass) then fight for the same depth and show as stripes, worst on phones
+  const opt = {format:THREE.RGBAFormat, type:gl2 ? THREE.HalfFloatType : THREE.UnsignedByteType, depthBuffer:true, stencilBuffer:true};
+  const rt = gl2 && THREE.WebGLMultisampleRenderTarget ? Object.assign(new THREE.WebGLMultisampleRenderTarget(w, h, opt), {samples:coarse ? 2 : 4}) : new THREE.WebGLRenderTarget(w, h, opt);
   composer = new THREE.EffectComposer(renderer, rt);
   composer.setPixelRatio(Math.min(devicePixelRatio, gfxMode === 'penuh' ? 1.5 : 1.25)); composer.setSize(w, h);
   composer.addPass(new THREE.RenderPass(scene, camera));
