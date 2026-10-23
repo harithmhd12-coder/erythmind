@@ -57,6 +57,22 @@ function applyFar(){
   const i = anims.findIndex(f => /seaGeo\.attributes\.position/.test(String(f))); if(i >= 0) anims[i] = t => { U.uT.value = t; };
 }
 
+/* --- Chrome (or any browser) drawing without the graphics card: everything is slow, whatever we do --- */
+{
+  try{ const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info'); Q.gpu = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER); }catch(e){ Q.gpu = ''; }
+  Q.soft = /swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic/i.test(Q.gpu || '');
+  if(Q.soft){ Q.tier = 0; }
+}
+function softNotice(){
+  if(!Q.soft || LS.get('erythmind.softSeen', 0) > Date.now() - 864e5 * 3) return; LS.set('erythmind.softSeen', Date.now());
+  const isChrome = /Chrome\//.test(navigator.userAgent) && !/Edg\//.test(navigator.userAgent), isEdge = /Edg\//.test(navigator.userAgent);
+  const c = document.createElement('div'); c.id = 'softCard';
+  c.innerHTML = `<h2>Pelayar ini tidak menggunakan kad grafik</h2><div>Dunia dilukis oleh CPU sahaja (${esc(String(Q.gpu).slice(0, 80))}), sebab itu ia lag. Kualiti telah diturunkan ke paling rendah. Untuk lancar sepenuhnya:</div>
+    <ol>${isChrome || isEdge ? `<li>Buka <code>${isEdge ? 'edge' : 'chrome'}://settings/system</code> di tab baharu.</li><li>Hidupkan <b>${isEdge ? 'Use graphics acceleration when available' : 'Gunakan pecutan grafik apabila tersedia'}</b>.</li><li>Tekan <b>Lancarkan semula</b>, kemudian buka Erythmind semula.</li>` : '<li>Hidupkan pecutan perkakasan / graphics acceleration dalam tetapan pelayar, kemudian buka semula.</li>'}<li>Kalau masih sama, kemas kini pemacu grafik (graphics driver) komputer.</li></ol>
+    <div class="row"><button class="btn pri" type="button" id="softOk">Faham</button></div>`;
+  document.body.appendChild(c); $('#softOk').addEventListener('click', () => c.remove());
+}
+
 /* --- quality --- */
 function applyTier(){
   const t = Q.tier, dpr = devicePixelRatio || 1;
@@ -66,7 +82,8 @@ function applyTier(){
   if(sun.castShadow !== shadows){ sun.castShadow = shadows; }
   const ms = t >= 3 ? 2048 : 1024;
   if(sun.shadow.mapSize.x !== ms){ sun.shadow.mapSize.set(ms, ms); if(sun.shadow.map){ sun.shadow.map.dispose(); sun.shadow.map = null; } }
-  Q.noPost = t <= 1;
+  Q.noPost = t <= 1 || Q.soft; if(bloomPass) bloomPass.enabled = t >= 3;
+  document.body.classList.toggle('glass', t >= 3 && !Q.soft);
   if(composer) composer.setPixelRatio(Math.min(pr, gfxMode === 'penuh' ? 1.5 : 1.25));
   applyLayers();
 }
@@ -76,12 +93,15 @@ function setQuality(pick){
   toast(`Kualiti grafik: ${Q_NAMES[pick]}${pick === 'auto' ? ` (sekarang ${Q_NAMES[Q.tier]})` : ''}.`, 'ok', 2500);
 }
 // Auto: measure real frames; step down after 3 s below 40 fps, step up after 8 s above 57 fps
-function autoTune(dt){
-  if(Q.pick !== 'auto' || !session || document.hidden) return;
-  Q.frames++; Q.acc += dt; if(Q.acc < 1) return;
-  const fps = Q.frames / Q.acc; Q.frames = 0; Q.acc = 0; Q.fps = fps;
+// real time, not the clamped game step: at 8 fps the game clock runs slow, the wall clock does not
+function autoTune(){
+  const now = performance.now(); if(!Q.t0 || document.hidden || !session){ Q.t0 = now; Q.frames = 0; return; }
+  Q.frames++; const span = (now - Q.t0) / 1000; if(span < 1) return;
+  const fps = Q.frames / span; Q.frames = 0; Q.t0 = now; Q.fps = fps;
+  if(Q.pick !== 'auto') return;
   const top = matchMedia('(pointer:coarse)').matches ? 2 : 3;
-  if(fps < 40){ Q.slow++; Q.fast = 0; if(Q.slow >= 3 && Q.tier > 0){ Q.tier--; Q.slow = 0; applyTier(); } }
+  if(fps < 24 && Q.tier > 0){ Q.tier--; Q.slow = 0; Q.fast = 0; applyTier(); return; }      // clearly struggling: step down every second
+  if(fps < 40){ Q.slow++; Q.fast = 0; if(Q.slow >= 2 && Q.tier > 0){ Q.tier--; Q.slow = 0; applyTier(); } }
   else if(fps > 57){ Q.fast++; Q.slow = 0; if(Q.fast >= 8 && Q.tier < top){ Q.tier++; Q.fast = 0; applyTier(); } }
   else { Q.slow = 0; Q.fast = 0; }
 }
@@ -102,12 +122,12 @@ document.addEventListener('change', e => { if(e.target.id === 'qSel') setQuality
 
 // the film pass is rebuilt fresh for every entry: a composer made while the gate was up can come back washed out
 const _startSessionQ = startSession;
-startSession = function(s){ _startSessionQ(s); if(composer) setGfx(gfxMode); applyTier(); };
+startSession = function(s){ _startSessionQ(s); if(composer) setGfx(gfxMode); applyTier(); setTimeout(softNotice, 2500); };
 
 /* --- per frame --- */
 let lcT = 0;
 anims.push((t, dt) => {
   lcT -= dt; if(lcT <= 0){ lcT = 4; fileLayers(); }            // new pieces (models that finish loading) get filed too
-  applyLayers(); applyFar(); autoTune(dt);
+  applyLayers(); applyFar(); autoTune();
 });
 fileLayers(); applyTier();
