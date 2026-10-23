@@ -153,7 +153,7 @@ function pawWave(from, dir){
   paw.position.copy(from); paw.lookAt(from.clone().add(dir));
   addFx(paw, 1, (o, k) => { o.position.copy(from).addScaledVector(dir, k * 40); o.scale.setScalar(1.5 + k * 5); pm.opacity = .9 * (1 - k); });
   shockwave(from, 20);
-  if(AU.ctx){ tone(220, {d:.5, v:.12, glide:1400}); noiseHit({d:.4, v:.3, f:2500, type:'bandpass'}); tone(90, {t:.05, d:.8, v:.25, glide:40}); }
+  if(!playSfx('puma', from) && AU.ctx){ tone(220, {d:.5, v:.12, glide:1400}); noiseHit({d:.4, v:.3, f:2500, type:'bandpass'}); tone(90, {t:.05, d:.8, v:.25, glide:40}); }
 }
 
 /* --- hypersonic capsule --- */

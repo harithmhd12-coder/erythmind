@@ -12,7 +12,7 @@ const SFX = {buf:{}, files:{}, last:{}, muteUntil:0, ready:false};
 const SFX_NAMES = {
   kamusari:'Kamusari', raja:'Haki Raja Agung', obs:'Haki Pemerhatian', arm:'Haki Persenjataan', gearputih:'Gear Putih', tumbuk:'Tumbukan Gergasi',
   magma:'Magma (Akainu)', ais:'Ais (Aokiji)', cahaya:'Cahaya (Kizaru)', graviti:'Graviti (Fujitora)', hutan:'Hutan (Ryokugyu)', emas:'Gergasi Emas (Sengoku)', tebasan:'Pedang Hitam (Mihawk)', galaksi:'Tinju Galaksi (Garp)',
-  laser:'Laser PX-1 hingga PX-11 (Ujian Saringan)',
+  laser:'Laser PX-1 hingga PX-11 (Ujian Saringan)', puma:'Hayunan Puma (Ujian Saringan)',
   naga:'Naga Biru (Kaido)', matahari:'Matahari & Petir (Big Mom)', gempa:'Gempa (Whitebeard)', gelap:'Kegelapan (Blackbeard)', bilik:'Bilik Biru (Law)',
 };
 
