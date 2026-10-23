@@ -523,7 +523,7 @@ const EBUKU = [
   { slug: 'eb-turath', tajuk: 'Pengenalan Kitab Turath untuk Pembaca Baharu', ringkas: 'Kenali 10 kitab klasik dan cara mula membacanya dengan berpandu.', halaman: 64, harga: 'RM25', plus: true }
 ];
 
-/* Sip 'n Go Coffee & Bakery. Menu, harga, bahan dan kisah diambil daripada laman rasmi Sip 'n Go.
+/* Sip 'n Go Coffee & Bakery. Menu, harga dan bahan diambil daripada laman rasmi Sip 'n Go.
    Gambar botol dan foto: media/sng/. */
 const SNG = {
   nama: "Sip 'n Go Coffee & Bakery",
@@ -542,14 +542,6 @@ const SNG = {
     { h: 'Rasa yang jujur', p: 'Biji kopi dari Ethiopia, Colombia dan Brazil, susu segar, coklat premium Scrippo dan matcha Shizuko.' },
     { h: 'Satu botol, satu ilmu', p: 'Setiap botol disertakan satu kad ilmu. Order 3 kopi, dapat 3 ilmu yang berbeza.' },
     { h: 'Bawa ke mana saja', p: 'Macam Touch \'n Go yang dibawa ke mana-mana, cuma yang ini bawa kopi, bukan kad.' }
-  ],
-  kisah: [
-    { h: '2020, Kaherah', p: 'Dua pelajar yang suka buku, penulisan, pastri dan kopi. Kopi dihidang percuma untuk tetamu di rumah sewa.' },
-    { h: 'Roti boy dan donut', p: 'Kawan-kawan mula minta tempah. Sambutannya menggalakkan, tapi masa tak cukup.' },
-    { h: 'Fokus pada kopi', p: 'Kuliah, talaqqi dan program mahasiswa menuntut masa. Kami berehat dari pastri dan memilih kopi.' },
-    { h: 'Nama Farisi', p: 'Nama pena rakan kongsi kami. Lebih unik, dan itulah nama yang dikenali dalam kalangan pelajar Malaysia di Mesir.' },
-    { h: "Sip 'n Go", p: 'Lebih mudah diingat, dan sesuai dengan konsep kami: kopi dalam botol untuk dibawa ke mana-mana.' },
-    { h: 'Hari ini', p: 'Dari tempahan 30 botol dalam satu malam dengan moka pot, kepada tempahan 100 botol untuk sebuah syarikat.' }
   ],
   biji: [
     { negara: 'Ethiopia', untuk: 'Classic Latte, Caramel Latte dan Rich Mocha.' },
