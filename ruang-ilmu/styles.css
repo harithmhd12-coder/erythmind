@@ -1,22 +1,27 @@
 /* Ruang Ilmu · gaya.
-   Arah: halaman editorial putih ala fs.blog, dakwat hitam, satu merah sebagai penanda, dan sorotan kuning
-   seperti pen penanda dalam buku. Kopi Sip 'n Go mendapat jalur gelap sendiri supaya jualan terasing daripada bacaan.
-   Susun atur: lajur bacaan ~66 aksara, grid kandungan 12 lajur yang runtuh ke satu lajur di telefon. */
+   Arah: palet "Modern Clean & Academic". Latar putih keabu-abuan yang sejuk, teks slate gelap yang tajam,
+   dan biru royal sebagai satu-satunya warna aksen untuk pautan, butang dan kemajuan. Sorotan teks
+   menggunakan biru muda. Kopi Sip 'n Go mengekalkan jalur gelap jenamanya supaya jualan terasing daripada bacaan.
+   Susun atur: lajur bacaan ~66 aksara, grid kandungan yang runtuh ke satu lajur di telefon. */
 :root {
-  --kertas: #fffefb;
-  --permukaan: #f5f2ec;
-  --dakwat: #16130f;
-  --kelabu: #6a625a;
-  --garis: #e6e0d6;
-  --merah: #b3261e;
-  --merah-lembut: #f6e3df;
-  --sorot: #fff07a;
-  --sorot-dakwat: #16130f;
+  --kertas: #F8FAFC;
+  --permukaan: #F1F5F9;
+  --dakwat: #0F172A;
+  --kelabu: #475569;
+  --garis: #E2E8F0;
+  --merah: #2563EB;
+  --merah-lembut: #DBEAFE;
+  --sorot: #DBEAFE;
+  --sorot-dakwat: #0F172A;
+  --pentas: #0F172A;
+  --pentas-dakwat: #F8FAFC;
+  --pentas-kelabu: #94A3B8;
+  --pentas-aksen: #60A5FA;
   --jalur: #17110D;
   --jalur-dakwat: #F3EBDF;
   --jalur-kelabu: #b5a998;
   --jalur-garis: #33271e;
-  --baik: #2f6b3a;
+  --baik: #15803D;
   --sng-latte: #D9A66B;
   --sng-krim: #EFE6D8;
   --sng-ceri: #C9452F;
@@ -30,16 +35,18 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --kertas: #14110e; --permukaan: #1d1915; --dakwat: #ece5da; --kelabu: #a69c90; --garis: #2e2721;
-    --merah: #f0735a; --merah-lembut: #3a1f19; --sorot: #6b5d12; --sorot-dakwat: #fff8d6;
-    --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #7fc48b;
+    --kertas: #0B1120; --permukaan: #111A2E; --dakwat: #E2E8F0; --kelabu: #94A3B8; --garis: #1E293B;
+    --merah: #60A5FA; --merah-lembut: #172554; --sorot: #1E3A8A; --sorot-dakwat: #F8FAFC;
+    --pentas: #020617; --pentas-dakwat: #F8FAFC; --pentas-kelabu: #94A3B8; --pentas-aksen: #60A5FA;
+    --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #4ADE80;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --kertas: #14110e; --permukaan: #1d1915; --dakwat: #ece5da; --kelabu: #a69c90; --garis: #2e2721;
-  --merah: #f0735a; --merah-lembut: #3a1f19; --sorot: #6b5d12; --sorot-dakwat: #fff8d6;
-  --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #7fc48b;
+  --kertas: #0B1120; --permukaan: #111A2E; --dakwat: #E2E8F0; --kelabu: #94A3B8; --garis: #1E293B;
+  --merah: #60A5FA; --merah-lembut: #172554; --sorot: #1E3A8A; --sorot-dakwat: #F8FAFC;
+  --pentas: #020617; --pentas-dakwat: #F8FAFC; --pentas-kelabu: #94A3B8; --pentas-aksen: #60A5FA;
+  --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #4ADE80;
   color-scheme: dark;
 }
 
@@ -86,11 +93,11 @@ mark { background: linear-gradient(transparent 12%, var(--sorot) 12%, var(--soro
 @media (min-width: 960px) and (max-width: 1180px) { .alat .btn-langgan { display: none; } }
 
 /* ---------- Butang ---------- */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 4px; border: 1px solid var(--dakwat); background: var(--dakwat); color: var(--kertas); font-weight: 600; font-size: .95rem; text-decoration: none; line-height: 1.2; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--dakwat); background: var(--dakwat); color: var(--kertas); font-weight: 600; font-size: .95rem; text-decoration: none; line-height: 1.2; white-space: nowrap; }
 .btn:hover { background: var(--merah); border-color: var(--merah); }
 .btn.garis { background: transparent; color: var(--dakwat); }
 .btn.garis:hover { border-color: var(--merah); color: var(--merah); background: transparent; }
-.btn.merah { background: var(--merah); border-color: var(--merah); color: #fff; }
+.btn.merah { background: var(--merah); border-color: var(--merah); color: var(--kertas); }
 .btn.merah:hover { filter: brightness(1.08); }
 .btn.kecil { padding: 6px 12px; font-size: .85rem; }
 .btn[disabled] { opacity: .45; cursor: not-allowed; }
@@ -302,12 +309,12 @@ textarea:focus, .medan input:focus, .medan select:focus { border-color: var(--da
 .segmen button[aria-pressed="true"] { background: var(--dakwat); color: var(--kertas); }
 
 /* ---------- Pemain visual (Lihat) ---------- */
-.pentas { position: relative; aspect-ratio: 16 / 9; max-width: 100%; background: var(--jalur); color: var(--jalur-dakwat); overflow: hidden; border-radius: 6px; display: grid; }
+.pentas { position: relative; aspect-ratio: 16 / 9; max-width: 100%; background: var(--pentas); color: var(--pentas-dakwat); overflow: hidden; border-radius: 6px; display: grid; }
 .adegan { position: absolute; inset: 0; display: grid; align-content: center; justify-items: start; gap: 12px; padding: 6% 7%; opacity: 0; transition: opacity .6s ease, transform .8s ease; transform: translateY(12px); }
 .adegan.aktif { opacity: 1; transform: none; }
-.adegan .v { font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 7.5vw, 5rem); line-height: 1; letter-spacing: -.02em; color: var(--sng-latte); }
+.adegan .v { font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 7.5vw, 5rem); line-height: 1; letter-spacing: -.02em; color: var(--pentas-aksen); }
 .adegan .h { font-family: var(--serif); font-size: clamp(1.1rem, 3vw, 2rem); line-height: 1.15; max-width: 22ch; }
-.adegan .kat { font-family: var(--mono); font-size: clamp(.6rem, 1.4vw, .78rem); letter-spacing: .12em; text-transform: uppercase; color: var(--jalur-kelabu); }
+.adegan .kat { font-family: var(--mono); font-size: clamp(.6rem, 1.4vw, .78rem); letter-spacing: .12em; text-transform: uppercase; color: var(--pentas-kelabu); }
 .sari-kata { position: absolute; left: 5%; right: 5%; bottom: 5%; text-align: center; font-size: clamp(.78rem, 1.8vw, 1.02rem); line-height: 1.4; }
 .sari-kata span { background: rgba(0,0,0,.72); color: #fff; padding: 3px 8px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .kawalan-video { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding-block: 12px; }
@@ -414,7 +421,7 @@ textarea:focus, .medan input:focus, .medan select:focus { border-color: var(--da
 .semak-senarai li.ok::before { content: "● "; color: var(--baik); }
 
 /* ---------- Modal & toast ---------- */
-.lapik { position: fixed; inset: 0; z-index: 80; background: rgba(10,8,6,.55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.lapik { position: fixed; inset: 0; z-index: 80; background: rgba(15,23,42,.55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .modal { background: var(--kertas); border: 1px solid var(--dakwat); width: min(560px, 100%); max-height: 88vh; overflow: auto; padding: 28px; display: grid; gap: 16px; }
 .modal-kepala { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
 .toast { position: fixed; z-index: 90; left: 50%; transform: translateX(-50%); bottom: calc(150px + env(safe-area-inset-bottom, 0px)); background: var(--dakwat); color: var(--kertas); padding: 10px 18px; border-radius: 6px; font-size: .9rem; font-weight: 600; max-width: calc(100vw - 32px); text-align: center; }
