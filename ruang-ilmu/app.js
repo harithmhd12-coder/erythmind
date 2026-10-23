@@ -427,7 +427,7 @@ V.baca = () => {
 V.lihat = () => {
   const senarai = semua();
   return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Lihat</span><h1>Video penerangan</h1><p class="lede">Penerangan visual 1–3 minit dengan bab, sari kata dan transkrip. Setiap video berkongsi fakta dan sumber yang sama dengan artikelnya.</p></header>
-  <section class="seksyen"><div class="grid-artikel tiga">${senarai.map(a => { const m = minit(a); return `<article class="artikel-kad"><a class="sampul" href="#v.${a.slug}" data-kat="${esc(KAT[a.kategori]?.nama)}" style="background:var(--jalur);border-color:var(--jalur)"><span style="color:#e3a35d">${esc(a.bahagian[0]?.v || '▶')}</span></a><div class="meta"><span>${m.lihat} min</span><span>${adegan(a).length} bab</span><span>Sari kata</span></div><h3><a href="#v.${a.slug}">${esc(a.tajuk)}</a></h3></article>`; }).join('')}</div></section></div>`;
+  <section class="seksyen"><div class="grid-artikel tiga">${senarai.map(a => { const m = minit(a); return `<article class="artikel-kad"><a class="sampul" href="#v.${a.slug}" data-kat="${esc(KAT[a.kategori]?.nama)}" style="background:var(--pentas);border-color:var(--pentas)"><span style="color:var(--pentas-aksen)">${esc(a.bahagian[0]?.v || '▶')}</span></a><div class="meta"><span>${m.lihat} min</span><span>${adegan(a).length} bab</span><span>Sari kata</span></div><h3><a href="#v.${a.slug}">${esc(a.tajuk)}</a></h3></article>`; }).join('')}</div></section></div>`;
 };
 
 V.dengar = () => {
