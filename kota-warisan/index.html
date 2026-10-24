@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Kota Warisan</title>
+<meta name="description" content="Bina kota dari Lembah Bujang hingga Merdeka. Kumpul emas dan beras, latih pendekar, sertai puak dan buka kitab hikayat sejarah Malaysia.">
+<meta name="theme-color" content="#3a2416">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<canvas id="cv" aria-label="Peta kota"></canvas>
+
+<!-- HUD kampung -->
+<div class="lapis" id="hudKampung">
+  <div id="pemain" class="papan">
+    <div class="pangkat" id="pangkat"><span id="pangkatNo">1</span></div>
+    <div style="min-width:0">
+      <div class="nama" id="namaPemain">Pemain</div>
+      <div class="liga"><i class="lencana-liga" id="lencanaLiga"></i><span id="namaLiga">Liga Kampung</span><b class="nombor" id="maruah">0</b></div>
+    </div>
+  </div>
+  <div id="tukang" class="papan"></div>
+  <div id="sumber"></div>
+
+  <div id="bawahKiri">
+    <button class="btn merah" id="btnSerang" aria-label="Serang"></button>
+  </div>
+  <div id="bendahara" hidden></div>
+  <div id="bawahKanan">
+    <button class="btn kayu nav-btn" id="navBina"></button>
+    <button class="btn kayu nav-btn" id="navTentera"></button>
+    <button class="btn kayu nav-btn" id="navPuak"></button>
+    <button class="btn kayu nav-btn" id="navKitab"></button>
+    <button class="btn kayu nav-btn" id="navTetapan"></button>
+  </div>
+  <div id="panel" class="papan" hidden></div>
+  <div id="letakKawal" class="papan" hidden>
+    <button class="btn merah" id="letakBatal" aria-label="Batal">✕</button>
+    <span id="letakNama"></span>
+    <button class="btn hijau" id="letakOk" aria-label="Sahkan">✓</button>
+  </div>
+</div>
+
+<!-- HUD perang -->
+<div class="lapis" id="hudPerang" hidden>
+  <div id="perangAtasKiri" class="papan"></div>
+  <div id="perangTengah" class="papan"></div>
+  <div id="perangKanan" class="papan"></div>
+  <div id="perangBawah"></div>
+</div>
+
+<div id="modal" hidden>
+  <div class="kotak papan" role="dialog" aria-modal="true" aria-labelledby="modalTajuk">
+    <div class="songket"></div>
+    <header><h2 id="modalTajuk"></h2><button class="btn merah tutup" id="modalTutup" aria-label="Tutup">✕</button></header>
+    <div class="tab" id="modalTab"></div>
+    <div class="isi" id="modalIsi"></div>
+  </div>
+</div>
+<div id="toast" aria-live="polite"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
