@@ -480,17 +480,18 @@ function openGuests(){
   openPanel(`${head('Kawalan akses', 'Pas Tetamu', 'Benarkan orang tertentu masuk dengan PIN mereka sendiri. Lelaki muncul dengan anak panah hijau di atas kepala, perempuan dengan anak panah merah jambu.')}
   <div class="pb">
     <div class="list">${gs.length ? gs.map(([id, g]) => `<div class="guest"><span class="arrow ${g.gender === 'female' ? 'female' : ''}"></span><div><strong>${esc(g.name)}</strong><span>${Object.keys(g.keys || {}).map(z => ZONES[z]?.name).filter(Boolean).join(', ') || 'Tiada zon'}${g.lab ? ' · Labophase' : ''}${g.niv ? ' · Nivelham' : ''}${g.istana ? ' · Istana Pangaea' : ''}${g.laut ? ' · Pangkalan Laut' : ''}${g.exp ? (g.exp < Date.now() ? ' · TAMAT TEMPOH' : ' · sah hingga ' + fmtDate(g.exp)) : ''}${g.ask ? ' · PAS KUMPULAN (nama sendiri)' : ''}${g.kuasa ? ' · pilih kuasa sendiri' : ''}</span><span class="gpow">Haki: Pemerhatian, Persenjataan${EXTRA_POWERS.map(p => `<label><input type="checkbox" data-gp="${esc(id)}" value="${p}" ${(g.powers || []).includes(p) ? 'checked' : ''}> ${esc(POWERS.find(P => P.id === p).name)}</label>`).join('')}</span></div><button class="btn danger" type="button" data-rm="${esc(id)}">Batalkan pas</button></div>`).join('') : '<div class="empty"><b>Belum ada tetamu.</b><br>Cipta pas pertama di bawah. Kongsikan pautan app ini dengan mereka (Kawalan Penuh → Salin pautan) dan beritahu PIN mereka secara bersemuka.</div>'}</div>
-    <form id="gf" class="list" autocomplete="off">
+    <form id="gf" class="list" autocomplete="off" novalidate>
       <h3>Pas baharu</h3>
-      <div class="grid2"><div class="field"><label for="gname">Nama tetamu</label><input id="gname" maxlength="28" required></div>
+      <div class="grid2"><div class="field"><label for="gname">Nama tetamu (pas kumpulan: label pas, boleh dibiar kosong)</label><input id="gname" maxlength="28"></div>
       <div class="field"><label for="ggender">Jantina</label><select id="ggender"><option value="male">Lelaki · anak panah hijau</option><option value="female">Perempuan · anak panah merah jambu</option></select></div></div>
       <div class="field"><label for="gexp">Tempoh pas</label><select id="gexp"><option value="0">Tiada had</option><option value="1">1 hari</option><option value="7">7 hari</option><option value="30">30 hari</option><option value="90">90 hari</option></select></div>
-      <div class="field"><label for="gpin">PIN tetamu (6–12 digit, mesti lain daripada PIN kau)</label><input id="gpin" inputmode="numeric" pattern="[0-9]{6,12}" required></div>
+      <div class="field"><label for="gpin">PIN tetamu (6–12 digit, mesti lain daripada PIN kau)</label><input id="gpin" inputmode="numeric" maxlength="12"></div>
       <div class="field"><label>Zon yang dibenarkan</label><div class="checks">${ZONE_IDS.map(z => `<label for="gz_${z}"><input type="checkbox" id="gz_${z}" value="${z}" ${z === 'ilmu' ? 'checked' : ''}> ${esc(ZONES[z].name)}</label>`).join('')}</div></div>
       <div class="field"><label>Lapisan</label><div class="checks"><label for="glab"><input type="checkbox" id="glab"> Boleh masuk Labophase</label><label for="gniv"><input type="checkbox" id="gniv"> Boleh turun ke Nivelham</label><label for="gist"><input type="checkbox" id="gist"> Boleh naik ke Istana Pangaea (rakan kongsi terpilih)</label><label for="glaut"><input type="checkbox" id="glaut"> Boleh masuk Pangkalan Laut</label></div></div>
       <div class="field"><label>Pas kumpulan</label><div class="checks"><label for="gask"><input type="checkbox" id="gask"> Ramai orang guna PIN ini · setiap orang menaip nama dan jantina sendiri semasa masuk (nama di atas hanya label pas)</label><label for="gkuasa"><input type="checkbox" id="gkuasa"> Boleh pilih kuasa sendiri di Tetapan (8 kuasa laksamana, Gear Putih, Gear Putih + Tumbukan Gergasi · bukan Kamusari atau Haki Raja Agung)</label></div></div>
       <div class="field"><label>Kuasa Haki</label><div class="note">Semua pelawat mendapat Haki Pemerhatian dan Haki Persenjataan. Tanda kuasa tambahan jika mahu.</div><div class="checks">${EXTRA_POWERS.map(p => `<label for="gp_${p}"><input type="checkbox" id="gp_${p}" value="${p}"> ${esc(POWERS.find(P => P.id === p).name)}</label>`).join('')}</div></div>
       <div class="row"><button class="btn pri" type="submit">Cipta pas</button></div>
+      <div class="note warn" id="gmsg" hidden></div>
       <div class="note">Mencipta pas mengambil beberapa saat kerana kunci dijana dengan selamat.</div>
     </form>
   </div>`, '#3ddc84');
@@ -506,20 +507,23 @@ function openGuests(){
   }));
   $('#gf').addEventListener('submit', async ev => {
     ev.preventDefault();
-    const name = $('#gname').value.trim(), gender = $('#ggender').value, pin = $('#gpin').value.trim();
+    const say = (m, el) => { const b = $('#gmsg'); b.textContent = m; b.hidden = !m; if(m){ toast(m, 'bad'); (el || b).scrollIntoView({block:'center', behavior:'smooth'}); el?.focus?.(); } };   // errors shown beside the button too (a toast or the browser bubble can hide behind the panel)
+    say('');
+    const gender = $('#ggender').value, pin = $('#gpin').value.trim(), name = $('#gname').value.trim() || ($('#gask').checked ? 'Kawan-kawan' : '');
     const zones = ZONE_IDS.filter(z => $('#gz_' + z).checked);
-    if(!/^[0-9]{6,12}$/.test(pin)) return toast('PIN tetamu mesti 6 hingga 12 digit.', 'bad');
-    if(!zones.length) return toast('Pilih sekurang-kurangnya satu zon.', 'bad');
+    if(!name) return say('Isi nama tetamu (atau tandakan Pas kumpulan).', $('#gname'));
+    if(!/^[0-9]{6,12}$/.test(pin)) return say('PIN tetamu mesti 6 hingga 12 digit (nombor sahaja).', $('#gpin'));
+    if(!zones.length) return say('Pilih sekurang-kurangnya satu zon.');
     const sub = ev.submitter || $('#gf button[type=submit]'); sub.disabled = true; sub.textContent = 'Menjana kunci…';
     try{
-      try{ const k = await kekFrom(pin, core.kdf.salt, core.kdf.iter); await unseal(k, core.owner, 'owner'); toast('PIN itu sama dengan PIN pemilik. Pilih PIN lain.', 'bad'); sub.disabled = false; sub.textContent = 'Cipta pas'; return; }catch(e){}
+      try{ const k = await kekFrom(pin, core.kdf.salt, core.kdf.iter); await unseal(k, core.owner, 'owner'); say('PIN itu sama dengan PIN pemilik. Pilih PIN lain.', $('#gpin')); sub.disabled = false; sub.textContent = 'Cipta pas'; return; }catch(e){}
       const gid = 'g' + rid(9), salt = b64(rand(16));
       const kek = await kekFrom(pin, salt, ITER);
       const g = {name, gender, salt, iter:ITER, lab:$('#glab').checked, niv:$('#gniv').checked, istana:$('#gist').checked, laut:$('#glaut').checked, powers:EXTRA_POWERS.filter(p => $('#gp_' + p).checked), ask:$('#gask').checked, kuasa:$('#gkuasa').checked, created:Date.now(), exp:+$('#gexp').value ? Date.now() + +$('#gexp').value * 864e5 : 0, check:await seal(kek, te.encode('erythmind'), 'guest:' + gid), keys:{}};
       for(const z of zones){ const zk = await unseal(session.MK, core.zones[z], 'zone:' + z); g.keys[z] = await seal(kek, zk, `gz:${gid}:${z}`); zk.fill(0); }
       const n = clone(core); n.guests = n.guests || {}; n.guests[gid] = g;
       await store.setCore(n); core = n; toast(`Pas untuk ${name} dicipta.`, 'ok'); openGuests();
-    }catch(e){ toast('Gagal mencipta pas (' + (e.code || e.message) + ').', 'bad'); sub.disabled = false; sub.textContent = 'Cipta pas'; }
+    }catch(e){ say('Gagal mencipta pas (' + (e.code || e.message) + ').'); sub.disabled = false; sub.textContent = 'Cipta pas'; }
   });
 }
 
