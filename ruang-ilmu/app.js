@@ -38,6 +38,7 @@ const KUNCI = 'ruangilmu.v1';
 const asal = () => ({
   simpan: [], selesai: {}, kuiz: {}, nota: {}, posisi: {}, format: {}, akses: {}, dengar: {}, lihat: {},
   xp: 0, hari: {}, laluanSiap: {}, rehat: 0, laporan: [], draf: [], troli: {}, pesanan: [],
+  peristiwa: [], pembetulan: {}, lihatBetul: {},
   surat: null, akaun: null, ahli: null,
   tetapan: { tema: 'sistem', fon: 1, notifikasi: 'mingguan', sorokKopi: false, matlamat: 10, siri: true }
 });
@@ -50,11 +51,75 @@ let S = (() => {
 })();
 const simpan = () => { try { localStorage.setItem(KUNCI, JSON.stringify(S)); } catch (e) { /* abaikan */ } };
 Object.keys(S.troli).forEach(id => { if (!PROD[id]) delete S.troli[id]; });
+S.laporan.forEach(l => { l.id ||= Math.random().toString(36).slice(2, 8); l.status ||= 'baru'; });
 const rekodHari = () => (S.hari[hariIni()] ||= { saat: 0, aktif: false });
 const tandaAktif = () => { rekodHari().aktif = true; simpan(); };
 const tambahXP = (n, sebab) => { S.xp += n; tandaAktif(); toast(`+${n} XP · ${sebab}`); kemasPengepala(); };
 
 /* ================= Kandungan ================= */
+/* ================= Integriti (rujuk TAKTIK dalam data.js) ================= */
+const JENIS_SUMBER = { primer: 'Primer', ulasan: 'Ulasan', rasmi: 'Rasmi', esei: 'Esei', pengiraan: 'Pengiraan' };
+const JENIS_DAKWAAN = { fakta: 'Fakta', pengiraan: 'Pengiraan', tafsiran: 'Tafsiran', dibahas: 'Dibahas', riwayat: 'Riwayat', pendapat: 'Pendapat', nasihat: 'Nasihat' };
+const PERLU_SUMBER = ['fakta', 'pengiraan'];
+const bacaSumber = r => {
+  if (r && typeof r === 'object') return r;
+  const m = String(r).match(/^\s*(primer|ulasan|rasmi|esei|pengiraan)\s*[:|]\s*(.+)$/i);
+  return m ? { j: m[1].toLowerCase(), t: m[2].trim() } : { j: '', t: String(r).trim() };
+};
+const bacaDakwaan = baris => {
+  const m = String(baris).match(/^\s*(fakta|pengiraan|tafsiran|dibahas|riwayat|pendapat|nasihat)\s*:\s*(.+?)\s*(?:\[([\d,\s]+)\])?\s*$/i);
+  if (!m) return { t: String(baris).trim(), j: '', s: [] };
+  return { t: m[2], j: m[1].toLowerCase(), s: (m[3] || '').split(',').map(x => parseInt(x, 10) - 1).filter(x => x >= 0) };
+};
+const UMPAN = ['tak akan percaya', 'tidak akan percaya', 'takkan percaya', 'mengejutkan', 'gempar', 'terbongkar', 'wajib baca', 'wajib tahu', 'sebelum dipadam', 'viral', 'rahsia yang', 'klik', 'awas!', 'anda perlu tahu'];
+function semakTajuk(tajuk, ringkas60) {
+  const isu = []; const t = String(tajuk || '');
+  if (!t.trim()) return ['Tajuk kosong'];
+  if (t.length > 90) isu.push('Tajuk melebihi 90 aksara');
+  if (/!{2,}|\?!|!\?/.test(t)) isu.push('Tanda seru berganda');
+  if ((t.match(/\b[A-Z]{3,}\b/g) || []).filter(w => !/^(AI|PBB|BNM|EFSA|RM|CO)$/.test(w)).length >= 2) isu.push('Huruf besar penuh');
+  const kecil = t.toLowerCase(); const u = UMPAN.find(p => kecil.includes(p)); if (u) isu.push(`Frasa umpan klik: "${u}"`);
+  if (t.trim().endsWith('?') && kiraPerkataan(ringkas60 || '') < 20) isu.push('Tajuk soalan belum dijawab dalam Faham dalam 60 saat');
+  return isu;
+}
+const pembetulanBahan = slug => S.pembetulan[slug] || [];
+function sejarahBahan(a) {
+  const x = [{ tarikh: a.terbit, jenis: 'Terbit', teks: 'Diterbitkan selepas semakan editorial.' }];
+  if (a.kemas && a.kemas !== a.terbit) x.push({ tarikh: a.kemas, jenis: 'Semakan', teks: 'Fakta dan sumber disemak semula oleh penyemak bidang.' });
+  pembetulanBahan(a.slug).forEach(p => x.push({ tarikh: p.tarikh, jenis: 'Pembetulan', teks: p.teks }));
+  return x.sort((p, q) => String(q.tarikh).localeCompare(String(p.tarikh)));
+}
+const kepentingan = a => a.kepentingan || (a.pasangan ? `Bahan ini dipaparkan bersama ${PROD[a.pasangan]?.nama || 'produk'} dari Sip 'n Go, rakan komersial Ruang Ilmu. Dasar kami: rakan komersial tidak menulis, menyemak atau mengubah isi bahan, dan padanan dibuat selepas bahan ditulis.` : 'Tiada kepentingan komersial pada bahan ini.');
+/* Log peristiwa: asas ukuran yang kami pilih (bukan pageview). Disimpan dalam peranti ini sahaja. */
+function catat(jenis, slug, lain) { S.peristiwa.push({ t: Date.now(), j: jenis, s: slug || '', ...(lain || {}) }); if (S.peristiwa.length > 1500) S.peristiwa.splice(0, S.peristiwa.length - 1500); simpan(); }
+function ukuran(slug) {
+  const p = S.peristiwa.filter(e => e.s === slug); const ada = j => p.filter(e => e.j === j).length;
+  const kuiz = p.filter(e => e.j === 'kuiz');
+  return { buka: ada('buka'), baca80: ada('baca80'), selesai: ada('selesai'), dengar: ada('dengar'), lihat: ada('lihat'), simpan: ada('simpan'), kongsi: ada('kongsi'), kuizTepat: kuiz.length ? Math.round(kuiz.filter(e => e.betul).length / kuiz.length * 100) : null };
+}
+/* Semakan integriti data: dijalankan oleh Studio. Menyekat dakwaan fakta tanpa sumber (Taktik #9). */
+function sahkanKandungan() {
+  const isu = []; const slugs = new Set(semua().map(a => a.slug));
+  semua().forEach(a => {
+    const tempat = a.tajuk;
+    (a.rujukan || []).forEach((r, i) => { const o = bacaSumber(r); if (!JENIS_SUMBER[o.j]) isu.push([tempat, `Sumber ${i + 1} tiada jenis`]); });
+    if (!(a.dakwaan || []).length) isu.push([tempat, 'Tiada dakwaan utama']);
+    (a.dakwaan || []).forEach((d, i) => {
+      if (!JENIS_DAKWAAN[d.j]) isu.push([tempat, `Dakwaan ${i + 1} tiada jenis`]);
+      if (PERLU_SUMBER.includes(d.j) && !d.s.length) isu.push([tempat, `Dakwaan ${i + 1} (${d.j}) tiada sumber`]);
+      d.s.forEach(n => { if (n >= (a.rujukan || []).length) isu.push([tempat, `Dakwaan ${i + 1} merujuk sumber ${n + 1} yang tiada`]); });
+    });
+    semakTajuk(a.tajuk, a.ringkas60).forEach(m => isu.push([tempat, m]));
+    (a.berkaitan || []).forEach(b => { if (!slugs.has(b)) isu.push([tempat, `Bahan berkaitan "${b}" tiada`]); });
+    if (a.pasangan && !PROD[a.pasangan]) isu.push([tempat, `Produk "${a.pasangan}" tiada`]);
+  });
+  LALUAN.forEach(l => l.item.forEach(i => { if (!slugs.has(i)) isu.push([`Laluan ${l.nama}`, `Bahan "${i}" tiada`]); }));
+  PRODUK.forEach(p => { if (p.pasangan && !slugs.has(p.pasangan)) isu.push([`Produk ${p.nama}`, `Bacaan "${p.pasangan}" tiada`]); });
+  return isu;
+}
+/* Pembetulan yang belum dilihat, untuk bahan yang pernah dibuka, disimpan atau diselesaikan pengguna (lawan mitos pembetulan). */
+const pembetulanUntukAku = () => semua().filter(a => (S.akses[a.slug] || S.selesai[a.slug] || disimpan(a.slug)) && pembetulanBahan(a.slug).some(p => p.masa > (S.lihatBetul[a.slug] || 0)));
+
 function drafKeArtikel(d) {
   const bahagian = []; let semasa = null;
   String(d.isi || '').split(/\n\s*\n/).map(x => x.trim()).filter(Boolean).forEach(blok => {
@@ -64,7 +129,8 @@ function drafKeArtikel(d) {
   return {
     slug: 'd-' + d.id, tajuk: d.tajuk, dek: d.dek, kategori: d.kategori, tag: d.tag, tahap: d.tahap,
     terbit: d.terbit || hariIni(), kemas: d.kemas || hariIni(), ringkas60: d.ringkas60, bahagian,
-    fakta: [], kuiz: [], refleksi: '', rujukan: d.sumber, berkaitan: [], penulis: d.penulis, penyemak: d.penyemak, drafStudio: true
+    fakta: [], kuiz: [], refleksi: '', rujukan: (d.sumber || []).map(bacaSumber), dakwaan: (d.dakwaan || []).map(bacaDakwaan),
+    kepentingan: d.kepentingan, berkaitan: [], penulis: d.penulis, penyemak: d.penyemak, drafStudio: true
   };
 }
 const semua = () => KANDUNGAN.concat(S.draf.filter(d => d.langkah >= 6).map(drafKeArtikel));
@@ -77,7 +143,7 @@ const minit = a => {
 const penulis = a => a.penulis || 'Meja Editorial Ruang Ilmu';
 const penyemak = a => a.penyemak || `Penyemak bidang (${KAT[a.kategori]?.nama.split(' & ')[0] || 'Umum'})`;
 const selesai = slug => !!S.selesai[slug];
-const disimpan = slug => S.simpan.includes(slug);
+function disimpan(slug) { return S.simpan.includes(slug); }
 
 function adegan(a) {
   const ayat = s => (polos(s).match(/[^.!?]+[.!?]+/g) || [polos(s)]).map(x => x.trim());
@@ -226,7 +292,7 @@ const Pemain = {
     this.i++;
     S.dengar[this.slug] = this.i; simpan();
     if (this.i >= this.seg.length) {
-      this.main = false; S.dengar[this.slug] = 0; (S.format[this.slug] ||= {}).dengar = true; tandaAktif();
+      this.main = false; S.dengar[this.slug] = 0; (S.format[this.slug] ||= {}).dengar = true; catat('dengar', this.slug); tandaAktif();
       toast('Selesai mendengar. Jawab kuiz untuk mengukuhkan ingatan.'); this.i = 0; this.lukis(); kemasButangMain(); return;
     }
     if (this.i >= 2) { (S.format[this.slug] ||= {}).dengar = true; simpan(); }
@@ -274,7 +340,7 @@ const Video = {
     else this.lukisMasa();
   },
   ke(i) {
-    if (i >= this.x.length) { this.main = false; clearInterval(this.pemasa); this.i = this.x.length - 1; this.t = this.x[this.i].saat; S.lihat[this.slug] = 0; (S.format[this.slug] ||= {}).lihat = true; tandaAktif(); toast('Video selesai. Teruskan dengan artikel penuh atau kuiz.'); this.lukis(); return; }
+    if (i >= this.x.length) { this.main = false; clearInterval(this.pemasa); this.i = this.x.length - 1; this.t = this.x[this.i].saat; S.lihat[this.slug] = 0; (S.format[this.slug] ||= {}).lihat = true; catat('lihat', this.slug); tandaAktif(); toast('Video selesai. Teruskan dengan artikel penuh atau kuiz.'); this.lukis(); return; }
     this.i = Math.max(0, i); this.t = 0; S.lihat[this.slug] = this.i; if (this.i >= 2) (S.format[this.slug] ||= {}).lihat = true; simpan();
     if (this.main) this.bacaNarasi();
     this.lukis();
@@ -370,6 +436,8 @@ V.utama = () => {
       </aside>
     </section>
   </div>
+
+  ${pembetulanUntukAku().length ? `<div class="bekas"><section class="seksyen">${kepalaSeksyen('Pembetulan', 'Kemas kini untuk bahan yang pernah kau baca', 'Kami memaklumkan pembetulan kepada pembaca asal, bukan sekadar mengubah artikel secara senyap.')}<ul class="senarai-baris">${pembetulanUntukAku().map(a => { const p = pembetulanBahan(a.slug).at(-1); return `<li><div class="baris" style="grid-template-columns:1fr auto"><div class="tajuk-baris"><a href="#a.${a.slug}">${esc(a.tajuk)}</a><span class="kecil-nota">${tarikh(p.tarikh)}: ${esc(p.teks)}</span></div><a class="btn kecil garis" href="#a.${a.slug}">Baca versi terkini</a></div></li>`; }).join('')}</ul></section></div>` : ''}
 
   ${sambung.length ? `<div class="bekas"><section class="seksyen">${kepalaSeksyen('Teruskan penerokaan', 'Sambung dari tempat terakhir', `Hari ini: ${minitHari} daripada ${S.tetapan.matlamat} minit ritual ilmu.`, '<a class="pautan" href="#profil">Lihat peta ilmu</a>')}
     <ul class="senarai-baris">${sambung.map((a, i) => `<li><div class="baris"><span class="no">${String(i + 1).padStart(2, '0')}</span><div class="tajuk-baris"><a href="#a.${a.slug}">${esc(a.tajuk)}</a><span class="meta">${S.posisi[a.slug] ? `<span>Dibaca ${S.posisi[a.slug]}%</span>` : ''}${S.dengar[a.slug] ? `<span>Audio bahagian ${S.dengar[a.slug] + 1}</span>` : ''}${S.lihat[a.slug] ? `<span>Video bab ${S.lihat[a.slug] + 1}</span>` : ''}</span></div><a class="btn kecil garis" href="#a.${a.slug}">Sambung</a></div></li>`).join('')}</ul></section></div>` : ''}
@@ -478,6 +546,21 @@ V.l = slug => {
   <section class="seksyen">${kepalaSeksyen('Laluan lain', 'Teroka arah lain', '')}<div class="grid-laluan">${LALUAN.filter(x => x !== l).map(kadLaluan).join('')}</div></section></div>`;
 };
 
+function kadIntegriti(a) {
+  const src = a.rujukan.map(bacaSumber);
+  const kira = Object.keys(JENIS_SUMBER).map(j => [j, src.filter(r => r.j === j).length]).filter(x => x[1]);
+  const soalan = a.tajuk.trim().endsWith('?');
+  return `<section class="kotak integriti" id="integriti" aria-label="Kad integriti"><span class="eyebrow">Kad integriti</span><h3>Empat soalan sebelum percaya</h3>
+  <dl class="empat-soalan">
+    <div><dt>Siapa sumber asal?</dt><dd>${kira.map(([j, n]) => `${n} ${JENIS_SUMBER[j].toLowerCase()}`).join(', ') || 'Tiada sumber'}. Senarai penuh di bawah, dirujuk terus kepada asalnya.</dd></div>
+    <div><dt>Siapa yang untung?</dt><dd>${esc(kepentingan(a))}</dd></div>
+    <div><dt>Adakah tajuk dijawab?</dt><dd>${soalan ? (kiraPerkataan(a.ringkas60) >= 20 ? 'Ya. Jawapan ringkas berada di bahagian Faham dalam 60 saat, sebelum isi penuh.' : 'Belum. Bahan ini sedang disemak.') : 'Tajuk bukan soalan. Ringkasan berada di bahagian Faham dalam 60 saat.'}</dd></div>
+    <div><dt>Apa yang telah berubah?</dt><dd><ol class="sejarah">${sejarahBahan(a).map(h => `<li><span class="meta"><span>${tarikh(h.tarikh)}</span><span>${h.jenis}</span></span>${esc(h.teks)}</li>`).join('')}</ol></dd></div>
+  </dl>
+  ${(a.dakwaan || []).length ? `<h4>Dakwaan utama</h4><ol class="dakwaan">${a.dakwaan.map(d => `<li><span class="cip dakwaan-${d.j}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> ${esc(d.t)}${d.s.length ? ` <span class="rujuk">${d.s.map(n => `[${n + 1}]`).join('')}</span>` : ''}</li>`).join('')}</ol><p class="kecil-nota">Nombor dalam kurungan merujuk senarai sumber di bawah. Fakta dan pengiraan wajib bersumber.</p>` : ''}
+</section>`;
+}
+
 V.a = slug => {
   const a = cari(slug); if (!a) return V.tiada();
   const m = minit(a); const jawapan = S.kuiz[slug] || {};
@@ -502,9 +585,10 @@ V.a = slug => {
       <button class="btn-tindak" data-act="kongsi" aria-label="Salin pautan">${IKON.kongsi}</button>
       <button class="btn-tindak" data-act="tetapan-baca" aria-label="Tetapan bacaan" aria-expanded="false">${IKON.aa}</button>
     </div>
+    ${pembetulanBahan(slug).length ? `<div class="notis-betul" role="note"><b>Dibetulkan ${tarikh(pembetulanBahan(slug).at(-1).tarikh)}</b><span>${esc(pembetulanBahan(slug).at(-1).teks)}</span><a class="pautan" href="#a.${slug}" data-act="ke-seksyen" data-id="integriti">Lihat sejarah</a></div>` : ''}
     <section class="enam-puluh-kotak" aria-label="Faham dalam 60 saat"><span class="eyebrow">Faham dalam 60 saat</span><p>${sorot(a.ringkas60)}</p></section>
     <div class="prosa" id="prosa">${a.bahagian.map((b, i) => `<h2 id="bab-${i}">${esc(b.h)}</h2>${b.p.map(p => `<p>${sorot(p)}</p>`).join('')}`).join('')}</div>
-    ${a.fakta.length ? `<section style="display:grid;gap:14px"><span class="eyebrow">Kad fakta</span><div class="kad-fakta-baris">${a.fakta.map((f, i) => `<div class="kad-fakta"><b>FAKTA ${i + 1}/${a.fakta.length}</b><p>${esc(f)}</p><span class="meta"><span>Ruang Ilmu · ${esc(KAT[a.kategori].nama)}</span></span></div>`).join('')}</div></section>` : ''}
+    ${a.fakta.length ? `<section style="display:grid;gap:14px"><span class="eyebrow">Kad fakta</span><div class="kad-fakta-baris">${a.fakta.map((f, i) => `<div class="kad-fakta"><b>FAKTA ${i + 1}/${a.fakta.length}</b><p>${esc(f)}</p><span class="meta"><span>Ruang Ilmu · ${esc(KAT[a.kategori].nama)}</span></span><button class="pautan" data-act="salin-fakta" data-slug="${slug}" data-i="${i}">Salin bersama sumber</button></div>`).join('')}</div></section>` : ''}
     <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center">
       <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem">${selesai(slug) ? 'Kau telah menyelesaikan bahan ini.' : 'Sudah habis membaca?'}</b><span class="kecil-nota">${selesai(slug) ? `Ditanda pada ${tarikh(S.selesai[slug])}.` : 'Tanda selesai untuk mengemas kini peta ilmu dan laluan kau.'}</span></div>
       <button class="btn ${selesai(slug) ? 'garis' : ''}" data-act="selesai" data-slug="${slug}">${selesai(slug) ? IKON.tanda.replace('<svg', '<svg width="16" height="16"') + ' Selesai' : 'Tanda selesai'}</button>
@@ -512,7 +596,8 @@ V.a = slug => {
     ${a.kuiz.length ? `<section class="kotak" aria-label="Kuiz"><span class="eyebrow">Kuiz · 3 soalan</span><h3>Uji ingatan, bukan peperiksaan</h3>${a.kuiz.map((q, i) => { const dijawab = jawapan[i] !== undefined; return `<div class="kuiz-soalan"><b>${i + 1}. ${esc(q.s)}</b><div class="pilihan">${q.p.map((p, j) => `<button ${dijawab ? 'disabled' : ''} class="${dijawab && j === q.j ? 'betul' : dijawab && j === jawapan[i] ? 'salah' : ''}" data-act="jawab" data-slug="${slug}" data-q="${i}" data-j="${j}">${esc(p)}</button>`).join('')}</div>${dijawab ? `<p class="terang">${jawapan[i] === q.j ? 'Betul. ' : 'Belum tepat. '}${esc(q.t)}</p>` : ''}</div>`; }).join('')}
       ${Object.keys(jawapan).length === a.kuiz.length ? `<p class="kecil-nota">Skor: ${a.kuiz.filter((q, i) => jawapan[i] === q.j).length}/${a.kuiz.length}. <button class="pautan" data-act="ulang-kuiz" data-slug="${slug}">Cuba semula</button> (XP hanya untuk cubaan pertama).</p>` : ''}</section>` : ''}
     <section class="kotak" aria-label="Refleksi dan nota"><span class="eyebrow">${a.refleksi ? 'Soalan refleksi' : 'Nota peribadi'}</span>${a.refleksi ? `<h3>${esc(a.refleksi)}</h3>` : ''}<label class="sr" for="nota-${slug}">Nota peribadi</label><textarea id="nota-${slug}" rows="4" data-nota="${slug}" placeholder="Tulis jawapan atau nota kau. Disimpan secara automatik dan hanya kau yang boleh lihat.">${esc(S.nota[slug] || '')}</textarea><span class="kecil-nota" id="notaStatus">${S.nota[slug] ? 'Disimpan.' : ''}</span></section>
-    <section style="display:grid;gap:12px;max-width:var(--lajur)"><span class="eyebrow">Sumber & rujukan</span><ol class="rujukan">${a.rujukan.map(r => `<li>${esc(r)}</li>`).join('')}</ol>
+    ${kadIntegriti(a)}
+    <section style="display:grid;gap:12px;max-width:var(--lajur)" id="sumber"><span class="eyebrow">Sumber & rujukan</span><ol class="rujukan">${a.rujukan.map(bacaSumber).map(r => `<li>${JENIS_SUMBER[r.j] ? `<span class="cip sumber-${r.j}">${JENIS_SUMBER[r.j]}</span> ` : ''}${esc(r.t)}</li>`).join('')}</ol>
       <p class="kecil-nota">Kemas kini terakhir ${tarikh(a.kemas)}. Terjumpa kesilapan? <button class="pautan" data-act="lapor" data-slug="${slug}">Laporkan kesilapan</button>. Baca <a class="pautan" href="#tentang">standard editorial</a> kami.</p></section>
     ${prod && !S.tetapan.sorokKopi ? `<aside class="teman-kopi" aria-label="Teman bacaan">${kotakBotol(prod)}<p><b>Teman bacaan:</b> ${esc(prod.nama)} dari Sip 'n Go, ${rm(prod.harga)}. ${esc(prod.sebab)} <a class="pautan" href="#p.${prod.id}">Lihat botol</a> · <span>Pilihan, bukan syarat.</span></p></aside>` : ''}
     <section style="display:grid;gap:20px">
@@ -522,7 +607,7 @@ V.a = slug => {
     </section>
   </div>
   <aside class="sisi" aria-label="Isi kandungan"><div><span class="eyebrow">Isi kandungan</span><ol class="isi-kandungan">${a.bahagian.map((b, i) => `<li><a href="#a.${slug}" data-act="bab" data-bab="${i}">${esc(b.h)}</a></li>`).join('')}</ol>
-    <div class="meta" style="margin-top:8px"><span>${m.baca} min baca</span><span>${a.rujukan.length} sumber</span></div>
+    <div class="meta" style="margin-top:8px"><span>${m.baca} min baca</span><span>${a.rujukan.length} sumber</span><span>${a.rujukan.map(bacaSumber).filter(r => r.j === 'primer' || r.j === 'rasmi').length} primer/rasmi</span></div>
     ${a.tag.length ? `<div class="lencana-format">${a.tag.map(t => `<span>${esc(t)}</span>`).join('')}</div>` : ''}</div></aside>
   </article></div>`;
 };
@@ -550,7 +635,7 @@ V.v = slug => {
   <aside style="display:grid;gap:22px;align-content:start;min-width:0">
     <div style="display:grid;gap:8px"><span class="eyebrow">Bab</span><ol class="bab-senarai">${x.map((s, j) => { const mula = t; t += s.saat; return `<li><button data-act="video-ke" data-i="${j}"><span>${fmtMasa(mula)}</span>${esc(s.h)}</button></li>`; }).join('')}</ol></div>
     <details><summary style="cursor:pointer;font-weight:600">Transkrip penuh</summary><div class="prosa" style="font-size:1rem;margin-top:12px">${x.map(s => `<p><b>${esc(s.h)}</b> ${esc(s.cap)}</p>`).join('')}</div></details>
-    <div style="display:grid;gap:8px"><span class="eyebrow">Sumber</span><ol class="rujukan">${a.rujukan.map(r => `<li>${esc(r)}</li>`).join('')}</ol></div>
+    <div style="display:grid;gap:8px"><span class="eyebrow">Sumber</span><ol class="rujukan">${a.rujukan.map(bacaSumber).map(r => `<li>${JENIS_SUMBER[r.j] ? `<span class="cip sumber-${r.j}">${JENIS_SUMBER[r.j]}</span> ` : ''}${esc(r.t)}</li>`).join('')}</ol></div>
   </aside></div></div>`;
 };
 const m2 = a => minit(a).lihat;
@@ -754,6 +839,9 @@ V.tentang = () => `<div class="bekas"><header class="halaman-kepala"><span class
     <div class="blok-teks"><h3>Misi</h3><ul><li>Menjadikan ilmu lebih mudah difahami oleh orang awam.</li><li>Membolehkan pengguna belajar mengikut masa, minat dan gaya mereka.</li><li>Menghubungkan ilmu daripada pelbagai bidang.</li><li>Membina tabiat pembelajaran sepanjang hayat.</li><li>Menyokong pencipta kandungan dan perniagaan kopi dalam ekosistem yang sama.</li></ul></div>
     <div class="blok-teks"><h3>Prinsip produk</h3><ul><li>Ilmu dahulu: kandungan berkualiti ialah sebab utama pengguna datang.</li><li>Pelbagai format: satu topik dalam teks, visual dan audio.</li><li>Penerokaan berhubung melalui laluan dan cadangan yang relevan.</li><li>Gamifikasi sihat: tiada hukuman apabila berehat.</li><li>Perniagaan yang jelas: kandungan percuma, produk digital dan kopi dibezakan.</li></ul></div>
   </div></section>
+  <section class="seksyen" id="taktik">${kepalaSeksyen('Kenapa kami tidak mengejar pageview', 'Sembilan taktik manipulasi media, dan benteng kami', 'Dalam Trust Me, I\'m Lying, Ryan Holiday mendedahkan bagaimana penerbit yang dibayar mengikut tontonan mudah dimanipulasi. Ruang Ilmu dibina supaya setiap taktik itu tidak berkesan di sini.', '<a class="pautan" href="#a.taktik-manipulasi-media">Baca ringkasan buku</a>')}
+  <div class="jadual-bekas"><table class="jadual taktik"><thead><tr><th>Taktik</th><th>Bahaya</th><th>Benteng Ruang Ilmu</th></tr></thead><tbody>${TAKTIK.map(t => `<tr><td><b>#${t.n}</b> ${esc(t.taktik)}</td><td>${esc(t.bahaya)}</td><td>${esc(t.benteng)}</td></tr>`).join('')}${BENTENG_LAIN.map(t => `<tr><td><b>${esc(t.n)}</b></td><td>Dibincangkan dalam bab yang sama.</td><td>${esc(t.benteng)}</td></tr>`).join('')}</tbody></table></div>
+  <p style="padding-top:16px"><a class="btn garis" href="#l.celik-media">Ikut laluan Celik media</a></p></section>
   <section class="seksyen" id="standard">${kepalaSeksyen('Standard editorial', 'Bagaimana setiap bahan dihasilkan', '')}
   <div class="jadual-bekas"><table class="jadual"><thead><tr><th>Langkah</th><th>Aktiviti</th><th>Kawalan kualiti</th></tr></thead><tbody>${LANGKAH.map((l, i) => `<tr><td>${i + 1}. ${l[0]}</td><td>${l[1]}</td><td>${l[2]}</td></tr>`).join('')}</tbody></table></div>
   <div class="dua-kolum-teks" style="padding-top:28px"><div class="blok-teks"><h3>Kami berjanji</h3><ul><li>Membezakan fakta, tafsiran dan pendapat.</li><li>Menyediakan sumber yang boleh diperiksa dan tarikh kemas kini.</li><li>Menjelaskan hak penggunaan teks, imej, audio dan video.</li><li>Membetulkan kesilapan secara terbuka.</li></ul></div>
@@ -781,33 +869,61 @@ const LANGKAH = [
 ];
 
 function semakMetadata(d) {
+  const src = (d.sumber || []).map(bacaSumber); const dk = (d.dakwaan || []).map(bacaDakwaan);
+  const tajukIsu = semakTajuk(d.tajuk, d.ringkas60);
   return [
     ['Tajuk dan ringkasan', !!(d.tajuk && d.dek && d.ringkas60)],
+    [tajukIsu.length ? `Semakan tajuk: ${tajukIsu.join('; ')}` : 'Tajuk lulus semakan umpan klik', !tajukIsu.length],
     ['Kategori, tag dan tahap', !!(d.kategori && d.tag?.length && d.tahap)],
     ['Isi sekurang-kurangnya 80 perkataan', kiraPerkataan(d.isi || '') >= 80],
-    ['Sekurang-kurangnya satu sumber', (d.sumber || []).length >= 1],
+    ['Sekurang-kurangnya satu sumber primer atau rasmi', src.some(r => r.j === 'primer' || r.j === 'rasmi')],
+    ['Setiap sumber berlabel jenis', src.length > 0 && src.every(r => JENIS_SUMBER[r.j])],
+    ['Dakwaan utama berlabel, fakta dan pengiraan bersumber', dk.length > 0 && dk.every(x => JENIS_DAKWAAN[x.j] && (!PERLU_SUMBER.includes(x.j) || (x.s.length && x.s.every(n => n < src.length))))],
+    ['Pendedahan kepentingan diisi', !!(d.kepentingan && d.kepentingan.trim())],
     ['Penulis dan penyemak dinamakan', !!(d.penulis && d.penyemak)]
   ];
 }
-V.studio = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Studio editorial · prototaip CMS</span><h1>Dari soalan pembaca ke bahan yang disemak</h1><p class="lede">Setiap bahan melalui tujuh langkah. Butang terbit hanya aktif apabila metadata minimum lengkap. Draf disimpan dalam peranti ini.</p><div><button class="btn" data-act="draf-baru">Draf baharu</button></div></header>
+const LABEL_STATUS = { baru: 'Baru', disemak: 'Disemak', dibetulkan: 'Dibetulkan', ditolak: 'Ditolak' };
+V.studio = () => {
+  const isu = sahkanKandungan();
+  const bahan = semua();
+  const jum = k => bahan.reduce((t, a) => t + ukuran(a.slug)[k], 0);
+  const kuizSemua = S.peristiwa.filter(e => e.j === 'kuiz');
+  const hariAktif = Object.values(S.hari).filter(h => h.aktif).length;
+  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Studio editorial · prototaip CMS</span><h1>Dari soalan pembaca ke bahan yang disemak</h1><p class="lede">Setiap bahan melalui tujuh langkah. Butang terbit hanya aktif apabila metadata, sumber dan dakwaan lulus semakan. Draf disimpan dalam peranti ini.</p><div class="butang-format"><button class="btn" data-act="draf-baru">Draf baharu</button><a class="btn garis" href="#tentang" data-act="ke-tentang-taktik">Kenapa begini?</a></div></header>
+
+  <section class="seksyen">${kepalaSeksyen('Semakan integriti data', isu.length ? `${isu.length} isu perlu dibetulkan` : 'Semua bahan lulus semakan', 'Dijalankan setiap kali Studio dibuka: jenis sumber, dakwaan fakta tanpa sumber, rujukan yang tiada, tajuk umpan klik dan pautan yang putus.')}
+    ${isu.length ? `<ul class="senarai-isu">${isu.map(([t, m]) => `<li><b>${esc(t)}</b> · ${esc(m)}</li>`).join('')}</ul>` : `<p class="lulus">✓ ${bahan.length} bahan, ${bahan.reduce((t, a) => t + (a.dakwaan || []).length, 0)} dakwaan, ${bahan.reduce((t, a) => t + a.rujukan.length, 0)} sumber, ${LALUAN.length} laluan dan ${PRODUK.length} produk disemak.</p>`}</section>
+
+  <section class="seksyen">${kepalaSeksyen('Ukuran yang kami pilih', 'Kefahaman, bukan pageview', 'Data peranti ini sahaja. Kami sengaja tidak menjadikan jumlah tontonan sebagai ukuran utama, kerana penerbit yang mengejar tontonan akan mengejar sensasi.')}
+    <div class="statistik"><div><b>${jum('buka') ? Math.round(jum('selesai') / jum('buka') * 100) + '%' : '–'}</b><span>kadar lengkap (selesai ÷ dibuka)</span></div><div><b>${kuizSemua.length ? Math.round(kuizSemua.filter(e => e.betul).length / kuizSemua.length * 100) + '%' : '–'}</b><span>jawapan kuiz tepat</span></div><div><b>${hariAktif}</b><span>hari pembaca kembali aktif</span></div><div><b>${Object.values(S.format).filter(f => Object.keys(f).length > 1).length}</b><span>bahan dinikmati dalam lebih satu format</span></div><div><b>${jum('simpan')}</b><span>disimpan untuk dibaca semula</span></div></div>
+    <div class="jadual-bekas" style="margin-top:20px"><table class="jadual ukuran"><thead><tr><th>Bahan</th><th>Dibuka</th><th>Dibaca ≥80%</th><th>Selesai</th><th>Kuiz tepat</th><th>Disimpan</th><th>Dikongsi</th></tr></thead><tbody>${bahan.map(a => { const u = ukuran(a.slug); return `<tr><td><a class="pautan" href="#a.${a.slug}" style="font-weight:400">${esc(a.tajuk)}</a></td><td>${u.buka}</td><td>${u.baca80}</td><td>${u.selesai}</td><td>${u.kuizTepat == null ? '–' : u.kuizTepat + '%'}</td><td>${u.simpan}</td><td>${u.kongsi}</td></tr>`; }).join('')}</tbody></table></div></section>
+
   <section class="seksyen">${kepalaSeksyen('Dalam proses', `${S.draf.length} draf`, S.draf.length ? '' : 'Belum ada draf. Mulakan dengan satu soalan yang sering ditanya pembaca.')}
   ${S.draf.map(d => { const sm = semakMetadata(d); const lengkap = sm.every(x => x[1]); return `<div class="studio-baris"><div class="atas"><b style="font-family:var(--serif);font-size:1.25rem">${esc(d.tajuk || 'Tanpa tajuk')}</b><span class="meta"><span>${esc(KAT[d.kategori]?.nama || '—')}</span><span>Langkah ${Math.min(d.langkah + 1, 7)}/7: ${LANGKAH[Math.min(d.langkah, 6)][0]}</span>${d.langkah >= 6 ? '<span style="color:var(--baik)">Diterbitkan</span>' : ''}</span></div>
     <div class="aliran" aria-hidden="true">${LANGKAH.map((l, i) => `<span class="${i <= d.langkah ? 'siap' : ''}"></span>`).join('')}</div>
-    <ul class="semak-senarai">${sm.map(([n, ok]) => `<li class="${ok ? 'ok' : ''}">${n}</li>`).join('')}</ul>
-    <div class="butang-format"><button class="btn kecil garis" data-act="draf-sunting" data-id="${d.id}">Sunting</button>${d.langkah < 5 ? `<button class="btn kecil" data-act="draf-maju" data-id="${d.id}">Maju ke ${LANGKAH[d.langkah + 1][0]}</button>` : d.langkah === 5 ? `<button class="btn kecil merah" data-act="draf-maju" data-id="${d.id}" ${lengkap ? '' : 'disabled'}>Terbitkan</button>${lengkap ? '' : '<span class="kecil-nota">Lengkapkan metadata untuk terbit.</span>'}` : `<a class="btn kecil" href="#a.d-${d.id}">Lihat bahan</a>`}<button class="btn kecil garis" data-act="draf-padam" data-id="${d.id}">Padam</button></div></div>`; }).join('')}</section>
-  <section class="seksyen">${kepalaSeksyen('Diterbitkan', `${KANDUNGAN.length} bahan contoh`, 'Semua bahan contoh mempunyai sumber, metadata dan status semakan.')}
-  <div class="jadual-bekas"><table class="jadual"><thead><tr><th>Tajuk</th><th>Bidang</th><th>Sumber</th><th>Kemas kini</th></tr></thead><tbody>${KANDUNGAN.map(a => `<tr><td><a class="pautan" href="#a.${a.slug}" style="font-weight:400">${esc(a.tajuk)}</a></td><td>${esc(KAT[a.kategori].nama)}</td><td>${a.rujukan.length}</td><td>${tarikh(a.kemas)}</td></tr>`).join('')}</tbody></table></div></section>
-  ${S.laporan.length ? `<section class="seksyen">${kepalaSeksyen('Maklum balas', 'Laporan dan cadangan pembaca', '')}<ul class="senarai-baris">${S.laporan.map(l => `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><b>${esc(l.jenis)}${l.slug ? ` · ${esc(cari(l.slug)?.tajuk || l.slug)}` : ''}</b><span style="color:var(--kelabu)">${esc(l.teks)}</span><span class="meta"><span>${tarikh(l.masa)}</span></span></div></div></li>`).join('')}</ul></section>` : ''}</div>`;
+    <ul class="semak-senarai">${sm.map(([n, ok]) => `<li class="${ok ? 'ok' : ''}">${esc(n)}</li>`).join('')}</ul>
+    <div class="butang-format"><button class="btn kecil garis" data-act="draf-sunting" data-id="${d.id}">Sunting</button>${d.langkah < 5 ? `<button class="btn kecil" data-act="draf-maju" data-id="${d.id}">Maju ke ${LANGKAH[d.langkah + 1][0]}</button>` : d.langkah === 5 ? `<button class="btn kecil merah" data-act="draf-maju" data-id="${d.id}" ${lengkap ? '' : 'disabled'}>Terbitkan</button>${lengkap ? '' : '<span class="kecil-nota">Lengkapkan semakan untuk terbit.</span>'}` : `<a class="btn kecil" href="#a.d-${d.id}">Lihat bahan</a>`}<button class="btn kecil garis" data-act="draf-padam" data-id="${d.id}">Padam</button></div></div>`; }).join('')}</section>
+
+  <section class="seksyen">${kepalaSeksyen('Laporan pembaca', S.laporan.length ? `${S.laporan.filter(l => l.status === 'baru' || !l.status).length} baru` : 'Tiada laporan', 'Setiap laporan disemak manusia. Pembetulan diterbitkan secara terbuka dan dihantar kepada pembaca yang pernah membuka bahan itu.')}
+  ${S.laporan.length ? `<ul class="senarai-baris">${S.laporan.map(l => { const st = l.status || 'baru'; return `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><span class="meta"><span class="cip status-${st}">${LABEL_STATUS[st]}</span><span>${esc(l.jenis)}</span><span>${tarikh(l.masa)}</span></span><b>${l.slug ? esc(cari(l.slug)?.tajuk || l.slug) : 'Umum'}</b><span style="color:var(--kelabu)">${esc(l.teks)}</span>
+    ${st === 'baru' || st === 'disemak' ? `<div class="butang-format" style="margin-top:6px">${st === 'baru' ? `<button class="btn kecil garis" data-act="laporan-status" data-id="${l.id}" data-status="disemak">Tandakan disemak</button>` : ''}${l.slug ? `<button class="btn kecil" data-act="laporan-betulkan" data-id="${l.id}">Terbitkan pembetulan</button>` : ''}<button class="btn kecil garis" data-act="laporan-status" data-id="${l.id}" data-status="ditolak">Tolak</button></div>` : ''}</div></div></li>`; }).join('')}</ul>` : ''}</section>
+
+  <section class="seksyen">${kepalaSeksyen('Diterbitkan', `${bahan.length} bahan`, 'Setiap bahan mempunyai sumber berlabel, dakwaan berlabel dan sejarah versi.')}
+  <div class="jadual-bekas"><table class="jadual"><thead><tr><th>Tajuk</th><th>Bidang</th><th>Sumber (primer/rasmi)</th><th>Dakwaan</th><th>Pembetulan</th><th>Kemas kini</th></tr></thead><tbody>${bahan.map(a => `<tr><td><a class="pautan" href="#a.${a.slug}" style="font-weight:400">${esc(a.tajuk)}</a></td><td>${esc(KAT[a.kategori]?.nama || '')}</td><td>${a.rujukan.length} (${a.rujukan.map(bacaSumber).filter(r => r.j === 'primer' || r.j === 'rasmi').length})</td><td>${(a.dakwaan || []).length}</td><td>${pembetulanBahan(a.slug).length}</td><td>${tarikh(a.kemas)}</td></tr>`).join('')}</tbody></table></div></section></div>`;
+};
 
 function borangDraf(d) {
   return `<form class="borang-grid" data-borang="draf" data-id="${d?.id || ''}">
-    <div class="medan"><label for="dTajuk">Tajuk</label><input id="dTajuk" required value="${esc(d?.tajuk)}" placeholder="Soalan atau tajuk yang jelas"></div>
+    <div class="medan"><label for="dTajuk">Tajuk</label><input id="dTajuk" required value="${esc(d?.tajuk)}" placeholder="Soalan atau tajuk yang jelas. Jika soalan, jawab dalam Faham dalam 60 saat."></div>
     <div class="medan"><label for="dDek">Ringkasan satu ayat</label><input id="dDek" value="${esc(d?.dek)}"></div>
     <div class="borang-grid dua"><div class="medan"><label for="dKat">Kategori</label><select id="dKat">${KATEGORI.map(k => `<option value="${k.id}" ${d?.kategori === k.id ? 'selected' : ''}>${esc(k.nama)}</option>`).join('')}</select></div><div class="medan"><label for="dTahap">Tahap</label><select id="dTahap">${['Asas', 'Pertengahan', 'Mendalam'].map(t => `<option ${d?.tahap === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
     <div class="medan"><label for="dTag">Tag (pisahkan dengan koma)</label><input id="dTag" value="${esc((d?.tag || []).join(', '))}"></div>
     <div class="medan"><label for="dRingkas">Faham dalam 60 saat</label><textarea id="dRingkas" rows="3">${esc(d?.ringkas60)}</textarea></div>
     <div class="medan"><label for="dIsi">Isi (mulakan bab dengan "## ", pisahkan perenggan dengan baris kosong, ==sorotan==)</label><textarea id="dIsi" rows="8">${esc(d?.isi)}</textarea></div>
-    <div class="medan"><label for="dSumber">Sumber (satu setiap baris)</label><textarea id="dSumber" rows="3">${esc((d?.sumber || []).join('\n'))}</textarea></div>
+    <div class="medan"><label for="dSumber">Sumber, satu setiap baris, dimulakan dengan jenis: primer:, ulasan:, rasmi:, esei: atau pengiraan:</label><textarea id="dSumber" rows="3" placeholder="primer: Forer, B. R. (1949). The fallacy of personal validation.">${esc((d?.sumber || []).join('\n'))}</textarea></div>
+    <div class="medan"><label for="dDakwaan">Dakwaan utama, satu setiap baris: jenis: teks [nombor sumber]. Jenis: fakta, pengiraan, tafsiran, dibahas, riwayat, pendapat, nasihat</label><textarea id="dDakwaan" rows="3" placeholder="fakta: Purata penilaian ketepatan ialah 4.26 daripada 5. [1]">${esc((d?.dakwaan || []).join('\n'))}</textarea></div>
+    <div class="medan"><label for="dKepentingan">Pendedahan kepentingan</label><input id="dKepentingan" value="${esc(d?.kepentingan ?? 'Tiada kepentingan komersial pada bahan ini.')}"></div>
     <div class="borang-grid dua"><div class="medan"><label for="dPenulis">Penulis</label><input id="dPenulis" value="${esc(d?.penulis)}"></div><div class="medan"><label for="dPenyemak">Penyemak</label><input id="dPenyemak" value="${esc(d?.penyemak)}"></div></div>
     <button class="btn" type="submit">Simpan draf</button></form>`;
 }
@@ -867,7 +983,7 @@ function kemasPengepala() {
 /* ================= Bacaan: kemajuan, isi kandungan ================= */
 let pemerhati, gulungT;
 function pasangBacaan(slug) {
-  S.akses[slug] = Date.now(); simpan();
+  S.akses[slug] = Date.now(); S.lihatBetul[slug] = Date.now(); catat('buka', slug);
   const pro = $('#prosa'); if (!pro) return;
   pemerhati?.disconnect();
   const tajuk = $$('h2', pro); const pautan = $$('.isi-kandungan a');
@@ -886,7 +1002,7 @@ window.addEventListener('scroll', () => {
   gulungT = setTimeout(() => {
     const slug = CURR.p; if (!cari(slug)) return;
     if (p > (S.posisi[slug] || 0) || p < 3) S.posisi[slug] = p;
-    if (p >= 80) (S.format[slug] ||= {}).baca = true;
+    if (p >= 80) { if (!S.format[slug]?.baca) catat('baca80', slug); (S.format[slug] ||= {}).baca = true; }
     simpan();
   }, 400);
 }, { passive: true });
@@ -924,11 +1040,11 @@ A['video-kapsyen'] = () => { Video.kapsyen = !Video.kapsyen; Video.lukis(); };
 A['video-narasi'] = () => { Video.narasi = !Video.narasi; if (!Video.narasi && sokongSuara) { speechSynthesis.cancel(); Video.cakapSiap = true; } else if (Video.main) Video.bacaNarasi(); Video.lukis(); };
 A.simpan = el => {
   const s = el.dataset.slug; const i = S.simpan.indexOf(s);
-  if (i >= 0) S.simpan.splice(i, 1); else S.simpan.unshift(s);
+  if (i >= 0) S.simpan.splice(i, 1); else { S.simpan.unshift(s); catat('simpan', s); }
   simpan(); toast(i >= 0 ? 'Dibuang dari simpanan' : 'Disimpan dalam koleksi peribadi'); render();
 };
 A.kongsi = () => {
-  const url = location.href;
+  const url = location.href; if (CURR.v === 'a' || CURR.v === 'v') catat('kongsi', CURR.p);
   const gagal = () => bukaModal('Salin pautan', `<div class="medan"><label for="pautanKongsi">Pautan</label><input id="pautanKongsi" readonly value="${esc(url)}"></div>`) || setTimeout(() => $('#pautanKongsi')?.select(), 30);
   try { navigator.clipboard.writeText(url).then(() => toast('Pautan disalin'), gagal); } catch (e) { gagal(); }
 };
@@ -948,14 +1064,14 @@ A.tema = el => { S.tetapan.tema = el.dataset.v; simpan(); terapTetapan(); $$('[d
 A.selesai = el => {
   const s = el.dataset.slug;
   if (S.selesai[s]) { delete S.selesai[s]; simpan(); toast('Tanda selesai dibuang'); render(); return; }
-  S.selesai[s] = hariIni(); (S.format[s] ||= {}).baca = true;
+  S.selesai[s] = hariIni(); (S.format[s] ||= {}).baca = true; catat('selesai', s);
   if (!S.xpSelesai?.[s]) { (S.xpSelesai ||= {})[s] = 1; tambahXP(20, 'Bahan selesai'); } else { tandaAktif(); toast('Ditanda selesai'); }
   semakLaluan(); render();
 };
 A.jawab = el => {
   const s = el.dataset.slug, q = +el.dataset.q, j = +el.dataset.j; const a = cari(s);
   const pertama = !(S.xpKuiz?.[s]?.[q]);
-  (S.kuiz[s] ||= {})[q] = j;
+  (S.kuiz[s] ||= {})[q] = j; catat('kuiz', s, { betul: j === a.kuiz[q].j });
   if (pertama) { ((S.xpKuiz ||= {})[s] ||= {})[q] = 1; if (j === a.kuiz[q].j) tambahXP(10, 'Jawapan tepat'); else tandaAktif(); }
   simpan();
   const y = scrollY; render(); window.scrollTo(0, y);
@@ -996,9 +1112,23 @@ A.pasang = () => {
   bukaModal('Pasang Ruang Ilmu', `<div class="blok-teks"><p><b>Android (Chrome):</b> menu ⋮ → <i>Install app</i> atau <i>Tambah ke skrin utama</i>.</p><p><b>iPhone (Safari):</b> butang Kongsi → <i>Add to Home Screen</i>.</p><p><b>Komputer (Chrome/Edge):</b> ikon pasang di hujung bar alamat.</p><p class="kecil-nota">App yang dipasang dibuka tanpa bar pelayar dan boleh membuka bahan yang pernah dibaca walaupun tanpa internet.</p></div>`);
 };
 A['pilih-rehat'] = () => {};
+A['salin-fakta'] = el => {
+  const a = cari(el.dataset.slug); const f = a.fakta[+el.dataset.i];
+  const src = a.rujukan.map(bacaSumber); const utama = src.find(r => r.j === 'primer' || r.j === 'rasmi') || src[0];
+  const teks = `${f}\nSumber: ${utama ? utama.t : 'Ruang Ilmu'}\nDari "${a.tajuk}", Ruang Ilmu: ${location.href.split('#')[0]}#a.${a.slug}`;
+  catat('kongsi', a.slug);
+  const gagal = () => { bukaModal('Salin kad fakta', `<div class="medan"><label for="teksFakta">Teks untuk dikongsi</label><textarea id="teksFakta" rows="6" readonly>${esc(teks)}</textarea></div>`); setTimeout(() => $('#teksFakta')?.select(), 30); };
+  try { navigator.clipboard.writeText(teks).then(() => toast('Kad fakta disalin bersama sumbernya'), gagal); } catch (e) { gagal(); }
+};
+A['laporan-status'] = el => { const l = S.laporan.find(x => x.id === el.dataset.id); if (!l) return; l.status = el.dataset.status; simpan(); render(); };
+A['laporan-betulkan'] = el => {
+  const l = S.laporan.find(x => x.id === el.dataset.id); if (!l) return; const a = cari(l.slug);
+  bukaModal('Terbitkan pembetulan', `<form class="borang-grid" data-borang="betul" data-id="${l.id}"><p class="kecil-nota">Untuk: <b>${esc(a?.tajuk || l.slug)}</b>. Laporan pembaca: "${esc(l.teks)}"</p><div class="medan"><label for="bTeks">Apa yang dibetulkan (dipaparkan di atas artikel dan kepada pembaca asal)</label><textarea id="bTeks" rows="3" required placeholder="Contoh: Tarikh terbitan kajian dibetulkan daripada 1948 kepada 1949."></textarea></div><button class="btn" type="submit">Terbitkan pembetulan</button></form>`);
+};
 A.bab = el => { const h = $('#bab-' + el.dataset.bab); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 A['draf-baru'] = () => bukaModal('Draf baharu', borangDraf(null));
 A['draf-sunting'] = el => bukaModal('Sunting draf', borangDraf(S.draf.find(d => d.id === el.dataset.id)));
+A['ke-tentang-taktik'] = () => { location.hash = 'tentang'; setTimeout(() => $('#taktik')?.scrollIntoView({ behavior: 'smooth' }), 120); };
 A['draf-maju'] = el => {
   const d = S.draf.find(x => x.id === el.dataset.id); if (!d) return;
   if (d.langkah === 5 && !semakMetadata(d).every(x => x[1])) { toast('Lengkapkan metadata dahulu'); return; }
@@ -1050,15 +1180,20 @@ document.addEventListener('submit', e => {
     $$('#surat-borang').forEach(el => { el.innerHTML = borangSurat('emelHero'); });
   }
   if (jenis === 'cari') { CARI.q = $('#medanCari').value; $('#hasilCari').innerHTML = hasilCari(CURR.p); $('#hasilCari').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  if (jenis === 'lapor') { S.laporan.unshift({ jenis: f.dataset.jenis || $('#lJenis')?.value || 'Laporan', slug: f.dataset.slug || '', teks: $('#lTeks').value.trim(), masa: Date.now() }); simpan(); tutupModal(); toast('Terima kasih. Pasukan editorial akan menyemaknya.'); }
+  if (jenis === 'lapor') { S.laporan.unshift({ id: Math.random().toString(36).slice(2, 8), status: 'baru', jenis: f.dataset.jenis || $('#lJenis')?.value || 'Laporan', slug: f.dataset.slug || '', teks: $('#lTeks').value.trim(), masa: Date.now() }); simpan(); tutupModal(); toast('Terima kasih. Pasukan editorial akan menyemaknya.'); }
   if (jenis === 'akaun') { S.akaun = { nama: $('#aNama').value.trim(), emel: $('#aEmel').value.trim() }; simpan(); tutupModal(); toast(`Selamat datang, ${S.akaun.nama}.`); render(); }
+  if (jenis === 'betul') {
+    const l = S.laporan.find(x => x.id === f.dataset.id); if (!l) return;
+    (S.pembetulan[l.slug] ||= []).push({ tarikh: hariIni(), masa: Date.now(), teks: $('#bTeks').value.trim(), laporan: l.id });
+    l.status = 'dibetulkan'; INDEKS = null; simpan(); tutupModal(); toast('Pembetulan diterbitkan. Pembaca asal akan dimaklumkan.'); render();
+  }
   if (jenis === 'draf') {
     const id = f.dataset.id || Math.random().toString(36).slice(2, 8);
     let d = S.draf.find(x => x.id === id); if (!d) { d = { id, langkah: 0 }; S.draf.unshift(d); }
     Object.assign(d, {
       tajuk: $('#dTajuk').value.trim(), dek: $('#dDek').value.trim(), kategori: $('#dKat').value, tahap: $('#dTahap').value,
       tag: $('#dTag').value.split(',').map(x => x.trim()).filter(Boolean), ringkas60: $('#dRingkas').value.trim(), isi: $('#dIsi').value,
-      sumber: $('#dSumber').value.split('\n').map(x => x.trim()).filter(Boolean), penulis: $('#dPenulis').value.trim(), penyemak: $('#dPenyemak').value.trim(), kemas: hariIni()
+      sumber: $('#dSumber').value.split('\n').map(x => x.trim()).filter(Boolean), dakwaan: $('#dDakwaan').value.split('\n').map(x => x.trim()).filter(Boolean), kepentingan: $('#dKepentingan').value.trim(), penulis: $('#dPenulis').value.trim(), penyemak: $('#dPenyemak').value.trim(), kemas: hariIni()
     });
     INDEKS = null; simpan(); tutupModal(); toast('Draf disimpan'); render();
   }
