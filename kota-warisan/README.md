@@ -21,6 +21,7 @@ Buka `index.html` terus dalam pelayar. Tiada pelayan atau binaan diperlukan. Sim
 index.html   rangka HUD dan modal
 styles.css   gaya (kayu jati, kuning diraja, songket)
 data.js      imbangan, bangunan, tentera, hikayat, kuiz, kempen
-app.js       enjin: masa, lukisan isometrik kanvas, input, perang, puak, UI
+grafik.js    dunia 3D (three.js r128): model low-poly bersudut bulat, cahaya, bayang, laut, pokok
+app.js       enjin: masa, kamera, input, perang, puak, UI dan lapisan atas 2D
 ```
 Semua angka imbangan ada dalam `data.js`.

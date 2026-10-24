@@ -311,506 +311,56 @@ function sfx(n) {
   }
 }
 
-/* ================= Kanvas & kamera ================= */
+/* ================= Kanvas, kamera & lapisan atas =================
+   Dunia dilukis dalam 3D oleh grafik.js pada #gl. Kanvas #cv di atasnya menerima sentuhan
+   dan melukis bar nyawa, gelembung hasil dan teks terapung. */
 const cv = $('#cv');
 let ctx = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1;
-const TW = 64, TH = 32, ZS = 30, ZMIN = .28, ZMAX = 1.8;
-const cam = { x: 0, y: 0, z: 1 };
-function ubahSaiz() { DPR = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); hadKamera(); }
-function P(x, y, z = 0) { return [(x - y) * TW / 2, (x + y) * TH / 2 - z * ZS]; }
-function skrinKeDunia(sx, sy) {
-  const wx = (sx - W / 2) / cam.z + cam.x, wy = (sy - H / 2) / cam.z + cam.y;
-  return [(wx / (TW / 2) + wy / (TH / 2)) / 2, (wy / (TH / 2) - wx / (TW / 2)) / 2];
+const ZMIN = .55, ZMAX = 4.2;
+const cam = { x: G / 2, y: G / 2, z: 1 };
+function ubahSaiz() { DPR = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); G3.saiz(W, H, DPR); hadKamera(); }
+const skrinKeDunia = (sx, sy) => G3.skrinKeDunia(sx, sy);
+function hadKamera() { cam.z = clamp(cam.z, ZMIN, ZMAX); cam.x = clamp(cam.x, -4, G + 4); cam.y = clamp(cam.y, -4, G + 6); }
+function kameraAsal() {
+  const tv = Math.tan(15 * Math.PI / 180), asp = W / Math.max(1, H), d = clamp(Math.max(10 / (tv * asp), 13 / tv), 32, 90);
+  cam.x = G / 2; cam.y = G / 2 + .5; cam.z = 64 / d; hadKamera();
 }
-const keSkrin = (p) => [(p[0] - cam.x) * cam.z + W / 2, (p[1] - cam.y) * cam.z + H / 2];
-function hadKamera() { cam.z = clamp(cam.z, ZMIN, ZMAX); cam.x = clamp(cam.x, -G * TW / 2 - 200, G * TW / 2 + 200); cam.y = clamp(cam.y, -150, G * TH + 250); }
-function kameraAsal() { const c = P(G / 2, G / 2); cam.x = c[0]; cam.y = c[1] - 10; cam.z = clamp(Math.min(W / (G * TW * .78), H / (G * TH * 1.05)), .42, 1.05); hadKamera(); }
-function zoomDi(sx, sy, z) {
-  z = clamp(z, ZMIN, ZMAX);
-  const wx = (sx - W / 2) / cam.z + cam.x, wy = (sy - H / 2) / cam.z + cam.y;
-  cam.z = z; cam.x = wx - (sx - W / 2) / z; cam.y = wy - (sy - H / 2) / z; hadKamera();
-}
-
-/* ---------- primitif lukisan ---------- */
-const GARIS = 'rgba(20,10,4,.5)';
-function poly(pts, fill, stroke) {
-  ctx.beginPath();
-  for (let i = 0; i < pts.length; i++) { const p = P(pts[i][0], pts[i][1], pts[i][2]); if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }
-  ctx.closePath();
-  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
-}
-function prism(x0, y0, x1, y1, z0, z1, c, garis = true) {
-  const st = garis ? GARIS : null;
-  poly([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], shade(c, -.18), st);
-  poly([[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], shade(c, -.34), st);
-  poly([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], c, st);
-}
-function tapak(x0, y0, x1, y1, c, z = 0) { poly([[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]], c); }
-function tiang(x0, y0, x1, y1, z0, z1, c, w = .1) {
-  for (const [x, y] of [[x0, y0], [x1 - w, y0], [x0, y1 - w], [x1 - w, y1 - w]]) prism(x, y, x + w, y + w, z0, z1, c, false);
-}
-function tanduk(x, y, z, dx, dy) {
-  const a = P(x, y, z), m = P(x + dx * .26, y + dy * .26, z + .04), b = P(x + dx * .3, y + dy * .3, z + .42);
-  ctx.strokeStyle = '#e0b03a'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.quadraticCurveTo(m[0], m[1], b[0], b[1]); ctx.stroke();
-}
-function bumbung(x0, y0, x1, y1, zb, rh, c, o = {}) {
-  const zr = zb + rh, dinding = o.dinding || shade(c, -.3);
-  if (o.paksi === 'y') {
-    const xm = (x0 + x1) / 2;
-    poly([[x0, y0, zb], [x0, y1, zb], [xm, y1, zr], [xm, y0, zr]], shade(c, .08), GARIS);
-    poly([[x1, y0, zb], [x1, y1, zb], [xm, y1, zr], [xm, y0, zr]], shade(c, -.22), GARIS);
-    poly([[x0, y1, zb], [x1, y1, zb], [xm, y1, zr]], dinding, GARIS);
-    if (o.tanduk) { tanduk(xm, y0, zr, 0, -1); tanduk(xm, y1, zr, 0, 1); }
-    return;
-  }
-  const ym = (y0 + y1) / 2, g = o.gonjong || 0;
-  if (g) {
-    const xa = x0 + (x1 - x0) * .25, xb = x1 - (x1 - x0) * .25, xm = (x0 + x1) / 2;
-    const rabung = [[x1 + .25, ym, zr + g], [xb, ym, zr + g * .28], [xm, ym, zr], [xa, ym, zr + g * .28], [x0 - .25, ym, zr + g]];
-    poly([[x0, y0, zb], [x1, y0, zb], ...rabung], shade(c, .1), GARIS);
-    poly([[x1, y0, zb], [x1, y1, zb], [x1 + .25, ym, zr + g]], dinding, GARIS);
-    poly([[x0, y1, zb], [x1, y1, zb], ...rabung], shade(c, -.12), GARIS);
-    return;
-  }
-  poly([[x0, y0, zb], [x1, y0, zb], [x1, ym, zr], [x0, ym, zr]], shade(c, .08), GARIS);
-  poly([[x1, y0, zb], [x1, y1, zb], [x1, ym, zr]], dinding, GARIS);
-  poly([[x0, y1, zb], [x1, y1, zb], [x1, ym, zr], [x0, ym, zr]], shade(c, -.12), GARIS);
-  if (o.tanduk) { tanduk(x0, ym, zr, -1, 0); tanduk(x1, ym, zr, 1, 0); }
-}
-function limas(x0, y0, x1, y1, zb, rh, c) {
-  const a = [(x0 + x1) / 2, (y0 + y1) / 2, zb + rh];
-  poly([[x0, y0, zb], [x1, y0, zb], a], shade(c, .12), GARIS);
-  poly([[x0, y0, zb], [x0, y1, zb], a], shade(c, .02), GARIS);
-  poly([[x1, y0, zb], [x1, y1, zb], a], shade(c, -.28), GARIS);
-  poly([[x0, y1, zb], [x1, y1, zb], a], shade(c, -.1), GARIS);
-}
+function kunciTitik(sx, sy, gx, gy) { const [a, b] = skrinKeDunia(sx, sy); cam.x += gx - a; cam.y += gy - b; hadKamera(); }
+function zoomDi(sx, sy, z) { const [gx, gy] = skrinKeDunia(sx, sy); cam.z = clamp(z, ZMIN, ZMAX); kunciTitik(sx, sy, gx, gy); }
 function bulat(x, y, r, c) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = c; ctx.fill(); }
 function garis(x1, y1, x2, y2, w, c) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineWidth = w; ctx.strokeStyle = c; ctx.lineCap = 'round'; ctx.stroke(); }
-function garisD(a, b, w, c) { const p = P(...a), q = P(...b); garis(p[0], p[1], q[0], q[1], w, c); }
-function bendera(x, y, z0, tg, corak, ts) {
-  const a = P(x, y, z0), b = P(x, y, z0 + tg);
-  garis(a[0], a[1], b[0], b[1], 2, '#3a2416');
-  const w = 26, h = 16, n = 8, sw = w / n, ofs = i => Math.sin(ts * 4 + i * .7) * 1.8 * (i / n);
-  for (let i = 0; i < n; i++) {
-    const fx = b[0] + i * sw, fy = b[1] + ofs(i);
-    if (corak === 'jalur') {
-      const sh = h / 7;
-      for (let s = 0; s < 7; s++) { ctx.fillStyle = s % 2 ? '#ffffff' : '#cc0001'; ctx.fillRect(fx, fy + s * sh, sw + .6, sh + .3); }
-      if (i < n / 2) { ctx.fillStyle = '#010066'; ctx.fillRect(fx, fy, sw + .6, h * 4 / 7); }
-    } else { ctx.fillStyle = corak; ctx.fillRect(fx, fy, sw + .6, h); }
-  }
-  if (corak === 'jalur') {
-    const cx = b[0] + sw * 1.6, cy = b[1] + ofs(2) + h * 2 / 7;
-    bulat(cx, cy, 3, '#ffcc00'); bulat(cx + 1.1, cy, 2.5, '#010066'); bulat(cx + 4.2, cy, 1.6, '#ffcc00');
-  } else if (corak === '#f4c20d') { bulat(b[0] + w / 2, b[1] + ofs(4) + h / 2, 3, '#8f1d21'); }
-}
-
-/* ---------- dunia: tanah, laut, pokok ---------- */
-const POKOK = (() => {
-  const r = rng(7), a = [];
-  for (let i = 0; i < 170; i++) {
-    const x = -11 + r() * (G + 22), y = -11 + r() * (G + 15);
-    if (x > -1.2 && x < G + 1.2 && y > -1.2 && y < G + 1.2) continue;
-    a.push({ x, y, j: 'pokok', s: .7 + r() * .6, w: r() });
-  }
-  for (let i = 0; i < 26; i++) a.push({ x: -6 + r() * (G + 14), y: G + 2.6 + r() * 1.2, j: 'kelapa', s: .8 + r() * .4, w: r() });
-  return a;
-})();
-function lukisPokok(p, ts) {
-  const [sx, sy] = P(p.x, p.y, 0);
-  ctx.save(); ctx.translate(sx, sy); ctx.scale(p.s, p.s);
-  ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(0, 0, 18, 7, 0, 0, 7); ctx.fill();
-  if (p.j === 'kelapa') {
-    const goyang = Math.sin(ts * 1.2 + p.w * 6) * 2;
-    ctx.strokeStyle = '#7a5a34'; ctx.lineWidth = 4; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(6, -24, 4 + goyang, -46); ctx.stroke();
-    ctx.strokeStyle = '#3f8a35'; ctx.lineWidth = 3.4;
-    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + p.w; ctx.beginPath(); ctx.moveTo(4 + goyang, -46); ctx.quadraticCurveTo(4 + goyang + Math.cos(a) * 14, -54 + Math.sin(a) * 4, 4 + goyang + Math.cos(a) * 22, -40 + Math.sin(a) * 6); ctx.stroke(); }
-    bulat(4 + goyang, -44, 3, '#6b4a1f');
-  } else {
-    garis(0, 0, 0, -18, 5, '#5b3a20');
-    const c = p.w < .5 ? '#2f6b2a' : '#3b7d31';
-    bulat(-8, -24, 11, shade(c, -.15)); bulat(8, -25, 11, shade(c, -.1)); bulat(0, -34, 13, c); bulat(-3, -38, 6, shade(c, .15));
-  }
-  ctx.restore();
-}
-function lukisTanah(ts) {
-  // laut dan pantai di bawah kiri
-  poly([[-40, G + 4.6, 0], [G + 40, G + 4.6, 0], [G + 40, G + 60, 0], [-40, G + 60, 0]], '#2b7f9c');
-  poly([[-40, G + 1.8, 0], [G + 40, G + 1.8, 0], [G + 40, G + 4.6, 0], [-40, G + 4.6, 0]], '#e2cf98');
-  poly([[-40, G + 4.3, 0], [G + 40, G + 4.3, 0], [G + 40, G + 4.7, 0], [-40, G + 4.7, 0]], 'rgba(255,255,255,.35)');
-  ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 2;
-  for (let i = 0; i < 6; i++) {
-    const yy = G + 6.5 + i * 2.2, ofs = (ts * .4 + i * .37) % 1;
-    ctx.beginPath();
-    for (let x = -20; x <= G + 30; x += 1.5) { const p = P(x + ofs * 1.5, yy + Math.sin(x * .9 + ts + i) * .12, 0); if (x === -20) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); }
-    ctx.stroke();
-  }
-  lukisPerahu(ts);
-  // tanah kota
-  poly([[-.3, -.3, 0], [G + .3, -.3, 0], [G + .3, G + .3, 0], [-.3, G + .3, 0]], '#4f8a35');
-  poly([[0, 0, 0], [G, 0, 0], [G, G, 0], [0, G, 0]], '#74b04a');
-  ctx.fillStyle = 'rgba(255,255,255,.05)';
-  for (let i = 0; i < G; i++) for (let j = (i & 1); j < G; j += 2) {
-    const a = P(i, j), b = P(i + 1, j), c = P(i + 1, j + 1), d = P(i, j + 1);
-    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.fill();
-  }
-}
-function lukisPerahu(ts) {
-  const x = ((ts * .35) % (G + 50)) - 20, y = G + 9.5;
-  const [sx, sy] = P(x, y, 0), bob = Math.sin(ts * 2) * 1.5;
-  ctx.save(); ctx.translate(sx, sy + bob);
-  ctx.fillStyle = '#5b3a20'; ctx.beginPath(); ctx.moveTo(-30, -6); ctx.quadraticCurveTo(0, 8, 32, -10); ctx.lineTo(24, -2); ctx.quadraticCurveTo(0, 6, -24, 0); ctx.closePath(); ctx.fill();
-  garis(0, -2, 0, -46, 2.5, '#3a2416');
-  ctx.fillStyle = '#e9dcc0'; ctx.beginPath(); ctx.moveTo(1, -44); ctx.quadraticCurveTo(20, -30, 18, -8); ctx.lineTo(1, -8); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#b8322f'; ctx.beginPath(); ctx.moveTo(-1, -40); ctx.lineTo(-14, -10); ctx.lineTo(-1, -10); ctx.closePath(); ctx.fill();
-  ctx.restore();
-}
-
-/* ---------- bangunan ---------- */
-let petaKota = new Set();
-function lukisBangunan(b, o = {}) {
-  const d = B[b.t], s = d.s, x0 = b.x, y0 = b.y, x1 = x0 + s, y1 = y0 + s, cx = x0 + s / 2, cy = y0 + s / 2, lv = Math.max(1, b.lv), ts = o.ts || 0;
-  if (o.mati) { lukisRuntuhan(b); return; }
-  if (b.t !== 'kota' && b.t !== 'ranjau') tapak(x0 + .06, y0 + .06, x1 - .06, y1 - .06, 'rgba(40,28,10,.25)');
-  const isi = o.isi || 0;
-  switch (b.t) {
-    case 'istana': {
-      const batu = lv >= 6 ? '#ded6c6' : '#c19a62', kayu = lv >= 4 ? '#8a4b22' : '#9a6a3a', atap = lv >= 4 ? '#5a2618' : '#86643a';
-      prism(x0 + .2, y0 + .2, x1 - .2, y1 - .2, 0, .32, batu);
-      bendera(x0 + .45, y0 + .45, .32, lv >= 4 ? 3.6 : 3, lv >= 7 ? 'jalur' : lv >= 4 ? '#f4c20d' : '#8f1d21', ts);
-      if (lv >= 2) prism(cx - .5, y1 - .5, cx + .5, y1 - .2, .32, .45, shade(batu, -.1));
-      const bx0 = x0 + .6, by0 = y0 + .7, bx1 = x1 - .6, by1 = y1 - .7;
-      tiang(bx0, by0, bx1, by1, .32, .8, '#3d2412', .14);
-      prism(bx0, by0, bx1, by1, .8, 1.65, kayu);
-      if (lv >= 3) { garisD([bx0, by1, 1.25], [bx1, by1, 1.25], 2, '#f4c20d'); garisD([bx1, by1, 1.25], [bx1, by0, 1.25], 2, '#e0b03a'); }
-      for (let i = 1; i < 4; i++) { const xx = bx0 + (bx1 - bx0) * i / 4; garisD([xx, by1, .95], [xx, by1, 1.45], 3, '#2a170b'); }
-      bumbung(bx0 - .3, by0 - .3, bx1 + .3, by1 + .3, 1.65, 1.05 + (lv >= 5 ? .15 : 0), atap, { tanduk: lv >= 3, dinding: shade(kayu, -.15) });
-      if (lv >= 3) bumbung(cx - .75, by0 + .15, cx + .75, by1 - .15, 2.45, .75, campur(atap, '#ffffff', .08), { tanduk: lv >= 5, dinding: shade(kayu, -.1) });
-      if (lv >= 5) bumbung(cx - .35, cy - .35, cx + .35, cy + .35, 3.05, .5, campur(atap, '#ffffff', .14));
-      if (lv >= 2) { prism(cx - .55, by1 + .05, cx + .55, y1 - .3, .32, 1.05, shade(kayu, .05)); limas(cx - .7, by1 - .05, cx + .7, y1 - .15, 1.05, .45, atap); }
-      break;
-    }
-    case 'lombong_emas': {
-      tapak(x0 + .25, y0 + .25, x1 - .25, y1 - .25, '#7a5a34');
-      tapak(x0 + .7, y0 + .7, x1 - .7, y1 - .7, '#3a2615');
-      const r = rng(b.id * 31 + 7), n = 3 + Math.floor(isi * 9);
-      for (let i = 0; i < n; i++) { const p = P(x0 + .8 + r() * (s - 1.6), y0 + .8 + r() * (s - 1.6), .02); bulat(p[0], p[1], 2.2 + r() * 2, i % 3 ? '#f6c431' : '#ffe27a'); }
-      prism(x0 + .55, cy - .07, x0 + .7, cy + .07, 0, 1.15, '#5a3a1e', false);
-      prism(x1 - .7, cy - .07, x1 - .55, cy + .07, 0, 1.15, '#5a3a1e', false);
-      prism(x0 + .55, cy - .07, x1 - .55, cy + .07, 1.15, 1.27, '#6b4423');
-      garisD([cx, cy, 1.15], [cx, cy, .45 + Math.sin(ts * 2 + b.id) * .2], 1.2, '#2a1a10');
-      prism(cx - .12, cy - .12, cx + .12, cy + .12, .3 + Math.sin(ts * 2 + b.id) * .2, .5 + Math.sin(ts * 2 + b.id) * .2, '#7a5230');
-      prism(x1 - 1.05, y1 - .85, x1 - .4, y1 - .45, 0, .32, '#6b4423');
-      prism(x1 - .98, y1 - .8, x1 - .47, y1 - .5, .32, .32 + .12 + isi * .2, '#f6c431', false);
-      if (lv >= 3) { prism(x0 + .35, y1 - .75, x0 + .9, y1 - .35, 0, .3, '#6b4423'); prism(x0 + .4, y1 - .7, x0 + .85, y1 - .4, .3, .45, '#f6c431', false); }
-      break;
-    }
-    case 'sawah': {
-      tapak(x0 + .15, y0 + .15, x1 - .15, y1 - .15, '#8a6a3e');
-      const hijau = campur('#5aa83c', '#e3c24a', Math.round(clamp(isi * 1.1, 0, 1) * 16) / 16);
-      tapak(x0 + .3, y0 + .3, x1 - .3, y1 - .3, campur('#4f8fa0', hijau, .75));
-      for (let i = 1; i <= 6; i++) { const yy = y0 + .3 + i * (s - .6) / 7; garisD([x0 + .38, yy, .02], [x1 - .38, yy, .02], 2.6, shade(hijau, -.12)); }
-      garisD([cx, y0 + .3, .03], [cx, y1 - .3, .03], 2, '#8a6a3e');
-      tiang(x0 + .25, y0 + .25, x0 + .95, y0 + .95, 0, .45, '#4a2c16', .08);
-      prism(x0 + .25, y0 + .25, x0 + .95, y0 + .95, .45, .62, '#a07a48');
-      limas(x0 + .18, y0 + .18, x0 + 1.02, y0 + 1.02, .62, .45, '#8a6a3a');
-      if (lv >= 3) { const p = P(x1 - .7, y1 - .7, 0); garis(p[0], p[1], p[0], p[1] - 22, 1.6, '#5b3a20'); garis(p[0] - 7, p[1] - 15, p[0] + 7, p[1] - 15, 1.6, '#5b3a20'); bulat(p[0], p[1] - 24, 3.4, '#e9dcc0'); }
-      break;
-    }
-    case 'lombong_timah': {
-      tapak(x0 + .2, y0 + .2, x1 - .2, y1 - .2, '#8f7f6a');
-      tapak(x0 + .5, cy, x1 - .5, y1 - .45, '#5f8aa3');
-      prism(x0 + .4, cy - .5, x0 + .52, cy - .38, 0, 1.3, '#5a3a1e', false);
-      prism(x1 - .6, cy - .5, x1 - .48, cy - .38, 0, .55, '#5a3a1e', false);
-      poly([[x0 + .35, cy - .58, 1.35], [x1 - .4, cy - .58, .6], [x1 - .4, cy - .3, .6], [x0 + .35, cy - .3, 1.35]], '#8a5a2e', GARIS);
-      for (let i = 0; i < 2 + Math.floor(isi * 5); i++) prism(x0 + .5 + (i % 3) * .32, y0 + .35 + Math.floor(i / 3) * .3, x0 + .76 + (i % 3) * .32, y0 + .55 + Math.floor(i / 3) * .3, 0, .13, '#b7c7d6');
-      break;
-    }
-    case 'peti_emas': {
-      prism(x0 + .3, y0 + .3, x1 - .3, y1 - .3, 0, .25, '#b39a6b');
-      prism(x0 + .6, y0 + .6, x1 - .6, y1 - .6, .25, 1.25, '#7c4a22');
-      poly([[cx - .28, y1 - .6, .25], [cx + .28, y1 - .6, .25], [cx + .28, y1 - .6, .85], [cx - .28, y1 - .6, .85]], '#f4c20d', GARIS);
-      limas(x0 + .42, y0 + .42, x1 - .42, y1 - .42, 1.25, .85 + lv * .03, '#8f1d21');
-      const r = rng(b.id * 13), n = Math.floor(isi * 10);
-      for (let i = 0; i < n; i++) { const p = P(x0 + .45 + r() * (s - .9), y1 - .45 - r() * .2, .27); bulat(p[0], p[1], 3, '#f6c431'); }
-      break;
-    }
-    case 'jelapang': {
-      tiang(x0 + .6, y0 + .6, x1 - .6, y1 - .6, 0, .8, '#3d2412', .14);
-      prism(x0 + .55, y0 + .55, x1 - .55, y1 - .55, .8, 1.6, '#b08850');
-      for (let i = 1; i < 5; i++) garisD([x0 + .55, y1 - .55, .8 + i * .16], [x1 - .55, y1 - .55, .8 + i * .16], .8, 'rgba(60,35,10,.4)');
-      bumbung(x0 + .35, y0 + .35, x1 - .35, y1 - .35, 1.6, 1.0, '#7b5a2e', { paksi: 'y', dinding: '#9a7440' });
-      const n = 1 + Math.floor(isi * 5);
-      for (let i = 0; i < n; i++) prism(x0 + .25 + i * .42, y1 - .45, x0 + .6 + i * .42, y1 - .15, 0, .3, '#efe4c8');
-      break;
-    }
-    case 'gudang_timah': {
-      prism(x0 + .35, y0 + .35, x1 - .35, y1 - .35, 0, 1.1, '#8d969e');
-      prism(x0 + .25, y0 + .25, x1 - .25, y1 - .25, 1.1, 1.25, '#6b737a');
-      for (let i = 0; i < 2 + Math.floor(isi * 6); i++) prism(x0 + .5 + (i % 4) * .48, y0 + .5 + Math.floor(i / 4) * .5, x0 + .85 + (i % 4) * .48, y0 + .7 + Math.floor(i / 4) * .5, 1.25, 1.4, '#c3d2e0');
-      break;
-    }
-    case 'bangsal_tukang': {
-      tiang(x0 + .35, y0 + .35, x1 - .35, y1 - .35, 0, .35, '#3d2412', .1);
-      prism(x0 + .35, y0 + .35, x1 - .35, y1 - .35, .35, .95, '#a0784a');
-      bumbung(x0 + .2, y0 + .2, x1 - .2, y1 - .2, .95, .7, '#7b5a2e');
-      if (o.tukangLapang) lukisUnit({ t: 'tukang', x: x1 - .2, y: y1 + .1, arah: -1, langkah: ts * 3, serang: Math.sin(ts * 6) > .3 ? .1 : 0 });
-      break;
-    }
-    case 'balai_tentera': {
-      bendera(x1 - .5, y0 + .5, 0, 2.6, '#b8322f', ts);
-      tiang(x0 + .5, y0 + .7, x1 - .5, y1 - .7, 0, .35, '#3d2412', .12);
-      prism(x0 + .5, y0 + .7, x1 - .5, y1 - .7, .35, 1.15, '#9a5a2c');
-      bumbung(x0 + .3, y0 + .5, x1 - .3, y1 - .5, 1.15, .95, '#6e3a1c', { tanduk: lv >= 4 });
-      for (let i = 0; i < 3; i++) garisD([x0 + .6 + i * .25, y1 - .3, 0], [x0 + .7 + i * .25, y1 - .3, 1.2], 1.6, '#c9c9c9');
-      break;
-    }
-    case 'kem': {
-      tapak(x0 + .15, y0 + .15, x1 - .15, y1 - .15, '#a3824f');
-      const khemah = Math.min(4, 1 + Math.floor(lv / 2));
-      const sudut = [[x0 + .25, y0 + .25], [x1 - 1.05, y0 + .25], [x0 + .25, y1 - 1.05], [x1 - 1.05, y1 - 1.05]];
-      for (let i = 0; i < khemah; i++) limas(sudut[i][0], sudut[i][1], sudut[i][0] + .8, sudut[i][1] + .8, 0, .75, i % 2 ? '#e6d5b0' : '#d9c39a');
-      const p = P(cx, cy, 0), f = Math.sin(ts * 9) * 1.5;
-      bulat(p[0], p[1], 6, '#3a2416'); bulat(p[0], p[1] - 4, 4.5 + f * .4, '#f08a24'); bulat(p[0], p[1] - 6, 2.5 + f * .3, '#ffd24a');
-      break;
-    }
-    case 'balai_ilmu': {
-      tiang(x0 + .55, y0 + .7, x1 - .55, y1 - .7, 0, .55, '#3d2412', .12);
-      prism(x0 + .55, y0 + .7, x1 - .55, y1 - .7, .55, 1.3, '#8a5a2e');
-      garisD([x0 + .55, y1 - .7, .95], [x1 - .55, y1 - .7, .95], 2, '#f4c20d');
-      bumbung(x0 + .35, y0 + .5, x1 - .35, y1 - .5, 1.3, .85, '#2b211a', { gonjong: .75 + lv * .05, dinding: '#a3703a' });
-      break;
-    }
-    case 'balai_muafakat': {
-      prism(x0 + .3, y0 + .3, x1 - .3, y1 - .3, 0, .35, '#b39a6b');
-      tiang(x0 + .5, y0 + .5, x1 - .5, y1 - .5, .35, 1.3, '#5a3a1e', .13);
-      limas(x0 + .25, y0 + .25, x1 - .25, y1 - .25, 1.3, 1.0, '#7b3b1e');
-      bendera(cx, cy, 2.3, 1.2, '#2f7d32', ts);
-      break;
-    }
-    case 'meriam_lela': {
-      prism(x0 + .22, y0 + .22, x1 - .22, y1 - .22, 0, .3, '#7a5230');
-      const a = b.sudut ?? Math.PI / 4, p = P(cx, cy, .55), q = P(cx + Math.cos(a) * .8, cy + Math.sin(a) * .8, .62);
-      bulat(...P(cx - Math.sin(a) * .25, cy + Math.cos(a) * .25, .38), 4.5, '#3a2416');
-      garis(p[0], p[1], q[0], q[1], 9 + lv * .4, '#4a3418'); garis(p[0], p[1], q[0], q[1], 6.5 + lv * .4, lv >= 4 ? '#d4a44a' : '#b8873b');
-      bulat(q[0], q[1], 3, '#2a1a0c');
-      bulat(...P(cx + Math.sin(a) * .25, cy - Math.cos(a) * .25, .38), 4.5, '#3a2416');
-      if (b.kilat > 0) bulat(q[0], q[1], 7, 'rgba(255,200,80,.9)');
-      break;
-    }
-    case 'menara_sumpit': {
-      const h = 2 + lv * .06;
-      tiang(x0 + .4, y0 + .4, x1 - .4, y1 - .4, 0, h, '#5a3a1e', .12);
-      garisD([x0 + .45, y1 - .45, .2], [x1 - .45, y1 - .45, h - .3], 1.4, '#5a3a1e'); garisD([x1 - .45, y1 - .45, .2], [x0 + .45, y1 - .45, h - .3], 1.4, '#5a3a1e');
-      prism(x0 + .3, y0 + .3, x1 - .3, y1 - .3, h, h + .18, '#7a5230');
-      lukisUnit({ t: 'pemanah', x: cx, y: cy, z: h + .18, arah: Math.cos((b.sudut ?? 0) - Math.PI / 4) >= 0 ? 1 : -1, serang: b.kilat > 0 ? .2 : 0 });
-      tiang(x0 + .3, y0 + .3, x1 - .3, y1 - .3, h + .18, h + .95, '#5a3a1e', .07);
-      limas(x0 + .2, y0 + .2, x1 - .2, y1 - .2, h + .95, .55, '#8a6a3a');
-      break;
-    }
-    case 'meriam_besar': {
-      prism(x0 + .35, y0 + .35, x1 - .35, y1 - .35, 0, .6, '#9a9184');
-      for (let i = 0; i < 4; i++) prism(x0 + .35 + i * .62, y1 - .5, x0 + .6 + i * .62, y1 - .35, .6, .78, '#9a9184', false);
-      const a = b.sudut ?? Math.PI / 4, p = P(cx, cy, .7), q = P(cx + Math.cos(a) * .45, cy + Math.sin(a) * .45, 1.45);
-      garis(p[0], p[1], q[0], q[1], 17, '#1a1a1a'); garis(p[0], p[1], q[0], q[1], 13, '#3a3a3a'); bulat(q[0], q[1], 6.5, '#111');
-      if (lv >= 4) bulat(p[0], p[1], 4, '#d4a44a');
-      break;
-    }
-    case 'kota': {
-      const batu = lv >= 4, c = lv >= 6 ? '#d6cfc0' : batu ? '#a8a29a' : lv >= 2 ? '#9a6232' : '#8b5a2b', k = .22, h = batu ? 1.0 : .9;
-      const hidup = o.petaKota || petaKota;
-      if (hidup.has((b.x + 1) + ',' + b.y)) prism(b.x + .5, b.y + .5 - k * .8, b.x + 1.5, b.y + .5 + k * .8, 0, h * .9, c);
-      if (hidup.has(b.x + ',' + (b.y + 1))) prism(b.x + .5 - k * .8, b.y + .5, b.x + .5 + k * .8, b.y + 1.5, 0, h * .9, c);
-      prism(b.x + .5 - k, b.y + .5 - k, b.x + .5 + k, b.y + .5 + k, 0, h, shade(c, .06));
-      if (!batu) { const p = P(b.x + .5, b.y + .5, h); ctx.fillStyle = shade(c, -.1); ctx.beginPath(); ctx.moveTo(p[0] - 5, p[1]); ctx.lineTo(p[0], p[1] - 7); ctx.lineTo(p[0] + 5, p[1]); ctx.fill(); }
-      else if (lv >= 6) { const p = P(b.x + .5, b.y + .5, h); bulat(p[0], p[1], 2, '#f4c20d'); }
-      break;
-    }
-    case 'ranjau': {
-      for (let i = 0; i < 5; i++) { const p = P(b.x + .25 + (i % 3) * .25, b.y + .3 + (i >> 1) * .2, 0); garis(p[0], p[1], p[0] + 1, p[1] - 8, 2, '#c9b36a'); }
-      break;
-    }
-    case 'anjung_laksamana': case 'anjung_srikandi': {
-      const tuah = b.t === 'anjung_laksamana';
-      prism(x0 + .25, y0 + .25, x1 - .25, y1 - .25, 0, .3, '#c9b48a');
-      tiang(x0 + .45, y0 + .45, x1 - .45, y1 - .45, .3, 1.6, '#5a3a1e', .12);
-      if (b.lv >= 1 && !b.busy && !o.perang) lukisUnit({ t: tuah ? 'tuah' : 'fatimah', x: cx + .15, y: cy + .15, z: .3, arah: 1, langkah: 0 });
-      limas(x0 + .3, y0 + .3, x1 - .3, y1 - .3, 1.6, .85, tuah ? '#c8960a' : '#8f1d21');
-      break;
-    }
-  }
-  if (b.busy || b.lv === 0) lukisPerancah(b, ts);
-}
-function lukisPerancah(b, ts) {
-  const s = B[b.t].s, x0 = b.x + .1, y0 = b.y + .1, x1 = b.x + s - .1, y1 = b.y + s - .1, h = Math.min(2.2, s * .6);
-  for (const [x, y] of [[x0, y1], [x1, y1], [x1, y0]]) garisD([x, y, 0], [x, y, h], 2, '#d9b56a');
-  for (let i = 1; i <= 3; i++) { const z = h * i / 3.2; garisD([x0, y1, z], [x1, y1, z], 1.6, '#c9a45a'); garisD([x1, y1, z], [x1, y0, z], 1.6, '#c9a45a'); }
-  lukisUnit({ t: 'tukang', x: x1 + .25, y: (y0 + y1) / 2 + .3, arah: -1, langkah: 0, serang: Math.sin(ts * 7 + b.id) > .2 ? .1 : 0 });
-}
-function lukisRuntuhan(b) {
-  const s = B[b.t].s;
-  if (b.t === 'kota') { prism(b.x + .3, b.y + .3, b.x + .7, b.y + .7, 0, .15, '#6b5a4a'); return; }
-  tapak(b.x + .15, b.y + .15, b.x + s - .15, b.y + s - .15, '#4a3a2a');
-  const r = rng(b.id * 17 + 3);
-  for (let i = 0; i < 3 + s * 2; i++) { const x = b.x + .3 + r() * (s - .8), y = b.y + .3 + r() * (s - .8); prism(x, y, x + .25 + r() * .2, y + .25 + r() * .2, 0, .1 + r() * .25, r() < .5 ? '#7a6a58' : '#6b4423'); }
-}
-
-/* ---------- tentera ---------- */
-function lukisUnit(u) {
-  const [sx, sy] = P(u.x, u.y, u.z || 0);
-  const c = ctx, hayun = Math.sin(u.langkah || 0) * 2.2, besar = { gajah: 1, hulubalang: 1.2, tuah: 1.3, fatimah: 1.25 }[u.t] || 1;
-  c.save(); c.translate(sx, sy);
-  c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(0, 0, u.t === 'gajah' ? 17 : 7 * besar, u.t === 'gajah' ? 6.5 : 3 * besar, 0, 0, 7); c.fill();
-  if (u.aura) { c.fillStyle = 'rgba(255,214,90,.35)'; c.beginPath(); c.ellipse(0, -14, 16, 20, 0, 0, 7); c.fill(); }
-  c.scale((u.arah < 0 ? -1 : 1) * besar, besar);
-  const kaki = (w = '#2a1a10') => { garis(-2, -6, -2.5 - hayun * .5, 0, 2.4, w); garis(2, -6, 2.5 + hayun * .5, 0, 2.4, w); };
-  const kepala = (y = -18, r = 3.6) => bulat(0, y, r, '#c98b5a');
-  const badan = (w, y = -15, h = 10) => { c.fillStyle = w; c.beginPath(); c.roundRect ? c.roundRect(-4.5, y, 9, h, 3) : c.rect(-4.5, y, 9, h); c.fill(); };
-  switch (u.t) {
-    case 'pendekar':
-      kaki(); badan('#1c1c22'); c.fillStyle = '#b8322f'; c.fillRect(-5, -8.5, 10, 3.4); c.fillStyle = '#f4c20d'; c.fillRect(-5, -8.9, 10, .9);
-      kepala(); c.fillStyle = '#b8322f'; c.beginPath(); c.moveTo(-4.2, -19.6); c.lineTo(4.2, -19.6); c.lineTo(2.6, -24.5); c.lineTo(-.8, -22.4); c.closePath(); c.fill();
-      garis(-3.6, -20.2, 3.8, -20.2, 1, '#f4c20d');
-      if (u.serang > 0) garis(4, -12, 11, -16, 1.8, '#eeeeee'); else garis(4, -9, 7, -5, 1.6, '#c0c0c0');
-      break;
-    case 'pemanah':
-      kaki(); badan('#2e6b3f'); c.fillStyle = '#7a5230'; c.fillRect(-5, -8.5, 10, 2.6); kepala(); c.fillStyle = '#f4c20d'; c.fillRect(-3.8, -20.4, 7.6, 1.6);
-      garis(1, -15.5, u.serang > 0 ? 16 : 13, u.serang > 0 ? -16.5 : -19, 1.8, '#7a5a2e');
-      break;
-    case 'tukang':
-      kaki(); badan('#3d5a80'); kepala(); c.fillStyle = '#e9dcc0'; c.beginPath(); c.ellipse(0, -20.5, 5.5, 1.8, 0, 0, 7); c.fill(); c.beginPath(); c.arc(0, -20.5, 3, Math.PI, 0); c.fill();
-      if (u.serang > 0) { garis(3, -12, 9, -18, 1.8, '#6b4423'); garis(7, -20, 11, -16, 3, '#9aa3ab'); } else { garis(3, -12, 10, -10, 1.8, '#6b4423'); garis(10, -13, 10, -7, 3, '#9aa3ab'); }
-      break;
-    case 'gajah': {
-      for (const [x, y] of [[-8, -2], [-3, 0], [5, -2], [10, 0]]) garis(x, -10, x + hayun * .3 * (x > 0 ? 1 : -1), y, 4.5, '#5e5e5e');
-      c.fillStyle = '#808080'; c.beginPath(); c.ellipse(0, -14, 14, 9, 0, 0, 7); c.fill();
-      c.fillStyle = '#d4a017'; c.fillRect(-9, -21, 14, 7); c.fillStyle = '#b8322f'; c.fillRect(-8, -20, 12, 5);
-      bulat(12, -16, 6.5, '#8a8a8a'); c.fillStyle = '#6e6e6e'; c.beginPath(); c.ellipse(9, -16, 3.6, 5.2, 0, 0, 7); c.fill();
-      c.strokeStyle = '#7a7a7a'; c.lineWidth = 3.4; c.beginPath(); c.moveTo(17, -15); c.quadraticCurveTo(21, -8, 18 + (u.serang > 0 ? 4 : 0), -3); c.stroke();
-      garis(15.5, -12, 19.5, -10, 2, '#f5f0e0'); bulat(13.5, -18, 1.1, '#111');
-      c.fillStyle = '#8f1d21'; c.fillRect(-6, -29, 11, 7); c.fillStyle = '#f4c20d'; c.beginPath(); c.moveTo(-7, -29); c.lineTo(6, -29); c.lineTo(-.5, -34); c.closePath(); c.fill();
-      bulat(-.5, -27.5, 2.2, '#c98b5a');
-      break;
-    }
-    case 'pemecah':
-      kaki(); badan('#5a3a1e'); kepala(); c.fillStyle = '#1c1c22'; c.fillRect(-3.8, -21, 7.6, 1.8);
-      bulat(0, -27, 5.6, '#7a4a22'); garis(-5.4, -27, 5.4, -27, 1.2, '#3a2210'); garis(-4.6, -24.4, 4.6, -24.4, 1.2, '#3a2210');
-      bulat(3.5, -33, 1.4 + acak() * 1.2, '#ffb020'); garis(2, -31, 3.5, -33, 1, '#3a2210');
-      break;
-    case 'hulubalang':
-      kaki('#1d1208'); c.fillStyle = '#8f1d21'; c.fillRect(-6, -17, 12, 12); badan('#d4a017', -16, 7); kepala(-19.5, 3.8);
-      c.fillStyle = '#d4a017'; c.beginPath(); c.arc(0, -21, 4.3, Math.PI, 0); c.fill(); c.fillRect(-.6, -28, 1.2, 4);
-      garis(7, -32, 7, 0, 1.8, '#6b4423'); c.fillStyle = '#e6e6e6'; c.beginPath(); c.moveTo(5.5, -32); c.lineTo(7, -37); c.lineTo(8.5, -32); c.fill();
-      bulat(-6, -11, 4.6, '#7a5230'); c.strokeStyle = '#d4a017'; c.lineWidth = 1.2; c.beginPath(); c.arc(-6, -11, 4.6, 0, 7); c.stroke();
-      if (u.serang > 0) garis(7, -20, 15, -24, 2, '#e6e6e6');
-      break;
-    case 'tuah':
-      kaki(); badan('#f3ead6'); c.fillStyle = '#8f1d21'; c.fillRect(-5, -9, 10, 4); c.fillStyle = '#f4c20d'; c.fillRect(-5, -7.8, 10, 1);
-      kepala(); c.fillStyle = '#8f1d21'; c.beginPath(); c.moveTo(-4.4, -19.4); c.lineTo(4.4, -19.4); c.lineTo(3, -25); c.lineTo(-1.5, -23.5); c.closePath(); c.fill();
-      c.fillStyle = '#f4c20d'; c.fillRect(-4.2, -20, 8.4, 1.2);
-      if (u.serang > 0) garis(4, -12, 13, -17, 2.2, '#ffe27a'); else garis(4, -9, 8, -5, 2, '#ffe27a');
-      break;
-    case 'fatimah':
-      c.fillStyle = '#8f1d21'; c.beginPath(); c.moveTo(-4.5, -15); c.lineTo(4.5, -15); c.lineTo(6, 0); c.lineTo(-6, 0); c.closePath(); c.fill();
-      c.fillStyle = '#f4c20d'; c.fillRect(-5.5, -4, 11, 1.4); kepala(-18, 3.4);
-      c.fillStyle = '#d4a017'; c.beginPath(); c.arc(0, -18.5, 4.4, Math.PI * 1.05, Math.PI * 1.95); c.lineTo(5, -12); c.lineTo(3, -12); c.closePath(); c.fill();
-      c.strokeStyle = '#6b4423'; c.lineWidth = 1.6; c.beginPath(); c.arc(7, -12, 6, -1.2, 1.2); c.stroke(); garis(9.2, -17.6, 9.2, -6.4, .7, '#eee');
-      break;
-  }
-  c.restore();
-}
-
-/* ================= Lukisan utama ================= */
-function lukis(ts) {
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.fillStyle = '#2f5d29'; ctx.fillRect(0, 0, W, H);
-  ctx.setTransform(DPR * cam.z, 0, 0, DPR * cam.z, DPR * (W / 2 - cam.x * cam.z), DPR * (H / 2 - cam.y * cam.z));
-  lukisTanah(ts);
-  const perang = mode === 'perang' && BT;
-  const senarai = perang ? BT.blds : S.bld;
-  petaKota = new Set();
-  for (const b of senarai) if (b.t === 'kota' && !b.mati) petaKota.add(b.x + ',' + b.y);
-  if (perang && (BT.kilat > 0 || !BT.mula)) {
-    ctx.fillStyle = BT.kilat > 0 ? `rgba(230,60,40,${.12 + .18 * Math.min(1, BT.kilat)})` : 'rgba(230,60,40,.12)';
-    for (const k of BT.sekat) { const [i, j] = k.split(',').map(Number); const a = P(i, j), b2 = P(i + 1, j), c = P(i + 1, j + 1), d = P(i, j + 1); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b2[0], b2[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.fill(); }
-  }
-  if (!perang && pilihan && !S.letak) {
-    const s = B[pilihan.t].s, al = .45 + .25 * Math.sin(ts * 5);
-    poly([[pilihan.x - .08, pilihan.y - .08, 0], [pilihan.x + s + .08, pilihan.y - .08, 0], [pilihan.x + s + .08, pilihan.y + s + .08, 0], [pilihan.x - .08, pilihan.y + s + .08, 0]], `rgba(255,255,255,${al * .35})`, `rgba(255,255,255,${al})`);
-  }
-  if (perang) for (const z of BT.zon) {
-    const p = P(z.x, z.y), rx = z.r * TW / Math.SQRT2, ry = z.r * TH / Math.SQRT2, f = 1 - z.t / z.dur;
-    ctx.fillStyle = z.jenis === 'ubat' ? `rgba(120,230,120,${.22 * f + .05})` : `rgba(240,120,200,${.22 * f + .05})`;
-    ctx.strokeStyle = z.jenis === 'ubat' ? 'rgba(170,255,170,.8)' : 'rgba(255,170,230,.8)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(p[0], p[1], rx, ry, 0, 0, 7); ctx.fill(); ctx.stroke();
-  }
-  const benda = [];
-  for (const b of senarai) {
-    if (b.t === 'ranjau' && perang) continue;
-    if (S.letak && !S.letak.baru && S.letak.b === b) continue;
-    const s = B[b.t].s; benda.push({ k: b.x + b.y + s, b });
-  }
-  for (const p of POKOK) benda.push({ k: p.x + p.y, p });
-  if (perang) for (const u of BT.units) if (u.hp > 0) benda.push({ k: u.x + u.y, u });
-  if (!perang) for (const u of tenteraKem()) benda.push({ k: u.x + u.y, u });
-  benda.sort((a, b) => a.k - b.k);
-  const lapang = tukangLapang();
-  let kiraBangsal = 0;
-  for (const e of benda) {
-    if (e.p) lukisPokok(e.p, ts);
-    else if (e.u) lukisUnit(e.u);
-    else {
-      const b = e.b, o = { ts, perang, mati: perang && b.mati };
-      if (B[b.t].hasil) o.isi = (perang ? (b.lootBaki ? .6 : 0) : b.store / capPengumpul(b));
-      else if (B[b.t].simpan) o.isi = perang ? .4 + .6 * (b.lootBaki ? (b.lootBaki.emas + b.lootBaki.beras + b.lootBaki.timah) / Math.max(1, b.lootJum) : 0) : S.res[B[b.t].simpan] / Math.max(1, capSumber(B[b.t].simpan));
-      if (b.t === 'bangsal_tukang' && !perang) o.tukangLapang = kiraBangsal++ < lapang;
-      if (perang && b.kena > 0) { ctx.globalAlpha = .75; lukisBangunan(b, o); ctx.globalAlpha = 1; }
-      else lukisBangunan(b, o);
-    }
-  }
-  if (perang) { lukisPeluru(); lukisKesan(ts); }
-  if (S.letak) lukisHantu(ts);
-  // lapisan skrin
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  if (perang) lukisAtasPerang(); else lukisAtasKampung(ts);
+function lukis(ts, dt) {
+  G3.render(ts);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (mode === 'perang' && BT) lukisAtasPerang(); else lukisAtasKampung(ts);
+  lukisApungan(dt);
 }
 function tenteraKem() {
   const out = [], kem = S.bld.filter(b => b.t === 'kem' && b.lv >= 1); if (!kem.length) return out;
   const jenis = []; for (const [k, n] of Object.entries(S.army)) for (let i = 0; i < Math.min(n, 8); i++) jenis.push(k);
   const per = Math.ceil(Math.min(jenis.length, 14 * kem.length) / kem.length);
   kem.forEach((b, ki) => {
-    const sub = jenis.slice(ki * per, ki * per + per);
-    sub.forEach((t, i) => { const a = i / Math.max(1, sub.length) * Math.PI * 2 + ki; const r = t === 'gajah' ? 1.05 : .8 + (i % 2) * .3; out.push({ t, x: b.x + 1.5 + Math.cos(a) * r, y: b.y + 1.5 + Math.sin(a) * r, arah: Math.cos(a + Math.PI) - Math.sin(a + Math.PI) > 0 ? 1 : -1, langkah: 0 }); });
+    const sub = jenis.slice(ki * per, ki * per + per), kx = b.x + 1.5, ky = b.y + 1.5;
+    sub.forEach((t, i) => { const a = i / Math.max(1, sub.length) * Math.PI * 2 + ki, r = t === 'gajah' ? 1.05 : .62 + (i % 2) * .3; out.push({ t, x: kx + Math.cos(a) * r, y: ky + Math.sin(a) * r, kx, ky }); });
   });
   return out;
-}
-function lukisHantu(ts) {
-  const L = S.letak, s = B[L.t].s, ok = bolehLetak(L.t, L.x, L.y, L.b);
-  poly([[L.x, L.y, 0], [L.x + s, L.y, 0], [L.x + s, L.y + s, 0], [L.x, L.y + s, 0]], ok ? 'rgba(90,230,90,.45)' : 'rgba(240,70,50,.5)', ok ? '#bfffbf' : '#ffb0a0');
-  ctx.globalAlpha = .82;
-  lukisBangunan({ id: 999, t: L.t, x: L.x, y: L.y, lv: L.b ? L.b.lv : 1, busy: null }, { ts });
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = 'rgba(255,255,255,.85)';
-  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const q = P(L.x + s / 2 + dx * (s / 2 + .55), L.y + s / 2 + dy * (s / 2 + .55)); ctx.beginPath(); ctx.arc(q[0], q[1], 4, 0, 7); ctx.fill(); }
 }
 function lukisAtasKampung(ts) {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const b of S.bld) {
-    const s = B[b.t].s;
+    const s = B[b.t].s, h = G3.tinggi(b.t, b.lv);
     if (b.busy) {
-      const [x, y] = keSkrin(P(b.x + s / 2, b.y + s / 2, s * .9 + .8)), w = 58, f = clamp((kini() - b.busy.mula) / (b.busy.until - b.busy.mula), 0, 1);
+      const [x, y] = G3.ke2D(b.x + s / 2, b.y + s / 2, h + .45), w = 58, f = clamp((kini() - b.busy.mula) / (b.busy.until - b.busy.mula), 0, 1);
       ctx.fillStyle = 'rgba(10,6,3,.8)'; ctx.fillRect(x - w / 2 - 2, y - 7, w + 4, 14);
       ctx.fillStyle = '#6fcf4a'; ctx.fillRect(x - w / 2, y - 5, w * f, 10);
       ctx.font = '700 10px Andika, sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(masa((b.busy.until - kini()) / 1000), x, y + .5);
     } else if (B[b.t].hasil && b.lv >= 1 && b.store >= Math.max(5, capPengumpul(b) * .06)) {
-      const [x, y] = keSkrin(P(b.x + s / 2, b.y + s / 2, 2.1)), bob = Math.sin(ts * 3 + b.id) * 3, penuh = b.store >= capPengumpul(b) * .999;
-      ctx.fillStyle = 'rgba(10,6,3,.55)'; ctx.beginPath(); ctx.ellipse(x, y + 16 + bob * .2, 8, 3, 0, 0, 7); ctx.fill();
+      const [x, y] = G3.ke2D(b.x + s / 2, b.y + s / 2, h + .75), bob = Math.sin(ts * 3 + b.id) * 3, penuh = b.store >= capPengumpul(b) * .999;
+      ctx.fillStyle = 'rgba(10,6,3,.35)'; ctx.beginPath(); ctx.ellipse(x, y + 18, 8, 3, 0, 0, 7); ctx.fill();
       ctx.fillStyle = penuh ? '#fff6c8' : '#ffffff'; ctx.strokeStyle = '#140c07'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(x, y + bob, 13, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y + bob, 14, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - 5, y + bob + 12); ctx.lineTo(x, y + bob + 19); ctx.lineTo(x + 5, y + bob + 12); ctx.fill();
       lukisIkonSumber(B[b.t].hasil, x, y + bob, 8);
     }
   }
@@ -830,7 +380,8 @@ cv.addEventListener('pointerdown', e => {
   jari.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (jari.size === 2) {
     const [a, b] = [...jari.values()];
-    gerak = { jenis: 'cubit', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: cam.z, m0: [(a.x + b.x) / 2, (a.y + b.y) / 2], c0: [cam.x, cam.y] };
+    const m0 = [(a.x + b.x) / 2, (a.y + b.y) / 2];
+    gerak = { jenis: 'cubit', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: cam.z, g0: skrinKeDunia(m0[0], m0[1]) };
     batalTahan(); return;
   }
   const [gx, gy] = skrinKeDunia(e.clientX, e.clientY);
@@ -839,7 +390,7 @@ cv.addEventListener('pointerdown', e => {
     const s = B[S.letak.t].s;
     if (gx >= S.letak.x - .5 && gx < S.letak.x + s + .5 && gy >= S.letak.y - .5 && gy < S.letak.y + s + .5) { seret = true; ox = gx - S.letak.x; oy = gy - S.letak.y; }
   }
-  gerak = { jenis: 'tekan', x0: e.clientX, y0: e.clientY, c0: [cam.x, cam.y], gerak: false, seret, ox, oy };
+  gerak = { jenis: 'tekan', x0: e.clientX, y0: e.clientY, g0: [gx, gy], gerak: false, seret, ox, oy };
   if (mode === 'perang') mulaTahan(e.clientX, e.clientY);
 });
 cv.addEventListener('pointermove', e => {
@@ -848,10 +399,8 @@ cv.addEventListener('pointermove', e => {
   if (!gerak) return;
   if (gerak.jenis === 'cubit' && jari.size >= 2) {
     const [a, b] = [...jari.values()];
-    const z = clamp(gerak.z0 * Math.hypot(a.x - b.x, a.y - b.y) / gerak.d0, ZMIN, ZMAX);
-    const m = [(a.x + b.x) / 2, (a.y + b.y) / 2];
-    const wx = (gerak.m0[0] - W / 2) / gerak.z0 + gerak.c0[0], wy = (gerak.m0[1] - H / 2) / gerak.z0 + gerak.c0[1];
-    cam.z = z; cam.x = wx - (m[0] - W / 2) / z; cam.y = wy - (m[1] - H / 2) / z; hadKamera();
+    cam.z = clamp(gerak.z0 * Math.hypot(a.x - b.x, a.y - b.y) / gerak.d0, ZMIN, ZMAX);
+    kunciTitik((a.x + b.x) / 2, (a.y + b.y) / 2, gerak.g0[0], gerak.g0[1]);
   } else if (gerak.jenis === 'tekan') {
     const dx = e.clientX - gerak.x0, dy = e.clientY - gerak.y0;
     if (!gerak.gerak && Math.hypot(dx, dy) > 9) { gerak.gerak = true; if (!(tahan && tahan.aktif)) batalTahan(); }
@@ -860,7 +409,7 @@ cv.addEventListener('pointermove', e => {
     if (gerak.seret && S.letak) {
       const [gx, gy] = skrinKeDunia(e.clientX, e.clientY), s = B[S.letak.t].s;
       S.letak.x = clamp(Math.round(gx - gerak.ox), 0, G - s); S.letak.y = clamp(Math.round(gy - gerak.oy), 0, G - s);
-    } else { cam.x = gerak.c0[0] - dx / cam.z; cam.y = gerak.c0[1] - dy / cam.z; hadKamera(); }
+    } else kunciTitik(e.clientX, e.clientY, gerak.g0[0], gerak.g0[1]);
   }
 });
 function lepasJari(e, batal) {
@@ -884,13 +433,7 @@ function mulaTahan(x, y) {
   }, 260);
 }
 function batalTahan() { if (tahan) { clearTimeout(tahan.t1); clearTimeout(tahan.t2); } tahan = null; }
-function cariBangunanSkrin(sx, sy) {
-  for (const ofs of [0, 14, 28, 44]) {
-    const [gx, gy] = skrinKeDunia(sx, sy + ofs * cam.z);
-    for (let i = S.bld.length - 1; i >= 0; i--) { const b = S.bld[i], s = B[b.t].s; if (gx >= b.x && gx < b.x + s && gy >= b.y && gy < b.y + s) return b; }
-  }
-  return null;
-}
+const cariBangunanSkrin = (sx, sy) => G3.pilihDi(sx, sy);
 function ketik(sx, sy) {
   const [gx, gy] = skrinKeDunia(sx, sy);
   if (mode === 'perang') { lepas(gx, gy); return; }
@@ -915,7 +458,7 @@ function kutip(b) {
   sfx('kutip'); semakLangkah(); kemaskiniHUD();
 }
 let apungan = [];
-function apungTeks(b, txt, w) { const s = B[b.t].s; apungan.push({ x: b.x + s / 2, y: b.y + s / 2, z: 2, txt, w, t: 0 }); }
+function apungTeks(b, txt, w) { const s = B[b.t].s; apungan.push({ x: b.x + s / 2, y: b.y + s / 2, z: G3.tinggi(b.t, b.lv) + .3, txt, w, t: 0 }); }
 function naikTaraf(b) {
   if (b.busy) return;
   const lvB = b.lv + 1;
@@ -952,7 +495,7 @@ function mulaLetak(t, dekat) {
   if (!tempat) { toast('Tiada ruang kosong. Pindahkan bangunan untuk memberi ruang.', true); return; }
   S.letak = { t, x: tempat[0], y: tempat[1], baru: true };
   pilihan = null; tutupModal(); paparLetak();
-  const p = P(tempat[0] + B[t].s / 2, tempat[1] + B[t].s / 2); cam.x = p[0]; cam.y = p[1]; hadKamera();
+  cam.x = tempat[0] + B[t].s / 2; cam.y = tempat[1] + B[t].s / 2; hadKamera();
 }
 function mulaPindah(b) { S.letak = { t: b.t, x: b.x, y: b.y, baru: false, b }; pilihan = null; paparPanel(); paparLetak(); }
 function batalLetak() { S.letak = null; paparLetak(); paparPanel(); }
@@ -1225,41 +768,22 @@ function kemaskiniPerang(dt) {
   else if (BT.mula && !hidup && !baki) { BT.tunggu += dt; if (BT.tunggu > 1.5) tamatPerang(); }
 }
 const bintangPerang = () => (BT.musnah / BT.jumlah >= .5 ? 1 : 0) + (BT.istanaMati ? 1 : 0) + (BT.musnah >= BT.jumlah ? 1 : 0);
-function lukisPeluru() {
-  for (const p of BT.proj) {
-    const f = p.t / p.dur, x = p.dari[0] + (p.ke[0] - p.dari[0]) * f, y = p.dari[1] + (p.ke[1] - p.dari[1]) * f;
-    let z = p.dari[2] + (p.ke[2] - p.dari[2]) * f;
-    if (p.j === 'bom') { z += 4 * 3.2 * f * (1 - f); const g = P(x, y, 0); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(g[0], g[1], 6, 3, 0, 0, 7); ctx.fill(); const q = P(x, y, z); bulat(q[0], q[1], 6, '#151515'); bulat(q[0] - 2, q[1] - 2, 2, '#555'); }
-    else if (p.j === 'peluru') { const q = P(x, y, z); bulat(q[0], q[1], 3.4, '#1a1a1a'); }
-    else { const q = P(x, y, z), dx = p.ke[0] - p.dari[0], dy = p.ke[1] - p.dari[1], L = Math.hypot(dx, dy) || 1, q2 = P(x - dx / L * .45, y - dy / L * .45, z); garis(q2[0], q2[1], q[0], q[1], p.j === 'panah' ? 2 : 1.6, p.j === 'panah' ? '#f4c20d' : '#efe2b8'); }
-  }
-}
-function lukisKesan() {
-  for (const f of BT.fx) {
-    const k = f.t / f.dur, p = P(f.x, f.y, 0);
-    if (f.j === 'letup') { ctx.globalAlpha = 1 - k; bulat(p[0], p[1] - 10, (10 + 34 * k) * f.r, '#ff9a2a'); bulat(p[0], p[1] - 12, (6 + 22 * k) * f.r, '#ffe27a'); ctx.globalAlpha = (1 - k) * .6; bulat(p[0] - 8, p[1] - 26 - 20 * k, 14 * f.r, '#6b6b6b'); bulat(p[0] + 10, p[1] - 30 - 24 * k, 12 * f.r, '#8a8a8a'); ctx.globalAlpha = 1; }
-    else if (f.j === 'asap' || f.j === 'debu') { ctx.globalAlpha = (1 - k) * .7; bulat(p[0], p[1] - 6 - 10 * k, 6 + 8 * k, f.j === 'debu' ? '#b59a72' : '#d9d9d9'); ctx.globalAlpha = 1; }
-    else if (f.j === 'percik') { ctx.globalAlpha = 1 - k; for (let i = 0; i < 4; i++) { const a = i * 1.6 + f.x; garis(p[0], p[1] - 10, p[0] + Math.cos(a) * 10 * k, p[1] - 10 + Math.sin(a) * 8 * k, 2, '#ffe9a0'); } ctx.globalAlpha = 1; }
-    else if (f.j === 'ranjau') { ctx.globalAlpha = 1 - k; for (let i = 0; i < 6; i++) garis(p[0] - 10 + i * 4, p[1] + 2, p[0] - 9 + i * 4, p[1] - 12 * Math.min(1, k * 4), 2.2, '#d8c27a'); ctx.globalAlpha = 1; }
-    else if (f.j === 'cincin') { ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.w; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(p[0], p[1], 20 + 70 * k, 10 + 35 * k, 0, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
-  }
-}
 function lukisAtasPerang() {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const b of BT.blds) {
     if (b.mati || b.hp >= b.maxHp || b.t === 'ranjau') continue;
-    const s = B[b.t].s, [x, y] = keSkrin(P(b.x + s / 2, b.y + s / 2, b.t === 'kota' ? 1.3 : s * .7 + .6)), w = b.t === 'kota' ? 22 : 40;
+    const s = B[b.t].s, [x, y] = G3.ke2D(b.x + s / 2, b.y + s / 2, G3.tinggi(b.t, b.lv) + .3), w = b.t === 'kota' ? 22 : 40;
     ctx.fillStyle = 'rgba(10,6,3,.8)'; ctx.fillRect(x - w / 2 - 1, y - 3, w + 2, 6);
     ctx.fillStyle = '#ffd24a'; ctx.fillRect(x - w / 2, y - 2, w * b.hp / b.maxHp, 4);
   }
   for (const u of BT.units) {
     if (u.hp >= u.maxHp && !u.wira) continue;
-    const [x, y] = keSkrin(P(u.x, u.y, u.t === 'gajah' ? 1.4 : u.wira ? 1.3 : 1)), w = u.wira ? 30 : 18;
+    const [x, y] = G3.ke2D(u.x, u.y, G3.tinggiUnit(u.t) + .18), w = u.wira ? 30 : 18;
     ctx.fillStyle = 'rgba(10,6,3,.8)'; ctx.fillRect(x - w / 2 - 1, y - 3, w + 2, 5);
     ctx.fillStyle = u.wira ? '#ffd24a' : '#6fdc4a'; ctx.fillRect(x - w / 2, y - 2, w * clamp(u.hp / u.maxHp, 0, 1), 3);
   }
   for (const f of BT.fx) if (f.j === 'teks') {
-    const k = f.t / f.dur, [x, y] = keSkrin(P(f.x, f.y, f.z + k * 1.5));
+    const k = f.t / f.dur, [x, y] = G3.ke2D(f.x, f.y, f.z * .8 + k * 1.4);
     ctx.globalAlpha = 1 - k * k; ctx.font = '400 17px "Lilita One", sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = '#140c07'; ctx.strokeText(f.txt, x, y); ctx.fillStyle = f.w; ctx.fillText(f.txt, x, y); ctx.globalAlpha = 1;
   }
 }
@@ -1267,7 +791,7 @@ function lukisApungan(dt) {
   if (!apungan.length || mode !== 'kampung') { apungan = []; return; }
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const a of apungan) {
-    a.t += dt; const k = a.t / 1.3, [x, y] = keSkrin(P(a.x, a.y, a.z + k * 2));
+    a.t += dt; const k = a.t / 1.3, [x, y] = G3.ke2D(a.x, a.y, a.z + k * 1.6);
     ctx.globalAlpha = clamp(1 - k * k, 0, 1); ctx.font = '400 20px "Lilita One", sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = '#140c07'; ctx.strokeText(a.txt, x, y); ctx.fillStyle = a.w; ctx.fillText(a.txt, x, y); ctx.globalAlpha = 1;
   }
   apungan = apungan.filter(a => a.t < 1.3);
@@ -1507,16 +1031,14 @@ function lukisKeKanvas(el, fn, skala = 1) {
   ctx.setTransform(d * skala, 0, 0, d * skala, w * d / 2, h * d * .5);
   try { fn(w / skala, h / skala); } finally { ctx = lama; }
 }
-function lukisPratonton(el, t) {
-  lukisKeKanvas(el, (w, h) => {
-    const s = B[t].s, k = Math.min(w / (s * TW * 1.15), h / (s * TH + 4 * ZS + 10));
-    ctx.scale(k, k); const c = P(s / 2, s / 2, 1.1); ctx.translate(-c[0], -c[1]);
-    lukisBangunan({ id: 5, t, x: 0, y: 0, lv: 1, busy: null, store: 0 }, { ts: 1, isi: .5, petaKota: new Set() });
-  });
+function lukisFoto(el, src) {
+  const r = el.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(40, r.width || 120), h = Math.max(40, r.height || 96);
+  el.width = Math.round(w * d); el.height = Math.round(h * d);
+  const c = el.getContext('2d'), k = Math.min(el.width / src.width, el.height / src.height), dw = src.width * k, dh = src.height * k;
+  c.drawImage(src, (el.width - dw) / 2, (el.height - dh) / 2, dw, dh);
 }
-function lukisPratontonUnit(el, t) {
-  lukisKeKanvas(el, () => { ctx.translate(0, t === 'gajah' ? 16 : 18); ctx.scale(t === 'gajah' ? 1.05 : 1.45, t === 'gajah' ? 1.05 : 1.45); lukisUnit({ t, x: 0, y: 0, arah: 1, langkah: 0 }); });
-}
+const lukisPratonton = (el, t) => lukisFoto(el, G3.foto('b', t));
+const lukisPratontonUnit = (el, t) => lukisFoto(el, G3.foto('u', t));
 
 function bukaInfo(b) {
   const d = B[b.t], baris = [];
@@ -1856,8 +1378,7 @@ function gelung(t) {
     }
     if (detikPuak > 1) { detikPuak = 0; puakDetik(); if (perluRenderPuak && modalCur && modalCur.tajuk.startsWith('Puak') && modalCur.tab === 'sembang' && !tekanModal && document.activeElement?.id !== 'inputSembang') { const el = $('#modalIsi'), bawah = el.scrollHeight - el.scrollTop - el.clientHeight < 40; renderSembang(); if (bawah) el.scrollTop = el.scrollHeight; S.puak.belumBaca = 0; } }
     if (detikSimpan > 5) { detikSimpan = 0; simpan(); if (!sudahIngatRehat && kini() - mulaSesi > 45 * 60e3) { sudahIngatRehat = true; toast('Dah 45 minit bermain. Rehat sekejap; kota kau terus berkembang semasa kau tiada.'); } }
-    lukis(t / 1000);
-    lukisApungan(dt);
+    lukis(t / 1000, dt);
   } catch (e) { console.error(e); }
   requestAnimationFrame(gelung);
 }
@@ -1866,6 +1387,7 @@ function gelung(t) {
 function mula(data) {
   S = (data && data.S) || muat() || keadaanBaru();
   S.stat = { ...keadaanBaru().stat, ...S.stat };
+  if (!G3.sedia) { G3.mula($('#gl')); G3.sedia = true; }
   binaHUD(); ubahSaiz(); kameraAsal();
   const jauh = kini() - (S.lastSeen || kini());
   kemaskini(kini());

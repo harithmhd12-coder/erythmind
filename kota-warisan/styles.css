@@ -16,6 +16,7 @@
 }
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; overflow: hidden; background: #22401f; color: var(--krim); font-family: var(--f-teks); font-size: 14px; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #cv { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
 button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible, input:focus-visible { outline: 3px solid var(--diraja); outline-offset: 2px; }
