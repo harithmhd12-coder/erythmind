@@ -12,9 +12,9 @@
 const ARENA = {x:BASE.x, z:BASE.z, r:96, y:3, on:false, rise:0};
 const LVL = {
   sederhana:{name:'SEDERHANA', hp:140, dmg:11, every:[4.6, 6.8], tele:1.3, r:4.6, speed:5, dist:[18, 30], col:'#ffd23a'},
-  sukar:{name:'SUKAR', hp:380, dmg:22, every:[3.0, 4.2], tele:1.0, r:6.8, speed:7, dist:[11, 18], col:'#ff4f45'},
+  sukar:{name:'SUKAR', hp:380, dmg:22, every:[3.0, 4.2], tele:.7, r:6.8, speed:7, dist:[11, 18], col:'#ff4f45'},
 };
-const IMPACT = {magma:.9, ais:.7, cahaya:.75, graviti:1.6, hutan:.8, emas:1.5, tebasan:.5, galaksi:.5};
+const IMPACT = {magma:.9, ais:.7, cahaya:.75, graviti:1.6, hutan:.8, emas:1.5, tebasan:.5, galaksi:GALAKSI_T};
 const FIGHT = {on:false, foes:[], hp:100, max:100, t:0, warns:[], fist:0, kick:0, dodge:0, inv:0, combo:0, comboT:0, lastHit:0, won:false, falls:0, dash:null};
 
 /* --- the arena: stone floor, rings, a glowing rim and pylons; it rises from the bay and sinks again --- */
@@ -102,6 +102,7 @@ function tickFoes(dt){
   const alive = FIGHT.foes.filter(f => !f.down);
   alive.forEach(f => {
     const c = f.c, L = f.lvl, dx = player.x - c.x, dz = player.z - c.z, d = Math.hypot(dx, dz) || 1;
+    if(c.leap){ c.moving = false; return; }                   // Garp in the air (Galaxy Impact): his body follows the leap
     // keep their fighting distance, circling; spread out from each other; stay on the arena
     const want = (L.dist[0] + L.dist[1]) / 2 + Math.sin(FIGHT.t * .4 + c.i) * (L.dist[1] - L.dist[0]) / 2;
     let mx = (d - want) * dx / d * .5 + dz / d * f.side * 2.2, mz = (d - want) * dz / d * .5 - dx / d * f.side * 2.2;
@@ -119,7 +120,7 @@ function tickFoes(dt){
   FIGHT.warns = FIGHT.warns.filter(w => {
     w.t -= dt; const k = Math.abs(Math.sin(FIGHT.t * 12)); w.ring.material.opacity = .35 + .4 * k; w.fill.material.opacity = .08 + .1 * k;
     if(!w.cast && w.t <= 0){ w.cast = true; w.left = IMPACT[w.f.c.power] || .7;
-      POWER_FX[w.f.c.power](charChest(w.f.c), new THREE.Vector3(w.x, ARENA.y, w.z), w.f.c.fleet ? .95 : .6, null, 'me'); }
+      POWER_FX[w.f.c.power](charChest(w.f.c), new THREE.Vector3(w.x, ARENA.y, w.z), w.f.c.fleet ? .95 : .6, null, 'me', w.f.c); }
     if(w.cast){ w.left -= dt;
       if(w.left <= 0){ scene.remove(w.ring, w.fill);
         if(FIGHT.on && !FIGHT.won && FIGHT.inv <= 0 && Math.hypot(player.x - w.x, player.z - w.z) < w.r) hurt(w.f);

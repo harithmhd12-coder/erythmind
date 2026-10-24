@@ -158,17 +158,75 @@ const POWER_FX = {
       addFx(cut, .35, (q, k) => { q.scale.set(1 + k, 1 - k * .8, 1); q.material.opacity = .9 * (1 - k); }); impactAt(to, 0x3aff9a, 1.2 * s); flash('rgba(255,255,255,.35)'); hit && hit(); });
     if(AU.ctx){ noiseHit({d:.35, v:.25, f:5000, type:'highpass'}); tone(1800, {d:.4, v:.05, glide:300, type:'sawtooth', filt:4000}); }
   },
-  // Tinju Galaksi: the fleet admiral's fist, a shock that throws a galaxy of sparks
-  galaksi(from, to, s, hit){
-    const g = new THREE.Group(), f = new THREE.Mesh(lksBall(), new THREE.MeshStandardMaterial({color:0x101014, metalness:.8, roughness:.3, emissive:0x1a0a3a, emissiveIntensity:.6})); f.scale.set(1.3, 1.1, 1.5); g.add(f); g.scale.setScalar(2.4 * s);
-    const a = from.clone().setY(from.y + 3);
-    addFx(g, .5, (o, k) => { o.position.lerpVectors(a, to, k); if(Math.random() < .9) bolt(o.position.clone(), o.position.clone().add(new THREE.Vector3((Math.random() - .5) * 6, (Math.random() - .5) * 6, (Math.random() - .5) * 6)), Math.random() < .5 ? 0x9a5aff : 0x14141a, 1, .08); });
-    later(.5, () => {
-      const dark = new THREE.Mesh(lksBall(), new THREE.MeshBasicMaterial({color:0x0a0618, transparent:true, opacity:.8, depthWrite:false})); dark.position.copy(to);
-      addFx(dark, 1.4, (o, k) => { o.scale.setScalar(2 + k * 30 * s); o.material.opacity = .8 * (1 - k); });
-      for(let k = 0; k < 40; k++){ const st = new THREE.Mesh(lksBall(), addMat(k % 3 ? 0x9fb8ff : 0xff9ae0)); const a2 = Math.random() * 6.283, r = 6 + Math.random() * 30 * s, sp = (Math.random() - .5) * 2;
-        addFx(st, 2, (o, k2) => { const ang = a2 + k2 * 3 * sp; o.position.set(to.x + Math.cos(ang) * r * Math.min(1, k2 * 3), to.y + 2 + Math.sin(k2 * 3 + k) * 4, to.z + Math.sin(ang) * r * Math.min(1, k2 * 3)); o.scale.setScalar(.35 * (1 - k2) + .02); }); }
-      impactAt(to, 0x9a5aff, 2.2 * s); shake = Math.max(shake, 1.4); flash('rgba(140,100,255,.4)'); lksSound('quake'); hit && hit();
+  // Tinju Galaksi (Galaxy Impact): the fist gathers black Haki crackling with red lightning inside a spinning galaxy
+  // of light, rises, dives and strikes; a white-hot point swells into a dome of light, a ring runs along the ground and
+  // a mushroom of smoke climbs after it. Cast by the fleet admiral himself (`who`), his body makes the leap (garpLeap).
+  galaksi(from, to, s, hit, caster, who){
+    const T = GALAKSI_T, L = who && who.g && !who.leap ? garpLeap(who, to) : null, t0 = performance.now();
+    const up = new THREE.Vector3(0, 1, 0), dir = _lv.subVectors(to, from).setY(0).normalize().clone();
+    const hang = from.clone().lerp(to, .45).setY(Math.max(from.y, to.y) + 14 * s);
+    // where the fist is, t seconds after the cast: on Garp's body, or (anyone else's cast) a fist of Haki alone in the air
+    const fist = (t, out) => {
+      if(L){ const g = who.g.position, f = t < .8 ? -.05 : .35; return out.set(g.x + Math.sin(who.ry) * who.h * f, g.y + who.h * (t < .8 ? .95 : .55), g.z + Math.cos(who.ry) * who.h * f); }
+      if(t < .55){ const k = 1 - Math.pow(1 - t / .55, 2); return out.copy(from).lerp(hang, k); }
+      if(t < .8) return out.copy(hang).addScaledVector(up, Math.sin((t - .55) / .25 * Math.PI) * .6);
+      const k = Math.min(1, (t - .8) / (T - .8)); return out.copy(hang).lerp(to, k * k);
+    };
+    // 1. the charge: black fist, red aura, a two-armed galaxy of sparks that spins and then crushes into the fist
+    const ch = new THREE.Group();
+    const core = new THREE.Mesh(lksBall(), new THREE.MeshBasicMaterial({color:0x050208, transparent:true, opacity:.92, depthWrite:false}));
+    const aura = new THREE.Mesh(lksBall(), addMat(0xff2a3a, .3));
+    const N = 110, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), cc = new THREE.Color();
+    for(let k = 0; k < N; k++){ const arm = k % 2, r = Math.pow(Math.random(), .7), a = r * 7 + arm * Math.PI + (Math.random() - .5) * .5;
+      pos[k * 3] = Math.cos(a) * r; pos[k * 3 + 1] = (Math.random() - .5) * .12; pos[k * 3 + 2] = Math.sin(a) * r;
+      cc.setHex([0xffffff, 0xffb0e8, 0x9fb8ff, 0xffd08a][k % 4]); col[k * 3] = cc.r; col[k * 3 + 1] = cc.g; col[k * 3 + 2] = cc.b; }
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); gg.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const gal = new THREE.Points(gg, new THREE.PointsMaterial({size:.55, vertexColors:true, transparent:true, opacity:.95, blending:THREE.AdditiveBlending, depthWrite:false}));
+    const disc = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({map:galaxyTex(), transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide})); disc.rotation.x = -Math.PI / 2;
+    const swirl = new THREE.Group(); swirl.add(disc, gal); ch.add(core, aura, swirl);
+    const fp = new THREE.Vector3(), last = new THREE.Vector3(); let lastOk = false;
+    addFx(ch, T, o => {
+      const t = (performance.now() - t0) / 1000, k = Math.min(1, t / .8), dive = t > .8;
+      o.visible = t < T; if(!o.visible) return;                // a slow phone's frames lag the wall clock: never outlive the blow
+      fist(t, fp); o.position.copy(fp);
+      core.scale.setScalar((.7 + k * .7) * s * (dive ? 1.15 : 1));
+      aura.scale.setScalar((1.6 + Math.sin(t * 40) * .25 + k) * s); aura.material.opacity = .25 + k * .2;
+      const gs = dive ? lerp(8, 1.6, Math.min(1, (t - .8) / (T - .8))) : 8 * Math.min(1, t / .5);
+      swirl.scale.setScalar(gs * s + .01); gal.rotation.y += .25; disc.rotation.z -= .12; gal.material.size = 1.1 * s;
+      swirl.lookAt(fp.clone().add(dive ? _lv.subVectors(to, fp) : up)); swirl.rotateX(Math.PI / 2);
+      if(Math.random() < .55) bolt(fp.clone(), fp.clone().add(new THREE.Vector3((Math.random() - .5), (Math.random() - .5), (Math.random() - .5)).normalize().multiplyScalar((2 + Math.random() * 3) * s)), Math.random() < .6 ? 0xff2a3a : 0x000000, .9 * s, .09);
+      if(dive && lastOk) bolt(last.clone(), fp.clone(), 0xffffff, 0, .18, 2);                     // speed line behind the diving fist
+      last.copy(fp); lastOk = true;
+    });
+    // 2. the blow
+    later(T, () => {
+      const g0 = to.clone();
+      const hot = new THREE.Mesh(lksBall(), addMat(0xffffff, 1)); hot.position.copy(g0).setY(g0.y + 1.5);
+      addFx(hot, .5, (o, k) => { o.scale.setScalar((1 + k * 6) * s); o.material.opacity = 1 - k; });
+      const dome = (c, o0, R, life, delay) => later(delay, () => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 18, 0, 6.283, 0, Math.PI / 2), addMat(c, o0)); m.material.side = THREE.DoubleSide; m.position.copy(g0);
+        addFx(m, life, (o, k) => { o.scale.setScalar(R * s * (1 - Math.pow(1 - k, 3)) + .01); o.material.opacity = o0 * (1 - k * k); }); });
+      dome(0xfff6e0, .85, 22, 1.1, 0); dome(0xff8a3a, .5, 27, 1.4, .08); dome(0xff3a5a, .25, 31, 1.6, .16);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(1, .5, 6, 64), addMat(0xffe2b0, .9)); ring.rotation.x = Math.PI / 2; ring.position.copy(g0).setY(g0.y + .4);
+      addFx(ring, 1.3, (o, k) => { const r = 2 + k * 44 * s; o.scale.set(r, r, 1 + k * 3); o.material.opacity = .9 * (1 - k); });
+      const crater = new THREE.Mesh(new THREE.CircleGeometry(1, 32), new THREE.MeshBasicMaterial({color:0x1a120c, transparent:true, opacity:.7, depthWrite:false})); crater.rotation.x = -Math.PI / 2; crater.position.copy(g0).setY(g0.y + .12);
+      addFx(crater, 4, (o, k) => { o.scale.setScalar(7 * s * Math.min(1, k * 8)); o.material.opacity = .7 * (k > .7 ? (1 - k) / .3 : 1); });
+      for(let k = 0; k < 18; k++){ const r = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshStandardMaterial({color:0x4a4038, roughness:.95})); const a = Math.random() * 6.283, v = (10 + Math.random() * 16) * s, vy = 8 + Math.random() * 14, sz = (.25 + Math.random() * .5) * s;
+        r.scale.setScalar(sz); addFx(r, 1.6, (o, q) => { const tt = q * 1.6; o.position.set(g0.x + Math.cos(a) * v * tt, Math.max(g0.y, g0.y + vy * tt - 14 * tt * tt), g0.z + Math.sin(a) * v * tt); o.rotation.x += .2; o.rotation.y += .15; }); }
+      // the mushroom of smoke and fire that climbs after the light
+      later(.3, () => {
+        const H = 30 * s, m = new THREE.Group();
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(.5, 1, 1, 16, 1, true), new THREE.MeshBasicMaterial({color:0xff8a3a, transparent:true, opacity:.8, depthWrite:false, side:THREE.DoubleSide}));
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 14), new THREE.MeshBasicMaterial({color:0xffb060, transparent:true, opacity:.85, depthWrite:false}));
+        const skirt = new THREE.Mesh(new THREE.TorusGeometry(1, .35, 8, 40), new THREE.MeshBasicMaterial({color:0xff9a50, transparent:true, opacity:.6, depthWrite:false}));
+        skirt.rotation.x = Math.PI / 2; m.add(stem, cap, skirt); m.position.copy(g0);
+        const hotC = new THREE.Color(0xffa050), smoke = new THREE.Color(0x6a625c), c2 = new THREE.Color();
+        addFx(m, 3.4, (o, k) => { const e = 1 - Math.pow(1 - Math.min(1, k * 1.6), 3), h = H * e;
+          stem.scale.set(3 * s * (1 + k), h, 3 * s * (1 + k)); stem.position.y = h / 2;
+          cap.scale.set(9 * s * (.4 + e * .9), 5 * s * (.4 + e * .7), 9 * s * (.4 + e * .9)); cap.position.y = h;
+          skirt.scale.setScalar(6 * s * (.5 + e)); skirt.position.y = h * .25;
+          c2.copy(hotC).lerp(smoke, Math.min(1, k * 2)); [stem, cap, skirt].forEach(q => { q.material.color.copy(c2); q.material.opacity = (q === skirt ? .6 : .85) * (k > .65 ? (1 - k) / .35 : 1); }); });
+      });
+      boom(g0.x, g0.y + 2, g0.z, 0xffe0b0, 2.4 * s); flash('rgba(255,248,230,.9)'); shake = Math.max(shake, 1.8); lksSound('quake'); hit && hit();
     });
   },
   // the intruders
@@ -218,6 +276,41 @@ const POWER_FX = {
     later(1.5, () => { flash('rgba(120,220,255,.3)'); boom(to.x, to.y + 2, to.z, 0x6fd8ff, 1 * s); hit && hit(); });
   },
 };
+// Galaxy Impact's body: a crouch, a high leap toward the target, a moment hanging in the air winding up the fist,
+// the dive that lands the blow just in front of the target, then a leap back to where he stood (wall-clock time)
+const GALAKSI_T = .95;
+// the swirl drawn once: two arms of light round a white-hot heart, pink and blue at the edges
+let _galTex = null;
+function galaxyTex(){
+  if(_galTex) return _galTex;
+  const n = 256, cv = document.createElement('canvas'); cv.width = cv.height = n; const x = cv.getContext('2d'), c = n / 2;
+  const glow = x.createRadialGradient(c, c, 0, c, c, c); glow.addColorStop(0, 'rgba(255,255,255,1)'); glow.addColorStop(.12, 'rgba(255,220,240,.85)'); glow.addColorStop(.45, 'rgba(160,120,255,.25)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = glow; x.fillRect(0, 0, n, n);
+  const R = mulberry(7);
+  for(let arm = 0; arm < 2; arm++) for(let i = 0; i < 520; i++){ const r = Math.pow(R(), .8), a = r * 7.5 + arm * Math.PI + (R() - .5) * .45;
+    x.fillStyle = ['rgba(255,255,255,.9)', 'rgba(255,170,230,.8)', 'rgba(150,180,255,.8)', 'rgba(255,210,150,.7)'][i % 4];
+    x.beginPath(); x.arc(c + Math.cos(a) * r * c * .95, c + Math.sin(a) * r * c * .95, (1 - r) * 3 + .6, 0, 6.283); x.fill(); }
+  return _galTex = new THREE.CanvasTexture(cv);
+}
+function garpLeap(c, to){
+  const a = new THREE.Vector3(c.x, 0, c.z), d = new THREE.Vector3(to.x - c.x, 0, to.z - c.z), len = d.length() || 1; d.divideScalar(len);
+  return c.leap = {t0:performance.now(), a, land:a.clone().addScaledVector(d, Math.max(0, len - 3.5)), H:3 + c.h * .9, ry:Math.atan2(d.x, d.z), punched:false};
+}
+function leapPose(c){
+  const L = c.leap, t = (performance.now() - L.t0) / 1000, T = GALAKSI_T, back = T + .45, end = back + .75;
+  if(t >= end){ c.leap = null; c.x = L.a.x; c.z = L.a.z; return null; }
+  const g0 = lksGround(L.a.x, L.a.z), g1 = lksGround(L.land.x, L.land.z), mid = L.a.clone().lerp(L.land, .55), mid2 = L.a.clone().lerp(L.land, .62);
+  let p, y, pitch = 0;
+  if(t < .12){ p = L.a; y = g0 - .5 * Math.sin(t / .12 * Math.PI / 2); pitch = .15; }                                     // crouch
+  else if(t < .55){ const e = 1 - Math.pow(1 - (t - .12) / .43, 2); p = L.a.clone().lerp(mid, e); y = g0 + L.H * e; pitch = -.2; }      // the leap
+  else if(t < .8){ const k = (t - .55) / .25; p = mid.clone().lerp(mid2, k); y = g0 + L.H + Math.sin(k * Math.PI) * .6; pitch = -.4; }   // winding up in the air
+  else if(t < T){ const e = Math.pow((t - .8) / (T - .8), 2); p = mid2.clone().lerp(L.land, e); y = lerp(g0 + L.H, g1, e); pitch = .6;      // the dive and the blow
+    if(!L.punched){ L.punched = true; const A = c.acts; if(A?.atk){ A.atk.reset(); A.atk.play(); if(c.anim !== 'atk') A[c.anim]?.crossFadeTo(A.atk, .08, false); c.anim = 'atk'; c.atkT = A.atk.getClip().duration; } } }
+  else if(t < back){ p = L.land; y = g1; pitch = .3 * (1 - (t - T) / .45); }                                                    // the fist stays out
+  else { const k = (t - back) / .75; p = L.land.clone().lerp(L.a, k); y = lerp(g1, g0, k) + Math.sin(k * Math.PI) * 8; pitch = -.25 * Math.sin(k * Math.PI); }   // back to his place
+  c.x = p.x; c.z = p.z; c.ry = L.ry; c.moving = false;
+  return {y, pitch};
+}
 // a defender takes an intruder's blow on a shield of Haki
 function blockFx(c){
   const r = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), new THREE.MeshBasicMaterial({color:0x2a0a3a, transparent:true, opacity:.4, depthWrite:false, side:THREE.DoubleSide}));
@@ -282,7 +375,7 @@ function tickInvasion(dt){
     const tgt = c.target && c.target.state === 'tempur' ? c.target : INVS.find(v => v.state === 'tempur');
     if(!tgt) return; c.ry = Math.atan2(tgt.x - c.x, tgt.z - c.z); c.cd -= dt;
     if(c.cd <= 0 && Math.hypot(c.tx - c.x, c.tz - c.z) < 3){ c.cd = (c.fleet ? 5 : 3.8) + Math.random() * 2.2; charAttack(c); const dmg = c.fleet ? 34 : 14 + Math.random() * 6;
-      castFx(c.power, charChest(c), charFeet(tgt), 1, () => invDamage(tgt, dmg, c.name)); }
+      castFx(c.power, charChest(c), charFeet(tgt), 1, () => invDamage(tgt, dmg, c.name), undefined, c); }
   });
   const left = INVS.filter(c => c.state === 'datang' || c.state === 'tempur').length;
   if((I.t * 2 | 0) !== I.hudT){ I.hudT = I.t * 2 | 0;
@@ -293,9 +386,9 @@ function tickInvasion(dt){
   if(I.t > 240) INVS.forEach(c => { if(c.state === 'datang' || c.state === 'tempur') invDamage(c, 999, 'para laksamana'); });
 }
 // effects are only drawn when someone can see them; the result is the same either way
-function castFx(power, from, to, s, hit, caster){
+function castFx(power, from, to, s, hit, caster, who){
   const seen = player.layer === 0 && Math.hypot(camera.position.x - to.x, camera.position.z - to.z) < 650;
-  if(seen || caster === 'me') POWER_FX[power](from, to, s, hit, caster); else later(.8, () => hit && hit());
+  if(seen || caster === 'me') POWER_FX[power](from, to, s, hit, caster, who); else later(power === 'galaksi' ? GALAKSI_T : .8, () => hit && hit());
 }
 
 /* ================= patrol and drawing ================= */
@@ -304,6 +397,7 @@ function tickChars(t, dt){
   const showBase = (player.layer === 0 || player.layer === 1) && Math.hypot(camera.position.x - BASE.x, camera.position.z - BASE.z) < 900;
   ADMS.forEach(c => {
     if(c.fight) return;                                       // in the arena for an entry trial (27-gelanggang.js)
+    if(c.leap){ c.g.visible = showBase; return; }             // in the middle of Galaxy Impact
     if(!LKS.inv.on){                                          // a slow patrol round their own post
       c.wait -= dt;
       if(c.wait <= 0 && Math.hypot(c.tx - c.x, c.tz - c.z) < 1){                     // a few steps along the quay and back
@@ -319,8 +413,9 @@ function tickChars(t, dt){
   LKS.chars.forEach(c => {
     if(c.fight) c.g.visible = player.layer === 0;
     if(!c.g.visible) return;
-    const y = c.side === 'inv' ? (c.state === 'undur' ? 2 + (c.lift || 0) : Math.max(.5, lksGround(c.x, c.z)) + Math.sin(t * 1.4 + c.i) * .3) : lksGround(c.x, c.z);
-    c.g.position.set(c.x, y, c.z); c.g.rotation.y = c.ry; if(c.state === 'undur') c.g.rotation.x += dt * 4; else c.g.rotation.x = 0;
+    const P = c.leap ? leapPose(c) : null;
+    const y = P ? P.y : c.side === 'inv' ? (c.state === 'undur' ? 2 + (c.lift || 0) : Math.max(.5, lksGround(c.x, c.z)) + Math.sin(t * 1.4 + c.i) * .3) : lksGround(c.x, c.z);
+    c.g.position.set(c.x, y, c.z); c.g.rotation.y = c.ry; if(c.state === 'undur') c.g.rotation.x += dt * 4; else c.g.rotation.x = P ? P.pitch : 0;
     if(c.block > 0){ c.block -= dt; c.g.position.addScaledVector(_lq.set(-Math.sin(c.ry), 0, -Math.cos(c.ry)), c.block * 1.5); }
     if(near(c, 500)){ if(c.mixer){
         if(c.acts?.idle){ if(c.anim === 'atk'){ c.atkT -= dt; if(c.atkT <= 0) setAnim(c, c.moving ? 'walk' : 'idle'); } else setAnim(c, c.moving ? 'walk' : 'idle'); }
