@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Malaysia Kita</title>
+<meta name="description" content="Jadi Perdana Menteri. Urus 13 negeri dan 3 Wilayah Persekutuan: projek, belanjawan, politik, sosial dan diplomasi antarabangsa.">
+<meta name="theme-color" content="#0b2a5b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<canvas id="cv" aria-label="Peta Malaysia"></canvas>
+
+<div class="lapis" id="hud">
+  <div id="pemimpin" class="papan">
+    <span class="muka-wrap"></span>
+    <div class="info">
+      <div class="baris1"><b id="namaPM">PM</b><button id="btnTetapan" class="ikon-btn" aria-label="Tetapan"></button></div>
+      <div class="baris2"><b id="tarikh" class="nombor">Jan 2026</b><span id="laju" class="laju"></span></div>
+      <div class="bulan"><i id="bulanBar"></i></div>
+      <small id="penggal"></small>
+    </div>
+  </div>
+  <div id="sumber"></div>
+  <div id="atasTengah">
+    <div id="lensa" class="cip-baris" role="toolbar" aria-label="Lensa peta"></div>
+    <div id="ticker"></div>
+  </div>
+  <div id="kanan">
+    <div id="kamera" class="cip-tegak"></div>
+    <div id="pasukan" class="papan kecil"></div>
+  </div>
+  <div id="legenda" class="papan" hidden></div>
+  <div id="nasihat" hidden></div>
+  <div id="bawahKiri"><button class="btn merah" id="btnPeristiwa" aria-label="Peristiwa"></button></div>
+  <nav id="bawahKanan">
+    <button class="btn biru nav-btn" id="navProjek"></button>
+    <button class="btn biru nav-btn" id="navDasar"></button>
+    <button class="btn biru nav-btn" id="navDiplomasi"></button>
+    <button class="btn biru nav-btn" id="navParlimen"></button>
+    <button class="btn biru nav-btn" id="navLaporan"></button>
+  </nav>
+  <section id="panel" class="papan" hidden aria-live="polite"></section>
+</div>
+
+<div id="modal" hidden>
+  <div class="kotak papan" role="dialog" aria-modal="true" aria-labelledby="modalTajuk">
+    <div class="jalur"></div>
+    <header><h2 id="modalTajuk"></h2><button class="btn merah tutup" id="modalTutup" aria-label="Tutup">✕</button></header>
+    <div class="tab" id="modalTab"></div>
+    <div class="isi" id="modalIsi"></div>
+  </div>
+</div>
+<div id="toast" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="data.js"></script>
+<script src="peta.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
