@@ -339,10 +339,12 @@ function syncKuasaPower(){
   P.key = KUASA.slot; P.name = I ? (KUASA.pick === 'gear5' ? (HAKI.gear > 0 ? 'Tumbukan Gergasi' : 'Gear Putih') : I.name.split(' · ')[0]) : 'Kuasa Laksamana'; P.sub = I ? `${I.name} · daripada ${I.by}` : '';
   const box = $('#haki'); if(box) box.dataset.key = '';
 }
+// the owner, and visitors whose pass lets them choose (never Kamusari or Haki Raja Agung: those are not in the list)
+const canChoose = () => isOwner() || !!session?.kuasa;
 const _allowedPowersL = allowedPowers;
 allowedPowers = function(){
   let a = _allowedPowersL().filter(id => id !== 'laksamana');
-  if(!isOwner() || !POWER_INFO[KUASA.pick]) return a;
+  if(!canChoose() || !POWER_INFO[KUASA.pick]) return a;
   if(KUASA.slot !== '5'){ const P = POWERS.find(p => p.key === KUASA.slot && p.id !== 'laksamana' && a.includes(p.id)); if(P) a = a.filter(id => id !== P.id); }
   return a.concat('laksamana');
 };
@@ -350,7 +352,7 @@ const _renderHakiButtonsL = renderHakiButtons;
 renderHakiButtons = function(allowed){ _renderHakiButtonsL([...allowed].sort((x, y) => (POWERS.find(p => p.id === x)?.key || '9').localeCompare(POWERS.find(p => p.id === y)?.key || '9'))); };
 // the number key for the chosen slot goes to the admiral power (the Haki file looks keys up by the first match)
 addEventListener('keydown', e => {
-  if(!session || !isOwner() || !POWER_INFO[KUASA.pick] || e.key !== KUASA.slot || (typeof FIGHT !== 'undefined' && FIGHT.on) || !$('#gate').hidden || !$('#panel').hidden || !$('#map').hidden || typing()) return;
+  if(!session || !canChoose() || !POWER_INFO[KUASA.pick] || e.key !== KUASA.slot || (typeof FIGHT !== 'undefined' && FIGHT.on) || !$('#gate').hidden || !$('#panel').hidden || !$('#map').hidden || typing()) return;
   e.preventDefault(); e.stopImmediatePropagation(); usePower('laksamana');
 }, true);
 SPECIAL_POWERS.laksamana = {
@@ -376,7 +378,7 @@ function useGearSlot(p){
   if(!fist && HAKI.gear > 0) return toast(`Gear Putih masih aktif (${HAKI.gear.toFixed(0)} s).`, 'ok', 1500);
   SPECIAL_POWERS[id].use();
   HAKI.cd.laksamana = fist ? 14 : p === 'gear5' ? 1.5 : 45;
-  POWER_HOOKS.forEach(f => f(id, o, true, true, player.layer));
+  POWER_HOOKS.forEach(f => f(id, o, true, isOwner(), player.layer));
   net.room?.emit('haki', {k:id, x:+player.x.toFixed(1), z:+player.z.toFixed(1), ry:+player.ry.toFixed(2), l:player.layer}).catch(() => {});
   if(fist) setTimeout(() => { const tx = o.x + dir.x * 70, tz = o.z + dir.z * 70;              // the fist lands 70 steps ahead
     if(player.layer === 2 && Math.hypot(GIANT.x - tx, GIANT.z - tz) < 60) giantHit(p); }, 1950);
@@ -407,9 +409,9 @@ function giantHit(p){
 const SLOT_NAMES = {5:'Tambah sebagai kuasa 5 (semua kuasa asal kekal)', 1:'Ganti 1 · Kamusari', 3:'Ganti 3 · Haki Pemerhatian', 4:'Ganti 4 · Haki Persenjataan'};
 const _gfxSettingsHtmlL = gfxSettingsHtml;
 gfxSettingsHtml = function(){
-  const base = _gfxSettingsHtmlL(); if(!isOwner()) return base;
+  const base = _gfxSettingsHtmlL(); if(!canChoose()) return base;
   return base + `<h3>Pilihan kuasa (laksamana & kuasa khas)</h3><div class="field"><label for="kuasaSel">Kuasa</label><select id="kuasaSel"><option value="asal" ${KUASA.pick === 'asal' ? 'selected' : ''}>Tiada · kuasa aku kekal seperti asal</option>${Object.entries(POWER_INFO).map(([k, I]) => `<option value="${k}" ${KUASA.pick === k ? 'selected' : ''}>${esc(I.name)} (${esc(I.by)})</option>`).join('')}</select></div>
-    <div class="field"><label for="kuasaSlot">Letak di</label><select id="kuasaSlot" ${KUASA.pick === 'asal' ? 'disabled' : ''}>${Object.entries(SLOT_NAMES).map(([k, n]) => `<option value="${k}" ${KUASA.slot === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div class="field"><label for="kuasaSlot">Letak di</label><select id="kuasaSlot" ${KUASA.pick === 'asal' ? 'disabled' : ''}>${Object.entries(SLOT_NAMES).filter(([k]) => isOwner() || k !== '1').map(([k, n]) => `<option value="${k}" ${KUASA.slot === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
     <div class="note">Haki Raja Agung (2) tidak boleh diganti: ia menundukkan gergasi dan menamatkan Ujian Saringan. Setiap kuasa laksamana boleh menjatuhkan Penjaga Gergasi: dua hentaman membuatnya terduduk 10 saat, hentaman ketiga membuatnya tumbang.</div>`;
 };
 document.addEventListener('change', e => {

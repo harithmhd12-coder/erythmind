@@ -447,7 +447,7 @@ function finishSaringan(how){
   if(SAR.finishing) return; SAR.finishing = true; hud('Lulus! Menjemput ke Labophase…');
   setTimeout(async () => {
     sarFist.hidden = true; SAR.stage = 6;
-    if(session?.role === 'guest' && !SAR.preview){ LS.set(SAR_KEY(session.gid), Date.now()); await sendResult({lulus:Date.now(), agung:how}); }
+    if(session?.role === 'guest' && !SAR.preview){ LS.set(SAR_KEY(session.pid || session.gid), Date.now()); await sendResult({lulus:Date.now(), agung:how}); }
     if(!SAR.preview) net.room?.emit('haki', {k:'saringan', s:'lulus', n:session?.name || 'Tetamu', d:SAR.dest || ''}).catch(() => {});
     flash('rgba(111,243,255,.8)'); sfx.whoosh(); setLayer(1); player.x = LAB.x; player.z = LAB.z + 16; player.ry = Math.PI; cam.yaw = 0;
     SAR.on = false; SAR.finishing = false; hud(); sirenTick(0, 0);
@@ -497,7 +497,7 @@ applyModel = function(key, gltf){
 const _startSession = startSession;
 startSession = function(s){
   _startSession(s);
-  if(s.role === 'guest' && !LS.get(SAR_KEY(s.gid), 0)) setTimeout(() => { if(session === s) startSaringan(false); }, 2600);
+  if(s.role === 'guest' && !LS.get(SAR_KEY(s.pid || s.gid), 0)) setTimeout(() => { if(session === s) startSaringan(false); }, 2600);
   if(s.role === 'owner') setTimeout(() => ensureInbox(), 1500);
 };
 const _lock = lock;

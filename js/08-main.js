@@ -319,6 +319,25 @@ async function createWorld(pin){
   await store.setCore(c); core = clone(c);
   startSession({role:'owner', name:c.ownerName, gender:null, MK, keys, lab:true, niv:true, istana:true, laut:true});
 }
+// group passes: ask who is coming in (remembered on this device)
+function nameHash(s){ let h = 0; for(const ch of s.toLowerCase()) h = (h * 131 + ch.charCodeAt(0)) >>> 0; return h.toString(36); }
+function askGuestName(label){
+  return new Promise(res => {
+    const last = LS.get('erythmind.kawan', {name:'', gender:'male'}), d = document.createElement('div'); d.id = 'askName';
+    d.innerHTML = `<form autocomplete="off"><h2>Selamat datang</h2><div class="note">${esc(label)} · tulis nama kau seperti yang kau mahu orang lain nampak.</div>
+      <div class="field"><label for="anName">Nama kau</label><input id="anName" maxlength="28" required value="${esc(last.name || '')}"></div>
+      <div class="field"><label for="anGender">Jantina</label><select id="anGender"><option value="male" ${last.gender !== 'female' ? 'selected' : ''}>Lelaki · anak panah hijau</option><option value="female" ${last.gender === 'female' ? 'selected' : ''}>Perempuan · anak panah merah jambu</option></select></div>
+      <div class="row"><button class="btn" type="button" id="anNo">Batal</button><button class="btn pri" type="submit">Masuk</button></div></form>`;
+    document.body.appendChild(d); setTimeout(() => $('#anName')?.focus(), 50);
+    const done = v => { d.remove(); res(v); };
+    $('#anNo').addEventListener('click', () => done(null));
+    d.querySelector('form').addEventListener('submit', e => { e.preventDefault();
+      const name = $('#anName').value.replace(/\s+/g, ' ').trim(), gender = $('#anGender').value;
+      if(name.length < 2) return toast('Nama sekurang-kurangnya 2 huruf.', 'bad');
+      if(/eryth|sayf|pemilik|owner|admin/i.test(name)) return toast('Nama itu dikhaskan. Pilih nama lain.', 'bad');
+      LS.set('erythmind.kawan', {name, gender}); done({name, gender}); });
+  });
+}
 async function tryUnlock(pin){
   const c = core; if(!c) return false;
   try{
@@ -341,7 +360,10 @@ async function tryUnlock(pin){
       if(g.exp && Date.now() > g.exp){ toast(`Pas ${g.name} telah tamat tempoh. Minta pemilik memanjangkannya.`, 'bad', 6000); return false; }
       const keys = {};
       for(const [z, box] of Object.entries(g.keys || {})){ const zk = await unseal(kek, box, `gz:${gid}:${z}`); keys[z] = await aesKey(zk); zk.fill(0); }
-      startSession({role:'guest', gid, name:g.name, gender:g.gender, keys, lab:!!g.lab, niv:!!g.niv, istana:!!g.istana, laut:!!g.laut, powers:Array.isArray(g.powers) ? g.powers.filter(p => typeof p === 'string').slice(0, 8) : []}); return true;
+      // a group pass: everyone shares the PIN and types their own name; each person keeps their own id (trial progress, reports)
+      let name = g.name, gender = g.gender, pid = gid;
+      if(g.ask){ const who = await askGuestName(g.name); if(!who) return false; name = who.name; gender = who.gender; pid = gid + '~' + nameHash(who.name); }
+      startSession({role:'guest', gid, pid, name, gender, keys, lab:!!g.lab, niv:!!g.niv, istana:!!g.istana, laut:!!g.laut, kuasa:!!g.kuasa, powers:Array.isArray(g.powers) ? g.powers.filter(p => typeof p === 'string').slice(0, 8) : []}); return true;
     }catch(e){}
   }
   guestReport('pin', 'Pad Frontier Dome');
