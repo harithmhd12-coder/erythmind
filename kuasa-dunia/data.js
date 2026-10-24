@@ -81,8 +81,11 @@ const TR = {
   dron: { n: 'Dron Serang', ruang: 2, kos: 160, masa: 12, hp: 110, dps: 26, jarak: 2.5, laju: 2.4, sasar: 'semua', udara: true, buka: 4, d: 'Terbang melepasi tembok. Lemah terhadap pertahanan udara dan mesingan.' },
   komando: { n: 'Komando', ruang: 4, kos: 400, masa: 30, hp: 330, dps: 45, jarak: .6, laju: 1.5, sasar: 'semua', buka: 5, d: 'Pasukan elit yang tahan lasak dan berbahaya dalam pertempuran dekat.' },
   helikopter: { n: 'Helikopter Serang', ruang: 6, kos: 600, masa: 40, hp: 650, dps: 42, jarak: 3.0, laju: 1.6, sasar: 'pertahanan', udara: true, buka: 6, d: 'Unit udara berat yang memburu pertahanan. Musuh utama: pertahanan udara.' },
+  apc: { n: 'Kenderaan Tempur Berperisai', ruang: 3, kos: 180, masa: 14, hp: 240, dps: 14, jarak: 1.6, laju: 2.3, sasar: 'semua', bawa: 2, buka: 3, d: 'Kenderaan beroda yang laju. Menurunkan Infantri percuma apabila dilepaskan.' },
+  roket: { n: 'Pelancar Roket Bergerak', ruang: 6, kos: 500, masa: 35, hp: 160, dps: 55, jarak: 7, laju: 1.3, sasar: 'semua', percik: 1.2, buka: 5, d: 'Tembakan roket jarak jauh dengan letupan kawasan. Lemah jika didekati.' },
+  jet: { n: 'Pesawat Tempur', ruang: 10, kos: 1000, masa: 60, hp: 700, dps: 70, jarak: 2.8, laju: 3.2, sasar: 'pertahanan', udara: true, buka: 7, d: 'Unit udara terpantas dan terkuat. Memburu pertahanan.' },
 };
-const KOS_KAJI = { infantri: 1500, penembak: 2500, kereta_kebal: 5000, jurutera_tempur: 5000, dron: 6000, komando: 12000, helikopter: 18000 };
+const KOS_KAJI = { infantri: 1500, penembak: 2500, kereta_kebal: 5000, jurutera_tempur: 5000, dron: 6000, komando: 12000, helikopter: 18000, apc: 4000, roket: 15000, jet: 25000 };
 const MASA_KAJI = [0, 0, 60, 180, 480, 1200, 2400, 3600];
 
 const WIRA = {
@@ -93,6 +96,8 @@ const TAKTIK = {
   ew: { n: 'Perang Elektronik', r: 3.5, dur: 6, buka: 3, d: 'Melumpuhkan pertahanan dalam bulatan selama 6 saat.' },
   bekalan: { n: 'Bekalan Udara', r: 3.5, dur: 8, buka: 4, d: 'Ubat dan peluru dijatuhkan: memulihkan unit dalam bulatan.' },
   udara: { n: 'Serangan Udara', r: 2.2, dur: 1.4, buka: 5, d: 'Jet menggugurkan bom ke atas bangunan dalam bulatan.' },
+  laut: { n: 'Serangan Kapal Selam', r: 2.0, dur: 1.8, buka: 6, d: 'Peluru berpandu dilancarkan dari laut ke atas bangunan dalam bulatan.' },
+  balistik: { n: 'Peluru Berpandu Balistik', r: 2.6, dur: 2.4, buka: 7, kos: 10000, sedia: 30, d: 'Satu serangan yang sangat kuat. Kos 10 000 dana setiap kali dan perlu 30 minit persediaan.' },
 };
 const DOKTRIN = {
   kilat: { n: 'Serangan Kilat', d: 'Unit 25% lebih laju, nyawa 10% kurang.', laju: 1.25, hp: .9, dmg: 1 },
@@ -161,6 +166,37 @@ const NEGARA = [
   { k: 'AU', n: 'Australia', wil: 'Oseania', blok: ['QUAD', 'AUKUS'], kdnk: 1800, pop: 27, belanja: 34, ll: [-35.3, 149.1], kuat: ['nadir', 'minyak'], sekutu: ['US', 'GB', 'JP'], tegang: ['CN'], nota: 'Kapal selam nuklear melalui AUKUS; pengeluar mineral kritikal.' },
   { k: 'NZ', n: 'New Zealand', wil: 'Oseania', blok: [], kdnk: 260, pop: 5.2, belanja: 2, ll: [-41.3, 174.8], kuat: [], sekutu: ['AU'], nota: 'Dasar bebas nuklear.' },
 ];
+/* ================= DATASET ASET KETENTERAAN =================
+   Aset sebenar setiap negara dipetakan kepada SLOT permainan:
+     unit (kunci TR): kereta_kebal, apc, dron, helikopter, roket, jet, infantri, penembak, komando ...
+     bangunan (kunci B): pertahanan_udara, artileri, pelancar_roket, radar ...
+     taktik (kunci TAKTIK): laut, balistik, udara ...
+   Negara tanpa aset untuk sesuatu slot menggunakan nama generik slot itu.
+   mod ialah imbangan permainan REKAAN, bukan prestasi sebenar:
+     hp, dmg, laju, jarak, kos = pengganda; range = pengganda jarak pertahanan;
+     bawa = bilangan Infantri dibawa; kamikaze = meletup pada sasaran; siluman = dikesan pertahanan udara pada 60% jarak.
+   warna = warna model 3D (pilihan). kesan = ringkasan bonus untuk paparan. */
+const ASET = {
+  MY: [
+    { n: 'PT-91M Pendekar', kat: 'Kereta kebal utama', peranan: 'Unit perisai berat Malaysia.', slot: 'kereta_kebal', warna: '#5d6b35', mod: { laju: 1.1 }, kesan: 'Laju +10%' },
+    { n: 'AV8 Gempita', kat: 'Kenderaan tempur berperisai', peranan: 'Mobiliti darat dan sokongan infantri.', slot: 'apc', warna: '#6b7a3a', mod: { bawa: 4 }, kesan: 'Menurunkan 4 Infantri' },
+    { n: 'Su-30MKM', kat: 'Pesawat tempur pelbagai peranan', peranan: 'Pertahanan udara dan misi serangan.', slot: 'jet', warna: '#9fb0c2', mod: { hp: 1.15 }, kesan: 'Nyawa +15%' },
+    { n: 'Kelas Scorpène', kat: 'Kapal selam', peranan: 'Aset laut untuk misi maritim.', slot: 'laut', mod: { dmg: 1.1 }, kesan: 'Kerosakan +10%' },
+  ],
+  US: [
+    { n: 'M1 Abrams', kat: 'Kereta kebal utama', peranan: 'Perisai berat dan serangan darat.', slot: 'kereta_kebal', warna: '#c2a66e', mod: { hp: 1.15 }, kesan: 'Nyawa +15%' },
+    { n: 'HIMARS', kat: 'Sistem artileri roket bergerak', peranan: 'Sokongan tembakan jarak jauh.', slot: 'roket', warna: '#5d6b35', mod: { jarak: 1.15 }, kesan: 'Jarak +15%' },
+    { n: 'F-35', kat: 'Pesawat tempur pelbagai peranan', peranan: 'Unit udara premium dengan kebolehan khas rekaan.', slot: 'jet', warna: '#666c72', mod: { siluman: true, kos: 1.2 }, kesan: 'Siluman (rekaan): pertahanan udara mengesan pada 60% jarak · kos +20%' },
+    { n: 'Patriot', kat: 'Sistem pertahanan udara dan peluru berpandu', peranan: 'Melindungi pangkalan daripada ancaman udara.', slot: 'pertahanan_udara', mod: { range: 1.1 }, kesan: 'Jarak +10%' },
+  ],
+  IR: [
+    { n: 'Zulfiqar', kat: 'Kereta kebal utama (MBT)', peranan: 'Unit perisai berat.', slot: 'kereta_kebal', warna: '#b59a68', mod: { dmg: 1.05 }, kesan: 'Kerosakan +5%' },
+    { n: 'Shahed-136', kat: 'Dron serangan sehala', peranan: 'Unit serangan jarak jauh dengan kos sumber yang rendah.', slot: 'dron', warna: '#d8d2bf', mod: { kamikaze: true, kos: .6 }, kesan: 'Meletup pada sasaran · kos −40%' },
+    { n: 'Fateh-110', kat: 'Sistem peluru berpandu balistik', peranan: 'Aset strategik dengan kos dan masa persediaan tinggi.', slot: 'balistik', mod: { dmg: 1.1 }, kesan: 'Kerosakan +10%' },
+    { n: 'Bavar-373', kat: 'Sistem pertahanan udara', peranan: 'Pertahanan kawasan daripada ancaman udara.', slot: 'pertahanan_udara', mod: { dmg: 1.1 }, kesan: 'Kerosakan +10%' },
+  ],
+};
+
 const BLOK = {
   NATO: 'Pakatan Atlantik Utara', EU: 'Kesatuan Eropah', G7: 'Kumpulan Tujuh', BRICS: 'BRICS', SCO: 'Pertubuhan Kerjasama Shanghai', CSTO: 'Pertubuhan Perjanjian Keselamatan Kolektif',
   ASEAN: 'ASEAN', QUAD: 'Dialog Keselamatan Segi Empat', AUKUS: 'AUKUS', GCC: 'Majlis Kerjasama Teluk', KA: 'Kesatuan Afrika',

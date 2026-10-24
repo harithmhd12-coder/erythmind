@@ -235,3 +235,6 @@ button.cip.aktif { background: #4d5a3a; color: #fff; border-color: #1f2a1c; }
 .mesej.bongkar { border-color: var(--merah-2); background: #fff0ec; }
 #perangAtasKiri .logistik { margin-top: 4px; color: var(--diraja); }
 .kawal .btn small { display: block; font-size: 10px; }
+.kecil.aset, small.aset { color: #4d6a1a; font-weight: 700; }
+.senarai-aset { display: grid; gap: 6px; }
+.senarai-aset .baris { margin: 0; }

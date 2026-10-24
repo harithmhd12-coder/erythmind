@@ -396,9 +396,12 @@ const G3 = (() => {
   const geoBendera = (() => { const g = new T.PlaneGeometry(.62, .34, 6, 1); g.translate(.31, -.17, 0); return g; })();
 
   /* ---------- model tentera (menghadap +X) ---------- */
-  const TERBANG = { dron: 1.4, helikopter: 1.9 };
+  const TERBANG = { dron: 1.4, helikopter: 1.9, jet: 2.6 };
+  // warna dan bentuk ikut aset negara pemain (ASET dalam data.js)
+  const kulitAset = t => { const a = typeof asetSlot === 'function' ? asetSlot(t) : null; return a ? (a.warna || '') + (a.mod && a.mod.kamikaze ? ':delta' : '') : ''; };
   function modelUnit(t) {
-    return ingat('U' + t, () => {
+    const ka = kulitAset(t), warna = ka.split(':')[0] || null, delta = ka.endsWith(':delta');
+    return ingat('U' + t + ka, () => {
       const m = new Bina(), kulit = K.kulit;
       const kaki = (w = '#2a2a22') => { m.sil(.038, .032, .15, w, 0, 0, -.05, { seg: 6 }); m.sil(.038, .032, .15, w, 0, 0, .05, { seg: 6 }); };
       const kepala = (y = .43, r = .115) => m.bola(r, kulit, 0, y, 0);
@@ -421,10 +424,11 @@ const G3 = (() => {
           m.sil(.012, .012, .22, K.besiG, .1, .18, .08, { rz: -1.1, seg: 4 }); m.kotak(.06, .05, .1, K.besi, .2, .26, .08, { r: .01 });
           break;
         case 'kereta_kebal': {
+          const w = warna || K.olive;
           for (const z of [-.22, .22]) { m.kotak(.86, .17, .15, '#33372f', 0, 0, z, { r: .07 }); for (let i = 0; i < 4; i++) m.sil(.055, .055, .02, '#5a5f55', -.3 + i * .2, .085, z + Math.sign(z) * .08, { rx: Math.PI / 2, seg: 8 }); }
-          m.kotak(.78, .18, .4, K.olive, 0, .1, 0, { r: .06 }); m.kotak(.18, .1, .38, K.oliveG, .36, .12, 0, { rz: -.55, r: .03 });
-          m.kotak(.4, .16, .32, K.oliveC, -.05, .28, 0, { r: .07 });
-          m.sil(.033, .036, .58, K.oliveG, .12, .36, 0, { rz: -Math.PI / 2, seg: 8 }); m.sil(.045, .045, .08, K.hitam, .66, .36, 0, { rz: -Math.PI / 2, seg: 8 });
+          m.kotak(.78, .18, .4, w, 0, .1, 0, { r: .06 }); m.kotak(.18, .1, .38, gelap(w, -.15), .36, .12, 0, { rz: -.55, r: .03 });
+          m.kotak(.4, .16, .32, gelap(w, .12), -.05, .28, 0, { r: .07 });
+          m.sil(.033, .036, .58, gelap(w, -.15), .12, .36, 0, { rz: -Math.PI / 2, seg: 8 }); m.sil(.045, .045, .08, K.hitam, .66, .36, 0, { rz: -Math.PI / 2, seg: 8 });
           m.sil(.07, .07, .04, K.oliveG, -.12, .44, .06, { seg: 8 }); m.kotak(.08, .06, .08, K.kuning, -.2, .3, .165, { r: .01 });
           break;
         }
@@ -434,6 +438,13 @@ const G3 = (() => {
           m.bola(.035, '#ffb020', .24, .3, .1, { d: 0 });
           break;
         case 'dron':
+          if (delta) {
+            const w = warna || '#d8d2bf';
+            m.kon(.42, .75, w, -.35, .02, 0, { rz: -Math.PI / 2, seg: 3, sx: .14 });
+            for (const z of [-.3, .3]) m.kotak(.06, .14, .03, gelap(w, -.15), -.3, .02, z, { r: .01 });
+            m.sil(.05, .05, .1, '#3a3f46', -.45, .02, 0, { rz: Math.PI / 2, seg: 8 }); m.kotak(.02, .22, .03, K.hitam, -.48, -.08, 0, { r: .005 });
+            break;
+          }
           m.kotak(.26, .08, .26, '#3d4a5c', 0, 0, 0, { r: .04 });
           m.kotak(.62, .03, .05, K.hitam, 0, .04, 0, { ry: Math.PI / 4, r: .01 }); m.kotak(.62, .03, .05, K.hitam, 0, .04, 0, { ry: -Math.PI / 4, r: .01 });
           for (const [x, z] of [[.22, .22], [.22, -.22], [-.22, .22], [-.22, -.22]]) { m.sil(.03, .03, .05, K.hitam, x, .04, z, { seg: 6 }); m.sil(.13, .13, .01, '#cfd6dc', x, .09, z, { seg: 12 }); }
@@ -455,6 +466,30 @@ const G3 = (() => {
           m.sil(.025, .025, .12, K.besiG, 0, .48, 0, { seg: 6 });
           break;
         }
+        case 'apc': {
+          const w = warna || K.olive;
+          for (const z of [-.24, .18]) for (let i = 0; i < 4; i++) m.sil(.075, .075, .06, '#2a2d28', -.3 + i * .2, .075, z, { rx: Math.PI / 2, seg: 10 });
+          m.kotak(.86, .22, .38, w, 0, .1, 0, { r: .06 }); m.kotak(.2, .12, .36, gelap(w, -.12), .38, .14, 0, { rz: -.5, r: .03 });
+          m.kotak(.26, .1, .22, gelap(w, .1), -.05, .32, 0, { r: .04 }); m.sil(.02, .02, .34, K.hitam, .05, .37, 0, { rz: -Math.PI / 2, seg: 6 });
+          m.kotak(.16, .03, .26, gelap(w, -.2), -.32, .32, 0, { r: .01 });
+          break;
+        }
+        case 'roket': {
+          const w = warna || K.olive;
+          for (const x of [-.32, -.1, .3]) for (const z of [-.26, .19]) m.sil(.08, .08, .07, '#2a2d28', x, .08, z, { rx: Math.PI / 2, seg: 10 });
+          m.kotak(.86, .08, .34, '#3a3f3a', 0, .1, 0, { r: .02 }); m.kotak(.24, .24, .34, w, .3, .16, 0, { r: .05 });
+          m.kotak(.04, .1, .28, '#7fd0ff', .42, .26, 0, { r: .01 });
+          m.kotak(.5, .22, .32, gelap(w, -.08), -.18, .2, 0, { rz: .4, r: .04 }); m.kotak(.04, .18, .26, K.hitam, .06, .3, 0, { rz: .4, r: .01 });
+          break;
+        }
+        case 'jet': {
+          const w = warna || '#8a939d';
+          m.sil(.09, .11, 1.1, w, -.45, .2, 0, { rz: -Math.PI / 2, seg: 8 }); m.kon(.09, .3, gelap(w, -.12), .65, .2, 0, { rz: -Math.PI / 2, seg: 8 });
+          m.bola(.08, '#7fd0ff', .35, .29, 0, { sx: 2, sy: .8, sz: .9 });
+          for (const sz of [-1, 1]) { m.kotak(.55, .03, .5, w, -.12, .17, sz * .32, { ry: -sz * .5, r: .01 }); m.kotak(.22, .03, .22, w, -.42, .2, sz * .17, { ry: -sz * .4, r: .01 }); m.kotak(.24, .22, .03, gelap(w, -.08), -.38, .24, sz * .09, { rx: sz * .3, r: .01 }); }
+          m.sil(.08, .08, .05, '#3a3f46', -.5, .2, 0, { rz: Math.PI / 2, seg: 8 });
+          break;
+        }
         case 'komander':
           askar(K.olive, '#8f1d2a'); m.kotak(.06, .03, .1, K.dana, 0, .3, .1, { r: .01 }); m.kotak(.06, .03, .1, K.dana, 0, .3, -.1, { r: .01 });
           m.kotak(.16, .04, .04, K.hitam, .12, .2, .11, { r: .01 }); m.kotak(.04, .03, .03, K.dana, .02, .2, .11, { r: .01 });
@@ -465,7 +500,7 @@ const G3 = (() => {
           break;
       }
       const g = m.geo();
-      const sk = { komander: 1.25, elit: 1.2, komando: 1.15, kereta_kebal: 1.1, dron: 1.25, helikopter: 1.1 }[t] || 1;
+      const sk = { komander: 1.25, elit: 1.2, komando: 1.15, kereta_kebal: 1.1, dron: 1.25, helikopter: 1.1, apc: 1.05, roket: 1.1, jet: 1.4 }[t] || 1;
       if (sk !== 1) { g.scale(sk, sk, sk); g.computeBoundingBox(); g.computeBoundingSphere(); }
       return g;
     });
@@ -699,7 +734,8 @@ const G3 = (() => {
     while (unitKem.length < mahu.length) { const m = meshUnit('tukang'); unitKem.push(m); adegan.add(m); }
     unitKem.forEach((m, i) => {
       const w = mahu[i]; m.visible = !!w; if (!w) return;
-      if (m.userData.t !== w.t) { m.geometry = modelUnit(w.t); m.userData.t = w.t; m.children[0].scale.setScalar(w.t === 'kereta_kebal' || w.t === 'helikopter' ? 1.1 : .55); }
+      const gU = modelUnit(w.t);
+      if (m.geometry !== gU) { m.geometry = gU; m.userData.t = w.t; m.children[0].scale.setScalar(w.t === 'kereta_kebal' || w.t === 'helikopter' ? 1.1 : .55); }
       arahKe(m, w.menghadap[0], w.menghadap[1]);
       m.position.set(w.x, w.bob || 0, w.y);
       m.rotation.z = w.tukul ? Math.max(0, Math.sin(ts * 9 + w.id)) * -.35 : 0;
@@ -718,12 +754,14 @@ const G3 = (() => {
     if (perang) for (const p of BT.proj) {
       let m = projObj.get(p);
       if (!m) {
-        const geo = p.j === 'bom' || p.j === 'bomU' ? geoBom : p.j === 'peluru' ? geoPeluru : p.j === 'misil' ? geoMisil : geoDamak;
-        const mat = p.j === 'bom' || p.j === 'bomU' || p.j === 'peluru' ? MAT_PELURU : p.j === 'panah' ? MAT_PANAH : p.j === 'misil' ? MAT_MISIL : MAT_DAMAK;
-        m = new T.Mesh(geo, mat); m.castShadow = true; projObj.set(p, m); adegan.add(m);
+        const misil = ['misil', 'misilL', 'roketU', 'balistik'].includes(p.j);
+        const geo = p.j === 'bom' || p.j === 'bomU' ? geoBom : p.j === 'peluru' ? geoPeluru : misil ? geoMisil : geoDamak;
+        const mat = p.j === 'bom' || p.j === 'bomU' || p.j === 'peluru' ? MAT_PELURU : p.j === 'panah' ? MAT_PANAH : misil ? MAT_MISIL : MAT_DAMAK;
+        m = new T.Mesh(geo, mat); m.castShadow = true; if (p.j === 'balistik') m.scale.set(3, 3, 3); projObj.set(p, m); adegan.add(m);
       }
       const f = clamp(p.t / p.dur, 0, 1), x = p.dari[0] + (p.ke[0] - p.dari[0]) * f, z = p.dari[1] + (p.ke[1] - p.dari[1]) * f;
-      let y = (p.dari[2] + (p.ke[2] - p.dari[2]) * f) * .8; if (p.j === 'bom') y += 4 * 3 * f * (1 - f);
+      let y = (p.dari[2] + (p.ke[2] - p.dari[2]) * f) * .8; if (p.j === 'bom' || p.j === 'roketU') y += 4 * 3 * f * (1 - f);
+      m.visible = p.t >= 0;
       m.position.set(x, y, z);
       if (m.geometry === geoDamak || m.geometry === geoMisil) arahKe(m, p.ke[0] - p.dari[0], p.ke[1] - p.dari[1]);
       m.userData.f = bingkai;
@@ -741,7 +779,7 @@ const G3 = (() => {
     if (perang) for (const z of BT.zon) {
       let o = zonObj.get(z);
       if (!o) {
-        const w = { bekalan: '#7dff8a', ew: '#7fd0ff', udara: '#ff5a3a', semangat: '#ffd65a' }[z.jenis] || '#ffffff';
+        const w = { bekalan: '#7dff8a', ew: '#7fd0ff', udara: '#ff5a3a', semangat: '#ffd65a', laut: '#3ab0ff', balistik: '#ff2a2a' }[z.jenis] || '#ffffff';
         o = new T.Group();
         const cakera = new T.Mesh(new T.CircleGeometry(z.r, 40), new T.MeshBasicMaterial({ color: new T.Color(w).convertSRGBToLinear(), transparent: true, opacity: .22, depthWrite: false }));
         cakera.rotation.x = -Math.PI / 2; cakera.userData.matSendiri = true;
@@ -873,7 +911,7 @@ const G3 = (() => {
   const foto = new Map();
   let adeganFoto = null, kameraFoto = null, rtFoto = null;
   function ambilFoto(jenis, t) {
-    const k = jenis + t; if (foto.has(k)) return foto.get(k);
+    const k = jenis + t + (jenis === 'u' ? kulitAset(t) : ''); if (foto.has(k)) return foto.get(k);
     const w = 320, h = 256;
     if (!adeganFoto) {
       adeganFoto = new T.Scene();

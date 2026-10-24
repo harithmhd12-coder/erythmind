@@ -52,6 +52,26 @@ All military operations target **fictional countries and forces** (`NAMA_LAWAN`,
 - `belanja` = military spending, USD billions. It sets the power tier through `tierNegara()`.
 - `kuat` takes `minyak` (oil), `nadir` (rare earths), `teknologi` (technology) or `kewangan` (finance).
 
+## Military asset dataset
+
+`data.js` → `ASET`: real assets for each country, mapped to **game slots**. Malaysia, the United States and Iran are filled in already. Countries without data use the generic units.
+
+```js
+XX: [
+  { n: 'Nama aset', kat: 'Kategori', peranan: 'Peranan game.', slot: 'kereta_kebal', warna: '#5d6b35', mod: { hp: 1.1 }, kesan: 'Nyawa +10%' },
+],
+```
+
+- **Unit slots**: `kereta_kebal`, `apc`, `dron`, `helikopter`, `roket`, `jet`, `infantri`, `penembak`, `komando`, `jurutera_tempur`.
+- **Building slots**: `pertahanan_udara`, `artileri`, `pelancar_roket`, `radar`, `menara_mesingan`.
+- **Tactic slots**: `laut` (submarine), `balistik` (ballistic missile), `udara`, `ew`, `bekalan`.
+- **`mod`** (invented game balance, not real performance):
+  - `hp`, `dmg`, `laju`, `jarak`, `kos` are multipliers for HP, damage, speed, range and cost.
+  - `range` is a range multiplier for defences.
+  - `bawa` is the number of infantry carried.
+  - `kamikaze` makes the unit explode on its target.
+  - `siluman` makes it stealthy: air defence detects it at only 60% of its range.
+
 Other files:
 
 - `HIKAYAT`: Fail Risikan cards.

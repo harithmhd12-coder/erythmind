@@ -137,11 +137,18 @@ const kosKaji = (k, lv) => Math.round(KOS_KAJI[k] * Math.pow(2.3, lv - 2));
 const ligaDari = m => { let l = LIGA[0]; for (const x of LIGA) if (m >= x.min) l = x; return l; };
 const pangkat = () => Math.floor(Math.sqrt(S.xp / 40)) + 1;
 function tambahXP(n) { const p = pangkat(); S.xp += n; if (pangkat() > p) { toast(`Pangkat naik ke ${pangkat()}!`); sfx('siap'); } }
-const namaBangunan = (t, lv) => t === 'tembok' ? (lv >= 6 ? 'Tembok Konkrit Bertetulang' : lv >= 4 ? 'Tembok Konkrit' : 'Beg Pasir') : B[t].n;
+const namaBangunan = (t, lv) => t === 'tembok' ? (lv >= 6 ? 'Tembok Konkrit Bertetulang' : lv >= 4 ? 'Tembok Konkrit' : 'Beg Pasir') : (asetSlot(t) || B[t]).n;
 const wiraSedia = k => { const b = S.bld.find(x => x.t === WIRA[k].bina); return b && b.lv >= 1 && !b.busy ? b.lv : 0; };
 /* Negara pemain: kekuatan sumber dalam dataset memberi bonus kecil. */
 const negaraKu = () => NEGARA.find(n => n.k === S.negara) || NEGARA.find(n => n.k === 'MY');
 const negaraDari = k => NEGARA.find(n => n.k === k);
+/* Aset negara: nama sebenar dan mod imbangan untuk setiap slot permainan (lihat ASET dalam data.js). */
+const asetSlot = slot => (S && ASET[S.negara] || []).find(a => a.slot === slot);
+const modAset = slot => (asetSlot(slot) || {}).mod || {};
+const namaUnit = k => (asetSlot(k) || TR[k] || WIRA[k]).n;
+const namaTaktik = k => (asetSlot(k) || TAKTIK[k]).n;
+const kosUnit = k => Math.round(TR[k].kos * (modAset(k).kos || 1));
+const namaSlot = k => (TR[k] || B[k] || TAKTIK[k] || {}).n;
 const BONUS_KUAT = { minyak: ['minyak', 1.2], nadir: ['nadir', 1.3], kewangan: ['dana', 1.2], teknologi: ['kaji', .8] };
 function bonusSumber(r) { let f = 1; for (const k of negaraKu().kuat || []) { const b = BONUS_KUAT[k]; if (b && b[0] === r) f *= b[1]; } return f; }
 const disekat = () => S.sekatan > kini();
@@ -548,14 +555,14 @@ function sahLetak() {
 function latih(k, n = 1) {
   const d = TR[k];
   for (let i = 0; i < n; i++) {
-    if (balaiMaks() < d.buka) { toast(`Naik taraf Berek Tentera ke tahap ${d.buka} untuk melatih ${d.n}.`, true); sfx('salah'); return; }
+    if (balaiMaks() < d.buka) { toast(`Naik taraf Berek Tentera ke tahap ${d.buka} untuk melatih ${namaUnit(k)}.`, true); sfx('salah'); return; }
     if (ruangGuna() + ruangGilir() + d.ruang > ruangTentera()) { toast('Kem Tentera sudah penuh. Naik taraf atau bina Kem baharu.', true); sfx('salah'); return; }
-    if (S.res.minyak < d.kos) { toast(`Minyak tidak cukup untuk ${d.n}.`, true); sfx('salah'); return; }
-    S.res.minyak -= d.kos; if (!S.gilir.length) S.gilirMula = kini(); S.gilir.push(k);
+    if (S.res.minyak < kosUnit(k)) { toast(`Minyak tidak cukup untuk ${namaUnit(k)}.`, true); sfx('salah'); return; }
+    S.res.minyak -= kosUnit(k); if (!S.gilir.length) S.gilirMula = kini(); S.gilir.push(k);
   }
   sfx('ketik'); kemaskiniHUD(); perluRender = true;
 }
-function batalGilir(i) { const k = S.gilir[i]; if (!k) return; S.gilir.splice(i, 1); tambah('minyak', TR[k].kos); if (i === 0) S.gilirMula = kini(); perluRender = true; kemaskiniHUD(); }
+function batalGilir(i) { const k = S.gilir[i]; if (!k) return; S.gilir.splice(i, 1); tambah('minyak', kosUnit(k)); if (i === 0) S.gilirMula = kini(); perluRender = true; kemaskiniHUD(); }
 function mulaKaji(k) {
   const lv = S.troopLv[k] + 1;
   if (S.kaji) { toast('Makmal sedang menjalankan kajian lain.', true); return; }
@@ -641,7 +648,7 @@ function mulaPerang(lawan) {
     lawan, karam: pg.karam, blds, units: [], proj: [], fx: [], zon: [], masa: 150, mula: false, tamat: false, tunggu: 0, laju: 1,
     tentera: Object.fromEntries(Object.entries(S.army).filter(([, n]) => n > 0)),
     wira: { komander: wiraSedia('komander') ? 'sedia' : 'tiada', elit: wiraSedia('elit') ? 'sedia' : 'tiada' }, wiraU: {},
-    taktik: { ew: L >= 3 ? (L >= 6 ? 2 : 1) : 0, bekalan: L >= 4 ? (L >= 7 ? 2 : 1) : 0, udara: L >= 5 ? (L >= 7 ? 2 : 1) : 0 },
+    taktik: { ew: L >= 3 ? (L >= 6 ? 2 : 1) : 0, bekalan: L >= 4 ? (L >= 7 ? 2 : 1) : 0, udara: L >= 5 ? (L >= 7 ? 2 : 1) : 0, laut: L >= 6 ? 1 : 0, balistik: L >= 7 && kini() >= (S.balistikSedia || 0) ? 1 : 0 },
     logistik: kosLogistik(lawan), risik: false, doktrin: S.doktrin || 'kilat', radar: false,
     propaganda: S.buff.propaganda > 0, proksi: S.buff.proksi > 0, palsu: S.buff.palsu > 0,
     bantuan: S.bantuan.slice(), rampas: { dana: 0, minyak: 0, nadir: 0 }, jumlahLoot: { dana: 0, minyak: 0, nadir: 0 },
@@ -660,7 +667,8 @@ function bolehLepas(gx, gy) {
 }
 function unitBaru(t, x, y, lv, wira) {
   const d = wira ? WIRA[t] : TR[t], f = wira ? 1 + .12 * (lv - 1) : 1 + .22 * (lv - 1), dk = DOKTRIN[BT.doktrin] || DOKTRIN.kilat, pr = BT.propaganda ? 1.1 : 1;
-  const u = { id: acak(), t, x, y, lv, hp: d.hp * f * dk.hp, maxHp: d.hp * f * dk.hp, dps: d.dps * f * dk.dmg * pr, jarak: d.jarak, laju: d.laju * dk.laju, sasar: wira ? 'semua' : d.sasar, udara: !wira && !!d.udara, sasaran: null, cd: 0, arah: 1, langkah: acak() * 6, serang: 0, kuasa: 0, wira: !!wira };
+  const ma = wira ? {} : modAset(t), hp = d.hp * f * dk.hp * (ma.hp || 1);
+  const u = { id: acak(), t, x, y, lv, hp, maxHp: hp, dps: d.dps * f * dk.dmg * pr * (ma.dmg || 1), jarak: d.jarak * (ma.jarak || 1), laju: d.laju * dk.laju * (ma.laju || 1), sasar: wira ? 'semua' : d.sasar, udara: !wira && !!d.udara, kamikaze: !!ma.kamikaze, siluman: !!ma.siluman, sasaran: null, cd: 0, arah: 1, langkah: acak() * 6, serang: 0, kuasa: 0, wira: !!wira };
   BT.units.push(u); return u;
 }
 /* Mula operasi: bayar logistik sekali, guna buff operasi strategik. */
@@ -683,17 +691,29 @@ function tukarDoktrin() {
   BT.doktrin = S.doktrin = k[i]; sfx('ketik'); toast(`Doktrin: ${DOKTRIN[k[i]].n}. ${DOKTRIN[k[i]].d}`); paparHudPerang(); paparKad();
 }
 function serangUdara(gx, gy) {
-  const n = 6, dmg = 260 * (1 + .25 * Math.max(0, istLv() - 5));
+  const n = 6, dmg = 260 * (1 + .25 * Math.max(0, istLv() - 5)) * (modAset('udara').dmg || 1);
   for (let i = 0; i < n; i++) { const a = acak() * 6.28, r = Math.sqrt(acak()) * TAKTIK.udara.r * .8, x = gx + Math.cos(a) * r, y = gy + Math.sin(a) * r; BT.proj.push({ j: 'bomU', dari: [x - 2.5, y - 2.5, 12], ke: [x, y, 0], t: -i * .09, dur: .9, dmg, splash: 1.3 }); }
+}
+function serangLaut(gx, gy) {
+  const dmg = 420 * (1 + .25 * Math.max(0, istLv() - 6)) * (modAset('laut').dmg || 1);
+  for (let i = 0; i < 4; i++) { const a = acak() * 6.28, r = Math.sqrt(acak()) * TAKTIK.laut.r * .7, x = gx + Math.cos(a) * r, y = gy + Math.sin(a) * r; BT.proj.push({ j: 'misilL', dari: [gx + (i - 1.5) * 1.6, G + 8, .5], ke: [x, y, .3], t: -i * .18, dur: 1.2, dmg, splash: 1.2 }); }
+  sfx('misil');
+}
+function serangBalistik(gx, gy) {
+  BT.proj.push({ j: 'balistik', dari: [gx - 9, gy - 9, 28], ke: [gx, gy, 0], t: 0, dur: 2.2, dmg: 1600 * (modAset('balistik').dmg || 1), splash: TAKTIK.balistik.r });
 }
 function lepas(gx, gy, ulangan) {
   if (!BT || BT.tamat) return false;
   const k = BT.pilih; if (!k) { toast('Pilih unit di bawah dahulu.', true); return false; }
   if (TAKTIK[k]) {
     if (ulangan || !(BT.taktik[k] > 0)) return false;
+    if (TAKTIK[k].kos && S.res.dana < TAKTIK[k].kos) { toast(`${namaTaktik(k)} perlu ${fmtN(TAKTIK[k].kos)} dana.`, true); sfx('salah'); return false; }
     if (!mulaOperasi()) return false;
+    if (TAKTIK[k].kos) { S.res.dana -= TAKTIK[k].kos; S.balistikSedia = kini() + TAKTIK[k].sedia * 60e3; }
     BT.taktik[k]--; BT.zon.push({ jenis: k, x: gx, y: gy, r: TAKTIK[k].r, t: 0, dur: TAKTIK[k].dur }); sfx(k === 'bekalan' ? 'kutip' : 'gong');
     if (k === 'udara') serangUdara(gx, gy);
+    if (k === 'laut') serangLaut(gx, gy);
+    if (k === 'balistik') serangBalistik(gx, gy);
     paparKad(); return true;
   }
   if (!bolehLepas(gx, gy)) { BT.kilat = 1.2; if (!ulangan) { sfx('salah'); toast('Lepaskan unit di luar kawasan merah.', true); } return false; }
@@ -702,6 +722,8 @@ function lepas(gx, gy, ulangan) {
     if (!(BT.tentera[k] > 0)) return false;
     BT.tentera[k]--; S.army[k] = Math.max(0, (S.army[k] || 0) - 1); if (!S.army[k]) delete S.army[k];
     unitBaru(k, gx + (acak() - .5) * .3, gy + (acak() - .5) * .3, S.troopLv[k]);
+    const nb = modAset(k).bawa ?? TR[k].bawa ?? 0;
+    for (let i = 0; i < nb; i++) unitBaru('infantri', gx + (acak() - .5) * .9, gy + (acak() - .5) * .9, S.troopLv.infantri);
     if (!BT.tentera[k]) { delete BT.tentera[k]; BT.pilih = Object.keys(BT.tentera)[0] || BT.pilih; }
   } else if (k === 'komander' || k === 'elit') {
     if (BT.wira[k] !== 'sedia' || ulangan) return false;
@@ -767,12 +789,18 @@ function kemaskiniUnit(u, dt) {
     u.cd = 1; u.serang = .25;
     const sx = (nx - u.x) - (ny - u.y); if (Math.abs(sx) > .01) u.arah = sx > 0 ? 1 : -1;
     let dmg = u.dps * bf.dmg * (u.t === 'komander' && u.kuasa > 0 ? 2.2 : 1);
+    if (u.kamikaze) {
+      u.hp = 0; BT.fx.push({ j: 'letup', x: nx, y: ny, t: 0, dur: .6, r: 1 }); sfx('bom');
+      for (const b of BT.blds) { if (b.mati || b.t === 'periuk_api') continue; if (titikDekat(nx, ny, b)[2] <= 1) rosakBangunan(b, dmg * 5); }
+      return;
+    }
     if (u.t === 'jurutera_tempur') {
       u.hp = 0; BT.fx.push({ j: 'letup', x: u.x, y: u.y, t: 0, dur: .6, r: 1 }); sfx('bom');
       for (const b of BT.blds) { if (b.mati || b.t === 'periuk_api') continue; if (titikDekat(u.x, u.y, b)[2] <= 1.2) rosakBangunan(b, b.t === 'tembok' ? dmg * 15 : dmg); }
       return;
     }
-    if (u.jarak > 1.5) BT.proj.push({ j: u.t === 'elit' ? 'panah' : u.t === 'helikopter' ? 'misil' : 'damak', dari: [u.x, u.y, .6 + G3.terbang(u.t)], ke: [nx, ny, .5], t: 0, dur: Math.max(.15, d / 14), dmg, sasaranB: t });
+    const pc = !u.wira && TR[u.t].percik;
+    if (u.jarak > 1.5) BT.proj.push({ j: u.t === 'elit' ? 'panah' : pc ? 'roketU' : u.t === 'helikopter' || u.t === 'jet' ? 'misil' : 'damak', dari: [u.x, u.y, .6 + G3.terbang(u.t)], ke: [nx, ny, .5], t: 0, dur: Math.max(.15, d / (pc ? 7 : 14)), dmg, sasaranB: t, percik: pc });
     else { rosakBangunan(t, dmg); BT.fx.push({ j: 'percik', x: nx, y: ny, t: 0, dur: .25 }); sfx('pukul'); }
     return;
   }
@@ -795,7 +823,7 @@ function kemaskiniPertahanan(b, dt) {
   if (BT.zon.some(z => z.jenis === 'ew' && Math.hypot(cx - z.x, cy - z.y) <= z.r + s * .3)) { b.cd = .25; b.jam = true; return; }
   b.jam = false;
   let best = null, bd = 1e9;
-  for (const u of BT.units) { if (u.hp <= 0 || (u.udara ? !df.udara : df.hanyaUdara)) continue; const d = Math.hypot(u.x - cx, u.y - cy) - s * .35; if (d <= r && d >= (u.udara ? 0 : df.min || 0) && d < bd) { bd = d; best = u; } }
+  for (const u of BT.units) { if (u.hp <= 0 || (u.udara ? !df.udara : df.hanyaUdara)) continue; const d = Math.hypot(u.x - cx, u.y - cy) - s * .35; if (d <= (u.siluman ? r * .6 : r) && d >= (u.udara ? 0 : df.min || 0) && d < bd) { bd = d; best = u; } }
   if (!best) { b.cd = .2; return; }
   b.cd = df.rate; b.sudut = Math.atan2(best.y - cy, best.x - cx); b.kilat = .1;
   const dmg = dmgPertahanan(b.t, b.lv);
@@ -815,7 +843,8 @@ function kemaskiniPerang(dt) {
   for (const b of BT.blds) { if (b.kena > 0) b.kena -= dt; if (!b.mati && B[b.t].def) kemaskiniPertahanan(b, dt); }
   for (const p of BT.proj) {
     p.t += dt; if (p.t < p.dur) continue; p.habis = true;
-    if (p.j === 'bomU') { for (const b of BT.blds) if (!b.mati && b.t !== 'periuk_api' && titikDekat(p.ke[0], p.ke[1], b)[2] <= p.splash) rosakBangunan(b, b.t === 'tembok' ? p.dmg * .5 : p.dmg); BT.fx.push({ j: 'letup', x: p.ke[0], y: p.ke[1], t: 0, dur: .6, r: 1.1 }); sfx('bom'); }
+    if (p.j === 'bomU' || p.j === 'misilL' || p.j === 'balistik') { for (const b of BT.blds) if (!b.mati && b.t !== 'periuk_api' && titikDekat(p.ke[0], p.ke[1], b)[2] <= p.splash) rosakBangunan(b, b.t === 'tembok' ? p.dmg * .5 : p.dmg); BT.fx.push({ j: 'letup', x: p.ke[0], y: p.ke[1], t: 0, dur: p.j === 'balistik' ? 1.1 : .6, r: p.j === 'balistik' ? 2.6 : 1.1 }); sfx('bom'); }
+    else if (p.j === 'roketU') { for (const b of BT.blds) if (!b.mati && b.t !== 'periuk_api' && titikDekat(p.ke[0], p.ke[1], b)[2] <= p.percik) rosakBangunan(b, b === p.sasaranB ? p.dmg : p.dmg * .5); BT.fx.push({ j: 'letup', x: p.ke[0], y: p.ke[1], t: 0, dur: .5, r: .7 }); sfx('bom'); }
     else if (p.j === 'bom') { for (const u of BT.units) if (u.hp > 0 && Math.hypot(u.x - p.ke[0], u.y - p.ke[1]) <= p.splash) rosakUnit(u, p.dmg); BT.fx.push({ j: 'letup', x: p.ke[0], y: p.ke[1], t: 0, dur: .5, r: .9 }); sfx('bom'); }
     else if (p.sasaranU) rosakUnit(p.sasaranU, p.dmg);
     else if (p.sasaranB) rosakBangunan(p.sasaranB, p.dmg);
@@ -902,7 +931,7 @@ function skorPertahanan(L, blds) {
   let s = 0;
   for (const b of blds) {
     const d = B[b.t]; if (b.lv < 1) continue;
-    if (d.def) s += dmgPertahanan(b.t, b.lv) / d.def.rate * d.def.range / 5 * 10;
+    if (d.def) { const ma = modAset(b.t); s += dmgPertahanan(b.t, b.lv) * (ma.dmg || 1) / d.def.rate * d.def.range * (ma.range || 1) / 5 * 10; }
     else if (b.t === 'tembok') s += b.lv * .6;
     else if (b.t === 'periuk_api') s += 4;
     else if (d.hero) s += b.lv * 12;
@@ -1128,6 +1157,7 @@ function bukaInfo(b) {
   if (b.t === 'kem') baris.push(['Muatan unit', KEM_CAP[Math.max(1, b.lv) - 1] + ' ruang']);
   if (b.t === 'markas') baris.push(['Fasa', `${ERA[b.lv - 1].nama} (${ERA[b.lv - 1].masa})`], ['Fasa seterusnya', b.lv < 7 ? ERA[b.lv].nama : 'Fasa tertinggi dicapai'], ['Negara', negaraKu().n]);
   if (d.hero) baris.push(['Komander', WIRA[d.hero].n], ['Kuasa', `${WIRA[d.hero].kuasa}: ${WIRA[d.hero].kd}`]);
+  const as = asetSlot(b.t); if (as) baris.push(['Aset negara', `${as.kat} · slot ${B[b.t].n}`], ['Kesan', as.kesan]);
   bukaModal(namaBangunan(b.t, b.lv), null, (_, isi) => {
     isi.innerHTML = `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start"><canvas id="infoKanvas" style="width:150px;height:120px;border-radius:10px;background:radial-gradient(ellipse at 50% 70%,#b9c48a,#6b7a3a 70%);flex:none"></canvas><div style="flex:1;min-width:200px"><p>${esc(d.d)}</p>${baris.map(([a, v]) => `<div class="baris" style="margin-bottom:6px;padding:6px 10px"><div class="teks"><small>${a}</small><b style="font-size:14px">${esc(v)}</b></div></div>`).join('')}</div></div>`;
     lukisPratonton($('#infoKanvas'), b.t);
@@ -1140,7 +1170,7 @@ function bukaKedai() {
     isi.innerHTML = `<div class="grid-kad">${jenis.map(t => {
       const h = had(t), n = bil(t), k = kos(t, 1), kunci = h === 0, penuh = n >= h;
       const label = kunci ? `Buka pada Markas ${bukaPada(t)}` : penuh ? `Had dicapai (${n}/${h})` : `${n}/${h} dibina`;
-      return `<div class="kedai ${kunci ? 'kunci' : ''}"><canvas data-pt="${t}"></canvas><h4>${esc(B[t].n)}</h4><div class="kecil">${esc(B[t].d)}</div><div class="kecil"><b>${label}</b>${masaBina(t, 1) ? ` · ${masa(masaBina(t, 1))}` : ''}</div><button class="btn ${kunci || penuh ? 'mati' : ''}" data-bina="${t}">${btnKos(k)}</button></div>`;
+      return `<div class="kedai ${kunci ? 'kunci' : ''}"><canvas data-pt="${t}"></canvas><h4>${esc(namaBangunan(t, 1))}</h4>${asetSlot(t) ? `<div class="kecil aset">${esc(B[t].n)} · ${esc(asetSlot(t).kesan)}</div>` : ''}<div class="kecil">${esc(B[t].d)}</div><div class="kecil"><b>${label}</b>${masaBina(t, 1) ? ` · ${masa(masaBina(t, 1))}` : ''}</div><button class="btn ${kunci || penuh ? 'mati' : ''}" data-bina="${t}">${btnKos(k)}</button></div>`;
     }).join('')}</div>`;
     isi.querySelectorAll('[data-pt]').forEach(c => lukisPratonton(c, c.dataset.pt));
     isi.querySelectorAll('[data-bina]').forEach(btn => btn.onclick = () => {
@@ -1159,10 +1189,10 @@ function bukaTentera() {
       const cap = ruangTentera(), guna = ruangGuna(), gilir = ruangGilir();
       const sedang = S.gilir.length ? TR[S.gilir[0]] : null, n = S.bld.filter(b => b.t === 'berek' && aktif(b)).length;
       isi.innerHTML = `<div class="ruang"><span>Ruang unit <span class="nombor">${guna} + ${gilir} / ${cap}</span></span><div class="meter"><i style="width:${100 * guna / Math.max(1, cap)}%"></i></div></div>
-        ${S.gilir.length ? `<div class="kecil" style="font-size:12px">Sedang melatih ${esc(sedang.n)} · ${n ? `${n} berek aktif` : 'berek sedang dinaik taraf, latihan berhenti'}</div><div class="baris-gilir">${S.gilir.map((k, i) => `<span class="gilir">${esc(TR[k].n)} <button data-batal="${i}" aria-label="Batal">✕</button></span>`).slice(0, 30).join('')}${S.gilir.length > 30 ? `<span class="gilir">+${S.gilir.length - 30} lagi</span>` : ''}</div>` : '<p class="kecil" style="font-size:12px">Ketik unit untuk mula melatih. Latihan berjalan walaupun kau keluar dari permainan. Unit udara terbang melepasi tembok tetapi hanya boleh ditembak Pertahanan Udara dan Menara Mesingan.</p>'}
+        ${S.gilir.length ? `<div class="kecil" style="font-size:12px">Sedang melatih ${esc(namaUnit(S.gilir[0]))} · ${n ? `${n} berek aktif` : 'berek sedang dinaik taraf, latihan berhenti'}</div><div class="baris-gilir">${S.gilir.map((k, i) => `<span class="gilir">${esc(namaUnit(k))} <button data-batal="${i}" aria-label="Batal">✕</button></span>`).slice(0, 30).join('')}${S.gilir.length > 30 ? `<span class="gilir">+${S.gilir.length - 30} lagi</span>` : ''}</div>` : '<p class="kecil" style="font-size:12px">Ketik unit untuk mula melatih. Latihan berjalan walaupun kau keluar dari permainan. Unit udara terbang melepasi tembok tetapi hanya boleh ditembak Pertahanan Udara dan Menara Mesingan.</p>'}
         <div class="grid-kad">${Object.keys(TR).map(k => {
-        const d = TR[k], buka = balaiMaks() >= d.buka;
-        return `<div class="kedai ${buka ? '' : 'kunci'}"><canvas data-un="${k}" style="height:84px"></canvas><h4>${esc(d.n)} <small>tahap ${S.troopLv[k]}</small></h4><div class="kecil">${esc(d.d)}</div><div class="kecil">${buka ? `${d.udara ? 'Udara · ' : ''}Ruang ${d.ruang} · ${d.masa}s · ada <b>${S.army[k] || 0}</b>` : `<b>Berek Tentera tahap ${d.buka}</b>`}</div><div style="display:flex;gap:6px"><button class="btn ${buka ? '' : 'mati'}" data-latih="${k}" style="flex:1">+1 ${btnKos(['minyak', d.kos])}</button><button class="btn kayu ${buka ? '' : 'mati'}" data-latih5="${k}">+5</button></div></div>`;
+        const d = TR[k], buka = balaiMaks() >= d.buka, as = asetSlot(k);
+        return `<div class="kedai ${buka ? '' : 'kunci'}"><canvas data-un="${k}" style="height:84px"></canvas><h4>${esc(namaUnit(k))} <small>tahap ${S.troopLv[k]}</small></h4>${as ? `<div class="kecil aset">${esc(d.n)} · ${esc(as.kesan)}</div>` : ''}<div class="kecil">${esc(d.d)}</div><div class="kecil">${buka ? `${d.udara ? 'Udara · ' : ''}Ruang ${d.ruang} · ${d.masa}s · ada <b>${S.army[k] || 0}</b>` : `<b>Berek Tentera tahap ${d.buka}</b>`}</div><div style="display:flex;gap:6px"><button class="btn ${buka ? '' : 'mati'}" data-latih="${k}" style="flex:1">+1 ${btnKos(['minyak', kosUnit(k)])}</button><button class="btn kayu ${buka ? '' : 'mati'}" data-latih5="${k}">+5</button></div></div>`;
       }).join('')}</div>`;
       isi.querySelectorAll('[data-un]').forEach(c => lukisPratontonUnit(c, c.dataset.un));
       isi.querySelectorAll('[data-latih]').forEach(b => b.onclick = () => latih(b.dataset.latih, 1));
@@ -1189,7 +1219,7 @@ function bukaIlmu(tab) {
       isi.innerHTML = `${S.kaji ? `<div class="baris"><div class="teks"><b>Mengkaji ${esc(TR[S.kaji.k].n)} tahap ${S.kaji.lv}</b><small>Baki <span data-sampai="${S.kaji.until}">${masa((S.kaji.until - kini()) / 1000)}</span></small><div class="meter"><i data-meter-mula="${S.kaji.mula}" data-meter-tamat="${S.kaji.until}" style="width:${100 * clamp((kini() - S.kaji.mula) / (S.kaji.until - S.kaji.mula), 0, 1)}%"></i></div></div></div>` : `<p>Pilih unit untuk dikaji. Setiap tahap menambah nyawa dan kerosakan sebanyak 22%.${negaraKu().kuat.includes('teknologi') ? ' Bonus teknologi negara: kajian 20% lebih cepat.' : ''}</p>`}
       ${Object.keys(TR).map(k => {
         const lv = S.troopLv[k], nx = lv + 1, buka = balaiMaks() >= TR[k].buka, had2 = nx <= maxKaji();
-        return `<div class="baris"><canvas data-un="${k}" style="width:56px;height:56px;flex:none;border-radius:10px;background:#dfe3d0"></canvas><div class="teks"><b>${esc(TR[k].n)} · tahap ${lv}</b><small>${!buka ? `Buka di Berek Tentera tahap ${TR[k].buka}` : !had2 ? 'Naik taraf Makmal untuk tahap seterusnya' : `Ke tahap ${nx} · ${masa(MASA_KAJI[nx] * bonusSumber('kaji'))}`}</small></div>${buka && had2 ? `<button class="btn ${S.kaji ? 'mati' : ''}" data-kaji="${k}">${btnKos(['minyak', kosKaji(k, nx)])}</button>` : ''}</div>`;
+        return `<div class="baris"><canvas data-un="${k}" style="width:56px;height:56px;flex:none;border-radius:10px;background:#dfe3d0"></canvas><div class="teks"><b>${esc(namaUnit(k))} · tahap ${lv}</b><small>${!buka ? `Buka di Berek Tentera tahap ${TR[k].buka}` : !had2 ? 'Naik taraf Makmal untuk tahap seterusnya' : `Ke tahap ${nx} · ${masa(MASA_KAJI[nx] * bonusSumber('kaji'))}`}</small></div>${buka && had2 ? `<button class="btn ${S.kaji ? 'mati' : ''}" data-kaji="${k}">${btnKos(['minyak', kosKaji(k, nx)])}</button>` : ''}</div>`;
       }).join('')}`;
       isi.querySelectorAll('[data-un]').forEach(c => lukisPratontonUnit(c, c.dataset.un));
       isi.querySelectorAll('[data-kaji]').forEach(b => b.onclick = () => mulaKaji(b.dataset.kaji));
@@ -1323,7 +1353,7 @@ function bukaSerang() {
   pilihan = null; paparPanel();
   bukaModal('Operasi', [['jiran', 'Cari sasaran'], ['kempen', 'Latihan OPFOR']], (t, isi) => {
     const jumlah = Object.values(S.army).reduce((a, b) => a + b, 0), ada = jumlah > 0 || wiraSedia('komander') || S.bantuan.length;
-    const ringkas = Object.entries(S.army).filter(([, n]) => n > 0).map(([k, n]) => `${TR[k].n} × ${n}`).join(', ') || 'Tiada unit';
+    const ringkas = Object.entries(S.army).filter(([, n]) => n > 0).map(([k, n]) => `${namaUnit(k)} × ${n}`).join(', ') || 'Tiada unit';
     const buff = [S.buff.propaganda && `Propaganda ×${S.buff.propaganda}`, S.buff.proksi && `Proksi ×${S.buff.proksi}`, S.buff.palsu && `Alasan perang ×${S.buff.palsu}`].filter(Boolean).join(' · ');
     if (t === 'jiran') {
       const lg = ligaDari(S.maruah);
@@ -1371,7 +1401,8 @@ function jalankanOps(k) {
 }
 function bukaOps(tab) {
   pilihan = null; paparPanel();
-  bukaModal('Strategi', [['ops', 'Operasi strategik'], ['dunia', 'Hubungan dunia'], ['negara', 'Dataset negara']], (t, isi) => {
+  bukaModal('Strategi', [['ops', 'Operasi strategik'], ['aset', 'Aset negara'], ['dunia', 'Hubungan dunia'], ['negara', 'Dataset negara']], (t, isi) => {
+    if (t === 'aset') { renderAset(isi); return; }
     if (t === 'ops') {
       const pr = S.bld.filter(b => b.t === 'pusat_risikan' && b.lv >= 1).reduce((m, b) => Math.max(m, b.lv), 0);
       isi.innerHTML = `<p>Operasi bukan konvensional memberi kelebihan dalam operasi seterusnya, tetapi boleh terbongkar dan menjatuhkan imej antarabangsa. Imej bawah 30 mencetuskan sekatan ekonomi. ${pr ? `Pusat Risikan tahap ${pr} mengurangkan risiko terbongkar sebanyak ${pr * 3}%.` : 'Bina <b>Pusat Risikan</b> (Markas 3) untuk membuka operasi rahsia.'}</p>
@@ -1394,13 +1425,29 @@ function bukaOps(tab) {
     } else renderNegara(isi, false);
   }, tab);
 }
+/* Inventori aset sebenar negara pemain dan negara lain dalam dataset ASET. */
+let asetLihat = null;
+function renderAset(isi) {
+  const k = asetLihat || S.negara, n = negaraDari(k) || negaraKu(), sen = ASET[k] || [], ada = Object.keys(ASET);
+  const jenisSlot = sl => TR[sl] ? 'u' : B[sl] ? 'b' : 't';
+  isi.innerHTML = `<p>Aset sebenar dipetakan kepada slot permainan. Kesan ialah imbangan permainan rekaan, bukan prestasi sebenar. Negara tanpa data menggunakan unit generik. Tambah aset dalam <code>data.js</code> → <code>ASET</code>.</p>
+    <div class="cip-baris" style="margin-bottom:8px">${ada.map(x => `<button class="cip ${x === k ? 'aktif' : ''}" data-aset="${x}">${esc(negaraDari(x).n)}${x === S.negara ? ' (kau)' : ''}</button>`).join('')}</div>
+    <h3>${esc(n.n)}</h3>
+    ${sen.length ? `<div class="senarai-aset">${sen.map((a, i) => `<div class="baris"><canvas data-aset-i="${i}" style="width:84px;height:66px;flex:none;border-radius:10px;background:#dfe3d0"></canvas><div class="teks"><b>${esc(a.n)}</b><small>Kategori: ${esc(a.kat)}</small><small>Peranan game: ${esc(a.peranan)}</small><small class="aset">Slot: ${esc(namaSlot(a.slot))} · ${esc(a.kesan)}</small></div></div>`).join('')}</div>` : '<p>Belum ada data aset untuk negara ini.</p>'}
+    ${k !== S.negara ? '<p class="kecil" style="font-size:12px">Aset hanya digunakan oleh negara yang kau pimpin. Tukar negara dalam Tetapan.</p>' : ''}`;
+  isi.querySelectorAll('[data-aset]').forEach(b => b.onclick = () => { asetLihat = b.dataset.aset; renderAset(isi); });
+  const lama = S.negara; S.negara = k; // pratonton guna warna aset negara yang dilihat
+  try {
+    isi.querySelectorAll('[data-aset-i]').forEach(c => { const a = sen[+c.dataset.asetI], j = jenisSlot(a.slot); if (j === 'u') lukisPratontonUnit(c, a.slot); else if (j === 'b') lukisPratonton(c, a.slot); else lukisKeKanvas(c, () => lukisIkonTaktik(a.slot), 1.4); });
+  } finally { S.negara = lama; }
+}
 let tapisWil = 'Semua';
 function renderNegara(isi, pilihMod) {
   const wil = ['Semua', ...new Set(NEGARA.map(n => n.wil))];
   const sen = NEGARA.filter(n => tapisWil === 'Semua' || n.wil === tapisWil).slice().sort((a, b) => b.belanja - a.belanja);
   isi.innerHTML = `${pilihMod ? '<p>Pilih negara yang kau pimpin. Kekuatan sumber negara memberi bonus kecil; blok menentukan sekutu dalam pakatan. Semua negara boleh menang dengan strategi yang betul.</p>' : `<p>${NEGARA.length} negara dalam dataset (anggaran 2024/2025). Tambah negara lain dengan menyalin satu baris dalam <code>data.js</code>.</p>`}
     <div class="cip-baris" style="margin-bottom:8px">${wil.map(w => `<button class="cip ${w === tapisWil ? 'aktif' : ''}" data-wil="${esc(w)}">${esc(w)}</button>`).join('')}</div>
-    <div class="senarai-negara">${sen.map(n => `<div class="baris ${n.k === S.negara ? 'pilih' : ''}"><span class="kod">${n.k}</span><div class="teks"><b>${esc(n.n)}${n.nuklear ? ' <small title="Kuasa nuklear">☢</small>' : ''}</b><small>${esc(n.blok.join(' · ') || 'Tiada blok')} · KDNK ${fmtK(n.kdnk)} bil · ${n.pop} juta · belanja ${n.belanja} bil</small><small>${esc(n.nota)}</small></div>${pilihMod ? `<button class="btn ${n.k === 'MY' ? 'hijau' : ''}" data-negara="${n.k}">Pimpin</button>` : `<b class="nombor" style="font-family:var(--f-papar)">T${tierNegara(n)}</b>`}</div>`).join('')}</div>`;
+    <div class="senarai-negara">${sen.map(n => `<div class="baris ${n.k === S.negara ? 'pilih' : ''}"><span class="kod">${n.k}</span><div class="teks"><b>${esc(n.n)}${n.nuklear ? ' <small title="Kuasa nuklear">☢</small>' : ''}</b><small>${esc(n.blok.join(' · ') || 'Tiada blok')}${ASET[n.k] ? ` · ${ASET[n.k].length} aset` : ''} · KDNK ${fmtK(n.kdnk)} bil · ${n.pop} juta · belanja ${n.belanja} bil</small><small>${esc(n.nota)}</small></div>${pilihMod ? `<button class="btn ${n.k === 'MY' ? 'hijau' : ''}" data-negara="${n.k}">Pimpin</button>` : `<b class="nombor" style="font-family:var(--f-papar)">T${tierNegara(n)}</b>`}</div>`).join('')}</div>`;
   isi.querySelectorAll('[data-wil]').forEach(b => b.onclick = () => { tapisWil = b.dataset.wil; renderNegara(isi, pilihMod); });
   isi.querySelectorAll('[data-negara]').forEach(b => b.onclick = () => {
     S.negara = b.dataset.negara; const n = negaraKu();
@@ -1459,9 +1506,9 @@ function paparKeputusan(r) {
 /* ================= HUD perang ================= */
 function binaKadPerang() {
   const k = [];
-  for (const [t, n] of Object.entries(BT.tentera)) k.push({ id: t, kelas: '', nama: TR[t].n, n });
+  for (const [t, n] of Object.entries(BT.tentera)) k.push({ id: t, kelas: '', nama: namaUnit(t), n });
   for (const w of ['komander', 'elit']) if (BT.wira[w] !== 'tiada') k.push({ id: w, kelas: 'wira', nama: WIRA[w].n });
-  for (const t of Object.keys(TAKTIK)) if (BT.taktik[t] > 0) k.push({ id: t, kelas: 'taktik', nama: TAKTIK[t].n });
+  for (const t of Object.keys(TAKTIK)) if (BT.taktik[t] > 0) k.push({ id: t, kelas: 'taktik', nama: namaTaktik(t) });
   if (BT.bantuan.length) k.push({ id: 'bantuan', kelas: 'bantuan', nama: 'Bantuan sekutu' });
   $('#perangBawah').innerHTML = `<div class="kad-wrap">${k.map(x => `<button class="kad ${x.kelas}" data-kad="${x.id}" aria-label="${esc(x.nama)}"><canvas></canvas><span class="k-bil"></span><span class="k-nama">${esc(x.nama)}</span><span class="kuasa" hidden>Kuasa</span></button>`).join('') || '<p style="margin:0;padding:10px">Tiada unit. Pulang dan latih di Berek Tentera.</p>'}</div><div class="kawal"><button class="btn kayu" id="btnDoktrin"></button><button class="btn kayu" id="btnRisik"></button><button class="btn kayu" id="btnLaju">x1</button><button class="btn" id="btnSeterus"></button><button class="btn merah" id="btnTamat"></button></div>`;
   $('#perangBawah').querySelectorAll('[data-kad]').forEach(el => {
@@ -1488,6 +1535,14 @@ function lukisIkonTaktik(id) {
     ctx.fillStyle = '#e9e3d0'; ctx.beginPath(); ctx.arc(0, -8, 13, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#6b7a3a'; ctx.lineWidth = 1.2; ctx.stroke();
     for (const x of [-12, 12]) garis(x, -8, x * .35, 5, 1.2, '#3a3a2a');
     ctx.fillStyle = '#6b7a3a'; ctx.fillRect(-7, 4, 14, 11); ctx.fillStyle = '#fff'; ctx.fillRect(-1.5, 6, 3, 7); ctx.fillRect(-4, 8.5, 8, 2);
+  } else if (id === 'laut') {
+    ctx.fillStyle = '#2a6fa8'; ctx.fillRect(-18, 6, 36, 10);
+    ctx.fillStyle = '#3a3f46'; ctx.beginPath(); ctx.ellipse(0, 4, 16, 5, 0, 0, 7); ctx.fill(); ctx.fillRect(-4, -4, 8, 7);
+    garis(2, -6, 10, -20, 2.6, '#f4f4f0'); bulat(11, -21, 2.4, '#ff8a1a');
+  } else if (id === 'balistik') {
+    ctx.fillStyle = '#e9e3d0'; ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(5, -12); ctx.lineTo(5, 8); ctx.lineTo(-5, 8); ctx.lineTo(-5, -12); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#b8322f'; ctx.fillRect(-5, -6, 10, 3); ctx.fillStyle = '#5d6b35'; ctx.beginPath(); ctx.moveTo(-5, 2); ctx.lineTo(-10, 10); ctx.lineTo(-5, 8); ctx.moveTo(5, 2); ctx.lineTo(10, 10); ctx.lineTo(5, 8); ctx.fill();
+    for (const [x, w] of [[0, '#ff8a1a'], [0, '#ffe066']]) bulat(x, 13 + (w === '#ffe066' ? -1 : 1), w === '#ffe066' ? 2.4 : 4, w);
   } else if (id === 'udara') {
     ctx.fillStyle = '#9aa3ab'; ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(14, -3); ctx.lineTo(16, 0); ctx.lineTo(14, 3); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(-6, -12); ctx.lineTo(-10, -12); ctx.lineTo(-4, 0); ctx.lineTo(-10, 12); ctx.lineTo(-6, 12); ctx.closePath(); ctx.fill();
