@@ -309,7 +309,7 @@ async function syncSatellites(){
   });
   flash('rgba(111,243,255,.35)'); sfx.whoosh();
   const n = clone(core); n.sync = Date.now();
-  try{ await store.setCore(n); core = n; toast('7 satelit disegerakkan dengan Eryth Records.', 'ok'); }catch(e){ toast('Gagal menyegerak (' + (e.code || e.message) + ').', 'bad'); }
+  try{ await store.setCore(n); core = n; toast('7 satelit disegerakkan dengan Eryth Records.', 'ok'); }catch(e){ toast('Gagal menyegerak (' + errText(e) + ').', 'bad'); }
   afterData(); if(ui.view === 'records') openRecords();
 }
 anims.push((t, dt) => { for(let i = syncBeams.length - 1; i >= 0; i--){ const b = syncBeams[i]; b.userData.life -= dt; b.material.opacity = Math.max(0, b.userData.life / 4); if(b.userData.life <= 0){ S.remove(b); syncBeams.splice(i, 1); } } });
@@ -466,11 +466,11 @@ function openKomuniti(){
     ${session?.role === 'guest' ? '<form id="gbf" class="list"><div class="field"><label for="gbmsg">Tinggalkan pesanan</label><input id="gbmsg" maxlength="200"></div><div class="row"><button class="btn pri" type="submit">Tandatangan</button></div></form>' : ''}
     <div class="list">${book.length ? book.map(b => `<div class="item"><strong style="white-space:normal">${esc(b.msg)}</strong><span>${esc(b.name || 'Pelawat')} · ${esc(fmtDate(b.t))}</span></div>`).join('') : '<div class="empty">Belum ada pelawat menandatangani.</div>'}</div>
   </div>`, '#ff4f45');
-  $('#bf')?.addEventListener('submit', async e => { e.preventDefault(); const text = $('#btext').value.trim(); if(!text) return; const posts2 = [...pub.board, {t:Date.now(), text}].slice(-30); try{ await store.setBoard(posts2); toast('Kenyataan ditampal di Dewan Komuniti.', 'ok'); }catch(err){ toast('Gagal menampal (' + (err.code || err.message) + ').', 'bad'); } });
+  $('#bf')?.addEventListener('submit', async e => { e.preventDefault(); const text = $('#btext').value.trim(); if(!text) return; const posts2 = [...pub.board, {t:Date.now(), text}].slice(-30); try{ await store.setBoard(posts2); toast('Kenyataan ditampal di Dewan Komuniti.', 'ok'); }catch(err){ toast('Gagal menampal (' + errText(err) + ').', 'bad'); } });
   document.querySelectorAll('[data-rmp]').forEach(b => b.addEventListener('click', async () => { const posts2 = pub.board.filter((_, i) => i !== +b.dataset.rmp); await store.setBoard(posts2).catch(() => {}); }));
   $('#gbf')?.addEventListener('submit', async e => { e.preventDefault(); const msg = $('#gbmsg').value.trim(); if(!msg) return;
     if(!myUid){ const u = await use('user'); myUid = u ? await u.id() : 'local'; }
-    try{ await store.sign(myUid || 'local', {name:session.name, msg, t:Date.now()}); toast('Terima kasih. Pesanan kau tercatat.', 'ok'); }catch(err){ toast('Buku pelawat ditolak: dunia dikunci atau peranti ini disekat (' + (err.code || err.message) + ').', 'bad'); } });
+    try{ await store.sign(myUid || 'local', {name:session.name, msg, t:Date.now()}); toast('Terima kasih. Pesanan kau tercatat.', 'ok'); }catch(err){ toast('Buku pelawat ditolak: dunia dikunci atau peranti ini disekat (' + errText(err) + ').', 'bad'); } });
 }
 
 /* --- guest passes --- */
@@ -498,12 +498,12 @@ function openGuests(){
   document.querySelectorAll('[data-gp]').forEach(c => c.addEventListener('change', async () => {
     const gid = c.dataset.gp, n = clone(core), g = n.guests?.[gid]; if(!g) return;
     g.powers = [...document.querySelectorAll(`[data-gp="${CSS.escape(gid)}"]`)].filter(x => x.checked).map(x => x.value);
-    try{ await store.setCore(n); core = n; toast(`Kuasa ${g.name} dikemas kini. Berkuat kuasa bila dia masuk semula.`, 'ok'); }catch(e){ c.checked = !c.checked; toast('Gagal (' + (e.code || e.message) + ').', 'bad'); }
+    try{ await store.setCore(n); core = n; toast(`Kuasa ${g.name} dikemas kini. Berkuat kuasa bila dia masuk semula.`, 'ok'); }catch(e){ c.checked = !c.checked; toast('Gagal (' + errText(e) + ').', 'bad'); }
   }));
   document.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', async () => {
     if(b.dataset.armed !== '1'){ b.dataset.armed = '1'; b.textContent = 'Sahkan batal'; return; }
     const n = clone(core); delete n.guests[b.dataset.rm];
-    try{ await store.setCore(n); core = n; toast('Pas tetamu dibatalkan.', 'ok'); openGuests(); }catch(e){ toast('Gagal (' + (e.code || e.message) + ').', 'bad'); }
+    try{ await store.setCore(n); core = n; toast('Pas tetamu dibatalkan.', 'ok'); openGuests(); }catch(e){ toast('Gagal (' + errText(e) + ').', 'bad'); }
   }));
   $('#gf').addEventListener('submit', async ev => {
     ev.preventDefault();
@@ -523,7 +523,7 @@ function openGuests(){
       for(const z of zones){ const zk = await unseal(session.MK, core.zones[z], 'zone:' + z); g.keys[z] = await seal(kek, zk, `gz:${gid}:${z}`); zk.fill(0); }
       const n = clone(core); n.guests = n.guests || {}; n.guests[gid] = g;
       await store.setCore(n); core = n; toast(`Pas untuk ${name} dicipta.`, 'ok'); openGuests();
-    }catch(e){ say('Gagal mencipta pas (' + (e.code || e.message) + ').'); sub.disabled = false; sub.textContent = 'Cipta pas'; }
+    }catch(e){ say('Gagal mencipta pas (' + errText(e) + ').'); sub.disabled = false; sub.textContent = 'Cipta pas'; }
   });
 }
 
@@ -556,7 +556,7 @@ function openSettings(){
     $('#impc').innerHTML = `<div class="ro"><div class="note warn">Ini akan menggantikan seluruh dunia sekarang (${raw.size} rekod) dengan sandaran (${Object.keys(b.vault || {}).length} rekod, ${fmtDate(b.exported)}). Selepas itu, buka semula dengan PIN sandaran tersebut.</div><div class="row"><button class="btn danger" id="impgo" type="button">Gantikan dunia dengan sandaran ini</button></div></div>`;
     $('#impgo').addEventListener('click', async () => {
       try{ for(const id of [...raw.keys()]) if(!(b.vault || {})[id]) await store.del(id); for(const [id, r] of Object.entries(b.vault || {})) await store.put(id, r); await store.setCore(b.core); core = clone(b.core); lock('Sandaran dipulihkan. Masukkan PIN sandaran itu.'); }
-      catch(err){ toast('Pemulihan gagal (' + (err.code || err.message) + ').', 'bad'); }
+      catch(err){ toast('Pemulihan gagal (' + errText(err) + ').', 'bad'); }
     });
   });
   $('#pf').addEventListener('submit', async ev => {
@@ -567,7 +567,7 @@ function openSettings(){
       const salt = b64(rand(16)), nk = await kekFrom(newp, salt, ITER);
       const n = clone(core); n.kdf = {salt, iter:ITER}; n.owner = await seal(nk, mkRaw, 'owner'); mkRaw.fill(0);
       await store.setCore(n); core = n; toast('PIN pemilik ditukar. Jangan lupa PIN baharu.', 'ok'); $('#pold').value = $('#pnew').value = '';
-    }catch(e){ toast(e.name === 'OperationError' ? 'PIN semasa salah.' : 'Gagal menukar PIN (' + (e.code || e.message) + ').', 'bad'); }
+    }catch(e){ toast(e.name === 'OperationError' ? 'PIN semasa salah.' : 'Gagal menukar PIN (' + errText(e) + ').', 'bad'); }
   });
 }
 
@@ -613,7 +613,7 @@ async function padKey(k){
   if(gateState === 'setup2'){
     if(pinBuf !== setupFirst){ pinBuf = ''; setupFirst = ''; gateMsg = 'PIN tidak sepadan. Mulakan semula.'; return renderGate('setup1'); }
     gateBusy = true; renderGate();
-    try{ await createWorld(pinBuf); }catch(e){ gateMsg = 'Gagal membina dunia (' + (e.code || e.message) + ').'; gateBusy = false; pinBuf = ''; setupFirst = ''; return renderGate('setup1'); }
+    try{ await createWorld(pinBuf); }catch(e){ gateMsg = 'Gagal membina dunia (' + errText(e) + ').'; gateBusy = false; pinBuf = ''; setupFirst = ''; return renderGate('setup1'); }
     gateBusy = false; pinBuf = ''; setupFirst = ''; return;
   }
   gateBusy = true; renderGate();

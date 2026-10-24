@@ -297,13 +297,13 @@ async function saveEntry(z, id, data, quiet){
   const rec = {z, iv:box.iv, ct:box.ct, t:prev?.t || now, u:now};
   plain.set(nid, {id:nid, z, t:rec.t, u:now, iv:box.iv, data});
   try{ await store.put(nid, rec); if(!quiet){ toast('Disulitkan & disimpan ke ' + ZONES[z].name, 'ok'); tone(1046, {d:.25, v:.05}); tone(1568, {t:.1, d:.35, v:.04}); } }
-  catch(e){ plain.delete(nid); toast(e.code === 'quota_exceeded' ? 'Bilik kebal penuh. Padam beberapa rekod lama dahulu.' : 'Gagal menyimpan (' + (e.code || e.message) + '). Cuba lagi.', 'bad'); return null; }
+  catch(e){ plain.delete(nid); toast(e.code === 'quota_exceeded' ? 'Bilik kebal penuh. Padam beberapa rekod lama dahulu.' : 'Gagal menyimpan (' + errText(e) + '). Cuba lagi.', 'bad'); return null; }
   if(!quiet) afterData(); return nid;
 }
 async function deleteEntry(id){
   if(!isOwner()) return;
   try{ await store.del(id); plain.delete(id); toast('Rekod dipadam.', 'ok'); afterData(); }
-  catch(e){ toast('Gagal memadam (' + (e.code || e.message) + ').', 'bad'); }
+  catch(e){ toast('Gagal memadam (' + errText(e) + ').', 'bad'); }
 }
 
 /* ================= session ================= */
@@ -395,7 +395,7 @@ setInterval(() => { if(session && performance.now() - lastActive > AUTO_LOCK_MS)
 
 $('#bGloves').addEventListener('click', () => setGloves(!gloves));
 $('#bAC').addEventListener('click', () => session && openAC());
-$('#bGuests').addEventListener('click', openGuests);
+$('#bGuests').addEventListener('click', () => openGuests());
 $('#bSettings').addEventListener('click', () => session && openSettings());
 $('#bLock').addEventListener('click', () => lock('Dunia dikunci. Semua kunci dibuang dari memori.'));
 $('#bRadio').addEventListener('click', () => { if(!session) return; audioStart(); openRadio(); });

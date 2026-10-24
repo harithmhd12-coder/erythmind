@@ -15,6 +15,8 @@ const fmtDate = t => { try{ return new Date(t).toLocaleDateString('ms-MY', {day:
 const fmtHM = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clone = o => JSON.parse(JSON.stringify(o));
+// an error as shown to the owner: the server's "not allowed" code is spelled out (in the app it means the owner account is not signed in here)
+function errText(e){ const c = e?.code || e?.message || String(e); return String(c) === '42501' ? 'pelayan menolak: akaun pemilik belum log masuk di pelayar ini' : c; }
 function toast(msg, kind = '', ms = 3800){
   const el = document.createElement('div'); el.className = 'toast ' + kind; el.textContent = msg;
   $('#toast').appendChild(el); setTimeout(() => el.remove(), ms);

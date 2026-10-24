@@ -149,4 +149,16 @@
     $('#kCopy').addEventListener('click', () => navigator.clipboard.writeText(url).then(() => toast('Pautan disalin.', 'ok'), () => toast('Papan klip ditolak.', 'bad')));
   }
   window.openKawalan = openKawalan;
+
+  /* --- owner changes refused by the server (code 42501): say why, and offer the way in --- */
+  const baseErr = errText;
+  errText = e => String(e?.code) === '42501' ? (E.email && !E.owner ? `pelayan menolak: ${E.email} bukan akaun pemilik` : 'pelayan menolak: akaun pemilik belum log masuk di pelayar ini · tekan "Log masuk akaun pemilik" di atas panel') : baseErr(e);
+  const baseGuests = openGuests;
+  openGuests = function(){
+    baseGuests.apply(this, arguments);
+    if(E.owner || ui.view !== 'guests') return;
+    const pb = document.querySelector('#panel .pb'); if(!pb) return;
+    pb.insertAdjacentHTML('afterbegin', `<div class="ro"><div class="note warn">Akaun pemilik belum log masuk di pelayar ini${E.email ? ` (sekarang: ${esc(E.email)})` : ''}, jadi pelayan akan menolak cipta atau batal pas (Gagal 42501). Pelayar dalam app lain (contohnya bila pautan dibuka dari WhatsApp atau Claude) tidak berkongsi log masuk dengan Safari.</div><div class="row"><button class="btn pri" type="button" id="gLogin">Log masuk akaun pemilik</button></div></div>`);
+    $('#gLogin').addEventListener('click', () => { lock('Log masuk akaun pemilik di bawah, kemudian masukkan PIN dunia.'); setTimeout(() => $('#oShow')?.click(), 300); });
+  };
 })();
