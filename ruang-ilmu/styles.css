@@ -489,3 +489,29 @@ a:hover > .peta-nod, a:focus > .peta-nod { r: 12; }
 .grid-komuniti { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
 .grid-komuniti .foto-sng { aspect-ratio: 3 / 4; max-width: 100%; }
 .mesej-wa { white-space: pre-wrap; font-family: var(--mono); font-size: .85rem; background: var(--permukaan); padding: 14px; border-radius: 8px; margin: 0; overflow-x: auto; }
+
+/* ---------- Integriti (Trust Me, I'm Lying) ---------- */
+.notis-betul { display: grid; gap: 4px; border: 1px solid var(--merah); background: var(--merah-lembut); border-radius: 8px; padding: 12px 16px; max-width: var(--lajur); font-size: .93rem; }
+.notis-betul b { color: var(--merah); }
+.integriti h4 { font-family: var(--sans); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--kelabu); margin-top: 6px; }
+.empat-soalan { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--garis); }
+.empat-soalan > div { display: grid; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--garis); }
+@media (min-width: 640px) { .empat-soalan > div { grid-template-columns: 11rem minmax(0, 1fr); gap: 16px; } }
+.empat-soalan dt { font-weight: 700; font-size: .92rem; }
+.empat-soalan dd { margin: 0; font-size: .92rem; color: var(--kelabu); min-width: 0; }
+.sejarah { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sejarah li { display: grid; gap: 2px; }
+.dakwaan { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 10px; font-size: .95rem; }
+.dakwaan li { line-height: 1.45; }
+.rujuk { font-family: var(--mono); font-size: .78rem; color: var(--merah); }
+.cip.sumber-primer, .cip.sumber-rasmi, .cip.dakwaan-fakta, .cip.dakwaan-pengiraan { border-color: var(--merah); color: var(--merah); }
+.cip.dakwaan-dibahas, .cip.dakwaan-pendapat, .cip.dakwaan-riwayat, .cip.status-baru { border-color: var(--dakwat); color: var(--dakwat); }
+.cip.status-dibetulkan { border-color: var(--baik); color: var(--baik); }
+.rujukan .cip { font-size: .66rem; padding: 1px 6px; margin-right: 2px; }
+.senarai-isu { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: .92rem; color: var(--dakwat); }
+.lulus { color: var(--baik); font-weight: 600; }
+.jadual.ukuran td:not(:first-child), .jadual.ukuran th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; width: auto; }
+.jadual.ukuran th:first-child { width: 40%; }
+.jadual.taktik th { width: auto; }
+.jadual.taktik td:first-child { min-width: 14rem; }
+.kad-fakta .pautan { justify-self: start; font-size: .82rem; }
