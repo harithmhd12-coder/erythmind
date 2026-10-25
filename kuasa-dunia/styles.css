@@ -238,3 +238,69 @@ button.cip.aktif { background: #4d5a3a; color: #fff; border-color: #1f2a1c; }
 .kecil.aset, small.aset { color: #4d6a1a; font-weight: 700; }
 .senarai-aset { display: grid; gap: 6px; }
 .senarai-aset .baris { margin: 0; }
+
+/* ================= Gaya visual v2: panel bergaris tebal, butang mainan, bar navigasi potret ================= */
+:root { --krim-btn: #fff8e2; --hijau-gelap: #2f5a24; --garis: 3px; }
+.papan { border-width: var(--garis); border-radius: 14px; box-shadow: 0 4px 0 var(--gelap), 0 8px 18px var(--bayang); }
+.btn { border-width: var(--garis); border-radius: 12px; box-shadow: 0 4px 0 #6b4a00, inset 0 2px 0 rgba(255,255,255,.6); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #6b4a00; }
+.btn.merah { background: linear-gradient(180deg, #ff8f6e, #e0472f 55%, #a52a1c); box-shadow: 0 4px 0 #4a0f08, inset 0 2px 0 rgba(255,255,255,.35); }
+.btn.hijau { background: linear-gradient(180deg, #7fc85a, #3f8a32 55%, var(--hijau-gelap)); color: var(--krim-btn); text-shadow: 0 1px 0 rgba(0,0,0,.45); box-shadow: 0 4px 0 #142a10, inset 0 2px 0 rgba(255,255,255,.35); }
+.btn.kayu { background: linear-gradient(180deg, #5f6e45, #3a4a2c); box-shadow: 0 4px 0 var(--gelap), inset 0 2px 0 rgba(255,255,255,.2); }
+.btn.krim, .btn.kayu.nav-btn { background: linear-gradient(180deg, #ffffff, var(--krim-btn) 45%, #e8dcb4); color: var(--hijau-gelap); text-shadow: none; box-shadow: 0 4px 0 #5c5534, inset 0 2px 0 #fff; }
+
+/* bar navigasi bawah */
+#bawahKanan { background: linear-gradient(180deg, var(--kayu-2), var(--kayu)); border: var(--garis) solid var(--gelap); border-radius: 18px; padding: 6px; gap: 6px; box-shadow: 0 4px 0 var(--gelap), 0 8px 18px var(--bayang); }
+.btn.nav-btn { width: 64px; height: 66px; padding: 4px 2px 3px; gap: 2px; font-size: 11px; font-family: var(--f-papar); border-radius: 13px; }
+.btn.nav-btn svg { width: 34px; height: 34px; filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)); }
+.btn.nav-btn span:not(.titik) { line-height: 1; }
+
+/* pemain & sumber: nombor besar */
+#pemain .pangkat { width: 44px; height: 44px; font-size: 18px; border-width: var(--garis); }
+#pemain .nama { font-size: 16px; }
+.bar { height: 30px; }
+.bar .isi { height: 24px; border-width: var(--garis); }
+.bar .isi b { font-size: 17px; line-height: 18px; }
+.bar svg { width: 32px; height: 32px; }
+
+/* butang tindakan utama */
+#btnSerang { width: 92px; height: 92px; border-radius: 20px; font-size: 18px; }
+#btnSerang svg { width: 46px; height: 46px; }
+
+/* panel tutorial krim */
+#bendahara .kata { border-width: var(--garis); border-radius: 14px 14px 14px 3px; box-shadow: 0 4px 0 var(--gelap); font-size: 13px; }
+#bendahara .muka { width: 46px; height: 46px; }
+#toast div { border-width: var(--garis); }
+
+/* modal */
+#modal .kotak { border-width: var(--garis); }
+.baris, .kedai, .grid-statistik div { border-width: var(--garis) !important; }
+
+@media (max-width: 760px) {
+  .btn.nav-btn { width: 56px; height: 62px; }
+  .btn.nav-btn svg { width: 30px; height: 30px; }
+}
+/* potret 9:16: bar navigasi penuh lebar, butang Operasi di atasnya */
+@media (max-width: 560px) {
+  #bawahKanan { left: var(--tepi-k); right: var(--tepi-n); bottom: var(--bawah); justify-content: space-between; gap: 4px; padding: 5px; }
+  .btn.nav-btn { flex: 1; width: auto; max-width: none; min-width: 0; height: 64px; font-size: 10.5px; }
+  .btn.nav-btn svg { width: 32px; height: 32px; }
+  #bawahKiri { bottom: calc(var(--bawah) + 88px); }
+  #btnSerang { width: 80px; height: 80px; font-size: 15px; }
+  #btnSerang svg { width: 40px; height: 40px; }
+  #bendahara { left: calc(var(--tepi-k) + 88px); bottom: calc(var(--bawah) + 90px); max-width: calc(100vw - 108px); }
+  #bendahara .muka { display: none; }
+  #panel { bottom: calc(var(--bawah) + 86px); }
+  .bar .isi { width: clamp(104px, 33vw, 150px); }
+  #pemain { max-width: 45vw; }
+  #tukang { top: calc(var(--atas) + 66px); }
+  #dunia { top: calc(var(--atas) + 100px); }
+  #pemain .nama { font-size: 14px; }
+  .bar .isi small { font-size: 9px; }
+  #perangAtasKiri { font-size: 12px; padding: 8px 10px; max-width: 62vw; }
+  #perangAtasKiri h4 { font-size: 14px; }
+}
+@media (max-width: 380px) {
+  .btn.nav-btn { font-size: 9.5px; height: 58px; }
+  .btn.nav-btn svg { width: 28px; height: 28px; }
+}

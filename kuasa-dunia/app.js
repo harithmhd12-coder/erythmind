@@ -346,14 +346,15 @@ function sfx(n) {
 const cv = $('#cv');
 let ctx = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1;
-const ZMIN = .55, ZMAX = 4.2;
+const ZMIN = .5, ZMAX = 3.5; // zoom kamera ortografik: tinggi pandangan = 40 / z unit dunia
 const cam = { x: G / 2, y: G / 2, z: 1 };
 function ubahSaiz() { DPR = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); G3.saiz(W, H, DPR); hadKamera(); }
 const skrinKeDunia = (sx, sy) => G3.skrinKeDunia(sx, sy);
 function hadKamera() { cam.z = clamp(cam.z, ZMIN, ZMAX); cam.x = clamp(cam.x, -4, G + 4); cam.y = clamp(cam.y, -4, G + 6); }
 function kameraAsal() {
-  const tv = Math.tan(15 * Math.PI / 180), asp = W / Math.max(1, H), d = clamp(Math.max(10 / (tv * asp), 13 / tv), 32, 90);
-  cam.x = G / 2; cam.y = G / 2 + .5; cam.z = 64 / d; hadKamera();
+  // muatkan kira-kira 24 unit lebar (potret) atau 27 unit tinggi (landskap) pangkalan
+  const asp = W / Math.max(1, H), vh = Math.max(24 / asp, 27);
+  cam.x = G / 2; cam.y = G / 2 + .5; cam.z = 40 / vh; hadKamera();
 }
 function kunciTitik(sx, sy, gx, gy) { const [a, b] = skrinKeDunia(sx, sy); cam.x += gx - a; cam.y += gy - b; hadKamera(); }
 function zoomDi(sx, sy, z) { const [gx, gy] = skrinKeDunia(sx, sy); cam.z = clamp(z, ZMIN, ZMAX); kunciTitik(sx, sy, gx, gy); }

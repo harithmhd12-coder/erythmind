@@ -1,11 +1,13 @@
 /* Kuasa Dunia · grafik 3D.
-   Pangkalan tentera miniatur bergaya mainan atas three.js r128: model low-poly bersudut bulat dicantum menjadi satu mesh
+   Diorama pangkalan tentera miniatur bergaya mainan atas three.js r128: kamera ortografik isometrik 40°,
+   tapak konkrit bagi setiap bangunan, AO "baked" dalam warna bucu: model low-poly bersudut bulat dicantum menjadi satu mesh
    bagi setiap bangunan atau tentera, cahaya matahari hangat, bayang lembut, dan bayang sentuh sebagai AO.
    Modul ini hanya membaca keadaan permainan (S, BT, mode, pilihan) dan tidak mengubahnya. */
 'use strict';
 const G3 = (() => {
   const T = THREE;
-  const FOV = 30, EL = 50 * Math.PI / 180, AZ = Math.PI / 4, D0 = 64;
+  // kamera ortografik: VH0 = tinggi pandangan (unit dunia) pada zoom 1; JARAK = jarak kamera dari sasaran
+  const EL = 40 * Math.PI / 180, AZ = Math.PI / 4, VH0 = 40, JARAK = 90;
   let R, adegan, kamera, mentari, W = 1, H = 1;
   const ray = new T.Raycaster(), v2 = new T.Vector2(), v3 = new T.Vector3(), lantai = new T.Plane(new T.Vector3(0, 1, 0), 0);
 
@@ -90,9 +92,14 @@ const G3 = (() => {
     }
     const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), wr = new Float32Array(n * 3); let o = 0;
     for (const [g, c] of sen) {
-      const k = g.attributes.position.count;
-      pos.set(g.attributes.position.array, o * 3); nor.set(g.attributes.normal.array, o * 3);
-      for (let i = 0; i < k; i++) { wr[(o + i) * 3] = c.r; wr[(o + i) * 3 + 1] = c.g; wr[(o + i) * 3 + 2] = c.b; }
+      const k = g.attributes.position.count, ps = g.attributes.position.array, ns = g.attributes.normal.array;
+      pos.set(ps, o * 3); nor.set(ns, o * 3);
+      for (let i = 0; i < k; i++) {
+        // AO "baked": bucu dekat tanah dan permukaan menghadap bawah lebih gelap, permukaan atas sedikit cerah
+        const y = ps[i * 3 + 1], ny = ns[i * 3 + 1], h = Math.min(1, Math.max(0, y / .55));
+        const f = (.74 + .26 * h * h * (3 - 2 * h)) * (ny < -.3 ? .8 : ny > .6 ? 1.06 : 1);
+        wr[(o + i) * 3] = c.r * f; wr[(o + i) * 3 + 1] = c.g * f; wr[(o + i) * 3 + 2] = c.b * f;
+      }
       o += k; g.dispose();
     }
     const out = new T.BufferGeometry();
@@ -105,7 +112,7 @@ const G3 = (() => {
   const K = {
     kayu: '#b97a44', kayuG: '#6e4425', tiang: '#5a636b', merah: '#c8452f', dana: '#ffc83a', emasG: '#d69b1c', putih: '#f4f3ee',
     konkrit: '#cfcbc1', konkritG: '#a19d94', olive: '#6b7a3a', oliveG: '#4d5a2a', oliveC: '#8a9a52', khaki: '#c9b07a', besi: '#8a939d', besiG: '#5a636b',
-    kaca: '#5fb8e0', gelapK: '#2c3e50', hitam: '#25272b', kulit: '#e2a67a', nadir: '#7fd6c2', minyak: '#33363d', kuning: '#f4c20d', oren: '#ff8a1a',
+    kaca: '#5fb8e0', bumbung: '#e0843a', gelapK: '#2c3e50', hitam: '#25272b', kulit: '#e2a67a', nadir: '#7fd6c2', minyak: '#33363d', kuning: '#f4c20d', oren: '#ff8a1a',
   };
 
   /* ---------- model bangunan ---------- */
@@ -126,7 +133,7 @@ const G3 = (() => {
           if (lv >= 2) {
             m.kotak(1.7, .7, 1.4, gelap(dinding, -.05), -.35, 1.47, -.45, { r: .08 });
             for (const px of [-.8, .1]) m.kotak(.4, .2, .06, K.gelapK, px, 1.78, .27, { r: .03 });
-            m.kotak(1.85, .12, 1.55, atap, -.35, 2.17, -.45, { r: .04 });
+            m.kotak(1.85, .12, 1.55, lv >= 4 ? atap : K.bumbung, -.35, 2.17, -.45, { r: .04 });
           }
           if (lv >= 3) { m.sil(.03, .03, 1.3, K.besi, .3, 2.29, -.85, { seg: 5 }); m.sil(.02, .02, .8, K.besi, .5, 2.29, -.6, { seg: 5 }); m.bola(.05, '#ff4a3a', .3, 3.6, -.85); }
           if (lv >= 4) { m.sil(.38, .42, .1, K.besiG, 1.05, 1.47, .55, { seg: 12 }); m.bola(.3, '#f2f2ee', 1.05, 1.62, .55, { sy: .85 }); }
@@ -139,7 +146,7 @@ const G3 = (() => {
         case 'zon_industri': {
           m.kotak(2.8, .12, 2.8, K.konkrit, 0, 0, 0, { r: .08 });
           m.kotak(2.0, .85, 1.4, '#d9ccad', -.25, .12, -.5, { r: .06 });
-          for (let i = 0; i < 3; i++) m.pelana(1.42, .66, .3, i % 2 ? '#8a939d' : '#7d8790', -.25 - .66 + i * .66, .97, -.5, { ry: Math.PI / 2 });
+          for (let i = 0; i < 3; i++) m.pelana(1.42, .66, .3, i % 2 ? K.bumbung : gelap(K.bumbung, -.1), -.25 - .66 + i * .66, .97, -.5, { ry: Math.PI / 2 });
           m.kotak(.5, .5, .06, K.besiG, -.25, .12, .21, { r: .03 });
           for (const px of [-.85, .35]) m.kotak(.32, .2, .05, K.kaca, px, .55, .21, { r: .03 });
           m.sil(.15, .19, 1.7, '#a0522d', .95, .12, -.95, { seg: 10 }); m.sil(.165, .165, .12, '#efefef', .95, 1.55, -.95, { seg: 10 });
@@ -208,7 +215,7 @@ const G3 = (() => {
         }
         case 'pejabat_jurutera': {
           m.kotak(1.8, .1, 1.8, K.konkrit, 0, 0, 0, { r: .05 });
-          m.kotak(1.4, .6, .9, K.kuning, 0, .1, -.25, { r: .06 }); m.kotak(1.44, .06, .94, '#b47f12', 0, .7, -.25, { r: .02 });
+          m.kotak(1.4, .6, .9, K.kuning, 0, .1, -.25, { r: .06 }); m.kotak(1.44, .06, .94, K.bumbung, 0, .7, -.25, { r: .02 });
           m.kotak(.42, .2, .05, K.gelapK, -.3, .4, .21, { r: .02 }); m.kotak(.26, .45, .05, '#5a4632', .38, .1, .21, { r: .02 });
           for (const [x, z] of [[.6, .6], [-.6, .65]]) { m.kon(.07, .2, K.oren, x, .1, z, { seg: 8 }); m.sil(.05, .06, .04, '#ffffff', x, .17, z, { seg: 8 }); }
           m.kotak(.8, .06, .12, K.besi, -.1, .1, .62, { r: .01 }); m.kotak(.8, .06, .12, K.besi, -.1, .16, .64, { r: .01, ry: .1 });
@@ -219,7 +226,7 @@ const G3 = (() => {
           m.kotak(2.4, .75, 1.4, '#7b8a4a', 0, .16, 0, { r: .07 });
           for (const px of [-.85, -.4, .4, .85]) m.kotak(.26, .2, .05, K.gelapK, px, .55, .71, { r: .02 });
           m.kotak(.4, .5, .06, '#3a3f46', 0, .16, .72, { r: .03 });
-          m.pelana(2.6, 1.65, .55, K.oliveG, 0, .91, 0);
+          m.pelana(2.6, 1.65, .55, K.bumbung, 0, .91, 0);
           for (const sx of [-1, 1]) for (let i = 0; i < 2; i++) m.bola(.12, K.khaki, sx * .42, .22 + i * .1, .92, { sx: 1.3, sy: .45, d: 1 });
           if (lv >= 4) for (const sx of [-1, 1]) m.kotak(.12, .12, .05, K.dana, sx * .7, .78, .72, { r: .02 });
           m.sil(.03, .03, 2.4, K.besi, 1.2, .16, -.85, { seg: 6 });
@@ -396,6 +403,7 @@ const G3 = (() => {
   const geoBendera = (() => { const g = new T.PlaneGeometry(.62, .34, 6, 1); g.translate(.31, -.17, 0); return g; })();
 
   /* ---------- model tentera (menghadap +X) ---------- */
+  const SKALA_UNIT = 1.25; // unit lebih besar supaya mudah dibaca pada skrin kecil
   const TERBANG = { dron: 1.4, helikopter: 1.9, jet: 2.6 };
   // warna dan bentuk ikut aset negara pemain (ASET dalam data.js)
   const kulitAset = t => { const a = typeof asetSlot === 'function' ? asetSlot(t) : null; return a ? (a.warna || '') + (a.mod && a.mod.kamikaze ? ':delta' : '') : ''; };
@@ -524,15 +532,15 @@ const G3 = (() => {
   }
   let laut, lautAsal, buih, perahu, pokokSemua = [];
   function binaDunia() {
-    const N = 80, SZ = 150, g0 = new T.PlaneGeometry(SZ, SZ, N, N); g0.rotateX(-Math.PI / 2); g0.translate(G / 2, 0, G / 2 + 12);
+    const N = 110, SZ = 260, g0 = new T.PlaneGeometry(SZ, SZ, N, N); g0.rotateX(-Math.PI / 2); g0.translate(G / 2, 0, G / 2 + 12);
     const p = g0.attributes.position, wr = new Float32Array(p.count * 3), c = new T.Color();
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), z = p.getZ(i), h = tinggiTanah(x, z), n = bunyi(x * 1.7, z * 1.7);
       p.setY(i, h);
       let w;
       if (z > G + 1.7) w = h > -.15 ? (n > .5 ? '#f2dca3' : '#ead19a') : '#d9c690';
-      else if (x > -1 && x < G + 1 && z > -1 && z < G + 1) w = n > .5 ? '#5fb833' : '#58ae2f';
-      else w = h > .9 ? (n > .5 ? '#3f8a26' : '#377f22') : (n > .5 ? '#52a92e' : '#4a9e2a');
+      else if (x > -1 && x < G + 1 && z > -1 && z < G + 1) w = n > .5 ? '#7ccb3e' : '#74c33a';
+      else w = h > .9 ? (n > .5 ? '#4f9e2e' : '#47942a') : (n > .5 ? '#62b836' : '#5aae32');
       c.set(w).convertSRGBToLinear(); wr[i * 3] = c.r; wr[i * 3 + 1] = c.g; wr[i * 3 + 2] = c.b;
     }
     g0.setAttribute('color', new T.BufferAttribute(wr, 3));
@@ -540,7 +548,7 @@ const G3 = (() => {
     const tanah = new T.Mesh(g, new T.MeshStandardMaterial({ vertexColors: true, roughness: .95 })); tanah.receiveShadow = true; adegan.add(tanah);
     // medan kota bertekstur petak halus
     const txMedan = kanvasTx(G * 8, G * 8, (x, w) => {
-      for (let i = 0; i < G; i++) for (let j = 0; j < G; j++) { x.fillStyle = (i + j) % 2 ? '#68c23a' : '#61b935'; x.fillRect(i * 8, j * 8, 8, 8); }
+      for (let i = 0; i < G; i++) for (let j = 0; j < G; j++) { x.fillStyle = (i + j) % 2 ? '#86d443' : '#7dcc3c'; x.fillRect(i * 8, j * 8, 8, 8); }
       const r = rng(5); for (let k = 0; k < 900; k++) { x.fillStyle = r() < .5 ? 'rgba(255,255,200,.10)' : 'rgba(30,80,10,.10)'; x.fillRect(r() * w, r() * w, 2, 2); }
     });
     txMedan.magFilter = T.LinearFilter; txMedan.anisotropy = 4;
@@ -552,11 +560,11 @@ const G3 = (() => {
     for (let i = 0; i <= G; i += 2) for (const [x, z] of [[i, -tebal], [-tebal, i], [G + tebal, i]]) bm.sil(.03, .03, .55, '#8a939d', x, 0, z, { seg: 4 });
     const sempadan = new T.Mesh(bm.geo(), MAT); sempadan.receiveShadow = true; adegan.add(sempadan);
     // laut
-    const gl = new T.PlaneGeometry(240, 80, 60, 20); gl.rotateX(-Math.PI / 2); gl.translate(G / 2, -.32, G + 3.4 + 40);
+    const gl = new T.PlaneGeometry(400, 160, 80, 32); gl.rotateX(-Math.PI / 2); gl.translate(G / 2, -.32, G + 3.4 + 80);
     laut = new T.Mesh(gl.toNonIndexed(), new T.MeshStandardMaterial({ color: new T.Color('#1fa6d2').convertSRGBToLinear(), roughness: .22, metalness: .05, transparent: true, opacity: .86, flatShading: true }));
     lautAsal = Float32Array.from(laut.geometry.attributes.position.array); laut.receiveShadow = true; adegan.add(laut);
     buih = new T.Mesh(geoDatar, new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .45, depthWrite: false }));
-    buih.scale.set(240, 1, .35); buih.position.set(G / 2, -.25, G + 4.5); adegan.add(buih);
+    buih.scale.set(400, 1, .35); buih.position.set(G / 2, -.25, G + 4.5); adegan.add(buih);
     // pokok, kelapa, semak, batu
     const r = rng(7), jenis = { pokok: [], pokok2: [], kelapa: [], semak: [], batu: [], rumput: [], bunga: [] };
     for (let i = 0; i < 230; i++) {
@@ -615,27 +623,31 @@ const G3 = (() => {
   function binaKumpulan(b, mati) {
     const s = B[b.t].s, g = new T.Group(), d = {};
     g.add(meshAO(mati ? s * .9 : s * 1.18));
+    if (b.t !== 'periuk_api') { const tp = new T.Mesh(modelTapak(s), MAT); tp.receiveShadow = true; g.add(tp); }
     const st = new T.Mesh(mati ? modelRuntuh(s) : modelBangunan(b.t, Math.max(1, b.lv)), MAT);
-    st.castShadow = true; st.receiveShadow = true; st.userData.b = b; g.add(st); d.st = st;
+    st.position.y = b.t === 'periuk_api' ? 0 : TAPAK_H; st.castShadow = true; st.receiveShadow = true; st.userData.b = b; g.add(st); d.st = st;
     if (!mati) {
       const lv = Math.max(1, b.lv);
-      if (b.t === 'artileri') { d.laras = new T.Mesh(modelLaras(lv), MAT); d.laras.position.y = .4; d.laras.castShadow = true; g.add(d.laras); }
-      if (b.t === 'pelancar_roket') { d.laras = new T.Mesh(modelMortar(), MAT); d.laras.position.y = .44; d.laras.castShadow = true; g.add(d.laras); }
-      if (b.t === 'pertahanan_udara') { d.laras = new T.Mesh(modelSAM(), MAT); d.laras.position.y = .32; d.laras.castShadow = true; g.add(d.laras); }
-      if (b.t === 'radar') { d.piring = new T.Mesh(modelPiring(), MAT); d.piring.position.y = 1.55; d.piring.castShadow = true; g.add(d.piring); }
-      if (b.t === 'telaga_minyak') { d.pam = new T.Mesh(modelPam(), MAT); d.pam.position.set(-.3, 1.32, .1); d.pam.castShadow = true; g.add(d.pam); }
-      if (POS_ISI[b.t]) { d.isi = new T.Mesh(modelIsi(b.t), MAT); d.isi.castShadow = true; d.isi.position.set(...POS_ISI[b.t]); g.add(d.isi); }
-      if (b.t === 'kem') { d.api = new T.Mesh(modelApi(), new T.MeshStandardMaterial({ vertexColors: true, emissive: 0xff7a20, emissiveIntensity: .9 })); d.api.userData.matSendiri = true; d.api.position.y = .12; g.add(d.api); }
+      if (b.t === 'artileri') { d.laras = new T.Mesh(modelLaras(lv), MAT); d.laras.position.y = TAPAK_H + .4; d.laras.castShadow = true; g.add(d.laras); }
+      if (b.t === 'pelancar_roket') { d.laras = new T.Mesh(modelMortar(), MAT); d.laras.position.y = TAPAK_H + .44; d.laras.castShadow = true; g.add(d.laras); }
+      if (b.t === 'pertahanan_udara') { d.laras = new T.Mesh(modelSAM(), MAT); d.laras.position.y = TAPAK_H + .32; d.laras.castShadow = true; g.add(d.laras); }
+      if (b.t === 'radar') { d.piring = new T.Mesh(modelPiring(), MAT); d.piring.position.y = TAPAK_H + 1.55; d.piring.castShadow = true; g.add(d.piring); }
+      if (b.t === 'telaga_minyak') { d.pam = new T.Mesh(modelPam(), MAT); d.pam.position.set(-.3, 1.32 + TAPAK_H, .1); d.pam.castShadow = true; g.add(d.pam); }
+      if (POS_ISI[b.t]) { d.isi = new T.Mesh(modelIsi(b.t), MAT); d.isi.castShadow = true; d.isi.position.set(POS_ISI[b.t][0], POS_ISI[b.t][1] + TAPAK_H, POS_ISI[b.t][2]); g.add(d.isi); }
+      if (b.t === 'kem') { d.api = new T.Mesh(modelApi(), new T.MeshStandardMaterial({ vertexColors: true, emissive: 0xff7a20, emissiveIntensity: .9 })); d.api.userData.matSendiri = true; d.api.position.y = .12 + TAPAK_H; g.add(d.api); }
       const benderaMarkas = perangKah() ? '#8a1d1d' : (S.negara === 'MY' ? 'jalur' : '#2b4a7a');
       const bnd = { markas: [-1.6, 3.45, -1.6, benderaMarkas], berek: [1.2, 2.58, -.85, '#4d5a2a'], pusat_pakatan: [0, 2.0, -.3, '#2f6fba'] }[b.t];
-      if (bnd) { d.bendera = new T.Mesh(geoBendera, teksturBendera(bnd[3])); d.bendera.position.set(bnd[0], bnd[1], bnd[2]); d.bendera.castShadow = true; g.add(d.bendera); }
-      if (b.t === 'menara_mesingan') { d.figur = new T.Mesh(modelUnit('infantri'), MAT); d.figur.position.y = 2.04 + lv * .05; d.figur.castShadow = true; g.add(d.figur); }
-      if (B[b.t].hero) { d.figur = new T.Mesh(modelUnit(B[b.t].hero), MAT); d.figur.position.set(.1, .34, .2); d.figur.castShadow = true; g.add(d.figur); }
+      if (bnd) { d.bendera = new T.Mesh(geoBendera, teksturBendera(bnd[3])); d.bendera.position.set(bnd[0], bnd[1] + TAPAK_H, bnd[2]); d.bendera.castShadow = true; g.add(d.bendera); }
+      if (b.t === 'menara_mesingan') { d.figur = new T.Mesh(modelUnit('infantri'), MAT); d.figur.position.y = 2.04 + lv * .05 + TAPAK_H; d.figur.castShadow = true; g.add(d.figur); }
+      if (B[b.t].hero) { d.figur = new T.Mesh(modelUnit(B[b.t].hero), MAT); d.figur.position.set(.1, .34 + TAPAK_H, .2); d.figur.castShadow = true; g.add(d.figur); }
     }
     g.position.set(b.x + s / 2, 0, b.y + s / 2);
     g.userData = { d, kunci: kunciB(b, mati) };
     return g;
   }
+  // tapak konkrit individu di bawah setiap bangunan (gaya diorama)
+  const TAPAK_H = .07;
+  const modelTapak = s => ingat(`T${s}`, () => new Bina().kotak(s - .04, TAPAK_H + .02, s - .04, '#dcd7ca', 0, -.02, 0, { r: .05 }).kotak(s - .3, .012, s - .3, '#e6e2d6', 0, TAPAK_H - .004, 0, { r: .004 }).geo());
   const kunciB = (b, mati) => `${b.t}:${Math.max(1, b.lv)}:${mati ? 1 : 0}${b.t === 'markas' ? ':' + (perangKah() ? 'L' : S.negara) : ''}`;
   const perangKah = () => mode === 'perang' && !!BT;
   const POS_ISI = { zon_industri: [.75, .12, .85], bank: [0, .36, 1.15], depot_minyak: [.75, .12, .8], telaga_minyak: [-.85, .12, .95], gudang_nadir: [0, 1.22, -.05], lombong_nadir: [-.5, .12, -1.05] };
@@ -717,7 +729,7 @@ const G3 = (() => {
       m.position.set(u.x + Math.cos(-m.rotation.y) * terkam, alt + bob, u.y + Math.sin(-m.rotation.y) * terkam);
       m.children[0].position.y = .025 - alt - bob; m.children[0].material.opacity = alt ? .55 : 1;
       if (ud.rotor) ud.rotor.rotation.y = ts * 22;
-      const k = u.kena > 0 ? 1.12 : 1, au = u.aura ? 1.15 : 1; m.scale.setScalar(k * au);
+      const k = u.kena > 0 ? 1.12 : 1, au = u.aura ? 1.15 : 1; m.scale.setScalar(k * au * SKALA_UNIT);
     }
     for (const [u, m] of unitObj) if (!hidup.has(u)) { adegan.remove(m); unitObj.delete(u); }
     // kampung: tentera di Medan Kawad dan tukang
@@ -737,7 +749,7 @@ const G3 = (() => {
       const gU = modelUnit(w.t);
       if (m.geometry !== gU) { m.geometry = gU; m.userData.t = w.t; m.children[0].scale.setScalar(w.t === 'kereta_kebal' || w.t === 'helikopter' ? 1.1 : .55); }
       arahKe(m, w.menghadap[0], w.menghadap[1]);
-      m.position.set(w.x, w.bob || 0, w.y);
+      m.position.set(w.x, w.bob || 0, w.y); m.scale.setScalar(SKALA_UNIT);
       m.rotation.z = w.tukul ? Math.max(0, Math.sin(ts * 9 + w.id)) * -.35 : 0;
     });
   }
@@ -857,7 +869,8 @@ const G3 = (() => {
 
   /* ---------- kamera ---------- */
   function kemaskiniKamera() {
-    const d = D0 / cam.z, tx = cam.x, tz = cam.y;
+    const d = JARAK, tx = cam.x, tz = cam.y, vh = VH0 / cam.z / 2, vw = vh * W / Math.max(1, H);
+    if (kamera.top !== vh || kamera.right !== vw) { kamera.top = vh; kamera.bottom = -vh; kamera.left = -vw; kamera.right = vw; kamera.updateProjectionMatrix(); }
     kamera.position.set(tx + d * Math.cos(EL) * Math.sin(AZ), d * Math.sin(EL), tz + d * Math.cos(EL) * Math.cos(AZ));
     kamera.lookAt(tx, 0, tz); kamera.updateMatrixWorld();
   }
@@ -868,20 +881,20 @@ const G3 = (() => {
     R.outputEncoding = T.sRGBEncoding; R.toneMapping = T.NoToneMapping;
     R.shadowMap.enabled = true; R.shadowMap.type = T.PCFSoftShadowMap;
     adegan = new T.Scene();
-    const langit = new T.Color('#a8dcec').convertSRGBToLinear();
-    adegan.background = langit; adegan.fog = new T.Fog(langit, 95, 190);
-    kamera = new T.PerspectiveCamera(FOV, 1, .5, 420);
-    adegan.add(new T.HemisphereLight(new T.Color('#e4f3ff').convertSRGBToLinear(), new T.Color('#4f7a28').convertSRGBToLinear(), .58));
-    adegan.add(new T.AmbientLight(new T.Color('#ffe9c8').convertSRGBToLinear(), .1));
-    mentari = new T.DirectionalLight(new T.Color('#ffe6b8').convertSRGBToLinear(), 1.05);
+    const latar = new T.Color('#4f9f2e').convertSRGBToLinear();
+    adegan.background = latar; adegan.fog = new T.Fog(latar, 150, 300);
+    kamera = new T.OrthographicCamera(-1, 1, 1, -1, 1, 400);
+    adegan.add(new T.HemisphereLight(new T.Color('#eaf6ff').convertSRGBToLinear(), new T.Color('#6a9a3a').convertSRGBToLinear(), .72));
+    adegan.add(new T.AmbientLight(new T.Color('#fff1da').convertSRGBToLinear(), .14));
+    mentari = new T.DirectionalLight(new T.Color('#fff0cf').convertSRGBToLinear(), .95);
     mentari.position.set(G / 2 - 13, 26, G / 2 + 7); mentari.target.position.set(G / 2, 0, G / 2);
     mentari.castShadow = true; mentari.shadow.mapSize.set(2048, 2048);
     const c = mentari.shadow.camera; c.left = -24; c.right = 24; c.top = 24; c.bottom = -24; c.near = 1; c.far = 80;
-    mentari.shadow.bias = -.0006; mentari.shadow.normalBias = .02; mentari.shadow.radius = 3;
+    mentari.shadow.bias = -.0006; mentari.shadow.normalBias = .02; mentari.shadow.radius = 5;
     adegan.add(mentari, mentari.target);
     binaDunia();
   }
-  function saiz(w, h, dpr) { W = w; H = h; R.setPixelRatio(Math.min(dpr, 2)); R.setSize(w, h, false); kamera.aspect = w / h; kamera.updateProjectionMatrix(); }
+  function saiz(w, h, dpr) { W = w; H = h; R.setPixelRatio(Math.min(dpr, 2)); R.setSize(w, h, false); kamera.top = 0; kemaskiniKamera(); }
   function render(ts) {
     kemaskiniKamera();
     animasiDunia(ts);
@@ -905,8 +918,8 @@ const G3 = (() => {
     for (let i = S.bld.length - 1; i >= 0; i--) { const b = S.bld[i], s = B[b.t].s; if (gx >= b.x && gx < b.x + s && gy >= b.y && gy < b.y + s) return b; }
     return null;
   }
-  const tinggi = (t, lv) => t === 'tembok' ? .9 : modelBangunan(t, Math.max(1, lv)).boundingBox.max.y;
-  const tinggiUnit = t => modelUnit(t).boundingBox.max.y;
+  const tinggi = (t, lv) => t === 'tembok' ? .9 : modelBangunan(t, Math.max(1, lv)).boundingBox.max.y + TAPAK_H;
+  const tinggiUnit = t => modelUnit(t).boundingBox.max.y * SKALA_UNIT;
   // gambar pratonton untuk kad dan kedai
   const foto = new Map();
   let adeganFoto = null, kameraFoto = null, rtFoto = null;
