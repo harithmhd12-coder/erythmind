@@ -1889,6 +1889,8 @@ function mula(data) {
   }
   requestAnimationFrame(t => { lalu = t; requestAnimationFrame(gelung); });
   mulaDunia();
+  const sp = $('#splash');
+  if (sp) { const tutup = () => { sp.classList.add('hilang'); setTimeout(() => sp.remove(), 600); }; sp.onclick = tutup; setTimeout(tutup, 1800); }
 }
 addEventListener('resize', ubahSaiz);
 document.addEventListener('visibilitychange', () => { if (document.hidden) simpan(); });

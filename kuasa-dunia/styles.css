@@ -321,3 +321,10 @@ button.cip.aktif { background: #4d5a3a; color: #fff; border-color: #1f2a1c; }
   .butang-lawat { width: 100%; justify-content: flex-end; }
   .butang-lawat .btn { flex: 1; }
 }
+
+/* ---------- Skrin pembuka dengan logo ---------- */
+#splash { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, #34412c, #141a10 75%); transition: opacity .5s; cursor: pointer; }
+#splash img { width: min(62vmin, 384px); height: auto; border-radius: 22%; box-shadow: 0 10px 0 #0c110a, 0 24px 60px rgba(0,0,0,.6); animation: logoMasuk .7s cubic-bezier(.2, 1.4, .4, 1) both; }
+#splash.hilang { opacity: 0; pointer-events: none; }
+@keyframes logoMasuk { from { transform: scale(.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #splash img { animation: none; } #splash { transition: none; } }
