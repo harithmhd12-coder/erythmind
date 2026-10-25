@@ -96,7 +96,7 @@ function syncGaya(){
 const _applyRealismG = applyRealism;
 applyRealism = function(){ _applyRealismG(); syncGaya(); syncProps(); };
 
-/* --- 1b. props: a hand-painted tree and boulder cluster (Higgsfield, assets/rts-tree / rts-rock) in place of the
+/* --- 1b. props: a hand-painted tree and boulder cluster (Higgsfield: rts-tree.gltf.json, rts-rock.gltf.json) in place of the
    cone, ball and twelve-sided placeholders; the photographic forest gives way to the painted tree too --- */
 function rtsRockGeometry(gltf, size){
   const parts = []; let mat = null; gltf.scene.updateMatrixWorld(true);
