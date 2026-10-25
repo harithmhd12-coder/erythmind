@@ -363,12 +363,12 @@ function garis(x1, y1, x2, y2, w, c) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.
 function lukis(ts, dt) {
   G3.render(ts);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
-  if (mode === 'perang' && BT) lukisAtasPerang(); else lukisAtasKampung(ts);
+  if (mode === 'perang' && BT) lukisAtasPerang(); else if (mode === 'kampung') lukisAtasKampung(ts);
   lukisApungan(dt);
 }
-function tenteraKem() {
-  const out = [], kem = S.bld.filter(b => b.t === 'kem' && b.lv >= 1); if (!kem.length) return out;
-  const jenis = []; for (const [k, n] of Object.entries(S.army)) for (let i = 0; i < Math.min(n, 8); i++) jenis.push(k);
+function tenteraKem(bld = S.bld, army = S.army) {
+  const out = [], kem = bld.filter(b => b.t === 'kem' && b.lv >= 1); if (!kem.length) return out;
+  const jenis = []; for (const [k, n] of Object.entries(army)) if (TR[k]) for (let i = 0; i < Math.min(n, 8); i++) jenis.push(k);
   const per = Math.ceil(Math.min(jenis.length, 14 * kem.length) / kem.length);
   kem.forEach((b, ki) => {
     const sub = jenis.slice(ki * per, ki * per + per), kx = b.x + 1.5, ky = b.y + 1.5;
@@ -468,6 +468,7 @@ const cariBangunanSkrin = (sx, sy) => G3.pilihDi(sx, sy);
 function ketik(sx, sy) {
   const [gx, gy] = skrinKeDunia(sx, sy);
   if (mode === 'perang') { lepas(gx, gy); return; }
+  if (mode === 'lawat') { const b = cariBangunanSkrin(sx, sy); if (b) { sfx('ketik'); toast(`${B[b.t].n} · tahap ${b.lv}`); } return; }
   if (S.letak) { const s = B[S.letak.t].s; S.letak.x = clamp(Math.round(gx - s / 2), 0, G - s); S.letak.y = clamp(Math.round(gy - s / 2), 0, G - s); return; }
   const b = cariBangunanSkrin(sx, sy);
   if (b && B[b.t].hasil && b.lv >= 1 && b.store >= 1) kutip(b);
@@ -626,7 +627,7 @@ function kosLogistik(lw) {
   return { kos: Math.round(asas * (1 - diskaun)), diskaun };
 }
 function mulaPerang(lawan) {
-  const pg = janaPangkalan(lawan.L, lawan.seed);
+  const pg = lawan.snap ? pangkalanDariSnap(lawan.snap) : janaPangkalan(lawan.L, lawan.seed), mesra = lawan.jenis === 'mesra';
   const mf = lawan.jenis === 'kempen' && (S.kempen[lawan.idx] || 0) > 0 ? .3 : 1;
   const hpF = S.buff.proksi > 0 ? .8 : 1;
   const blds = pg.blds.map(b => ({ ...b, maxHp: hpBangunan(b.t, b.lv) * (B[b.t].def || b.t === 'radar' ? hpF : 1), hp: hpBangunan(b.t, b.lv) * (B[b.t].def || b.t === 'radar' ? hpF : 1), mati: false, cd: acak(), sudut: Math.PI / 4, kena: 0, kilat: 0 }));
@@ -650,14 +651,14 @@ function mulaPerang(lawan) {
     tentera: Object.fromEntries(Object.entries(S.army).filter(([, n]) => n > 0)),
     wira: { komander: wiraSedia('komander') ? 'sedia' : 'tiada', elit: wiraSedia('elit') ? 'sedia' : 'tiada' }, wiraU: {},
     taktik: { ew: L >= 3 ? (L >= 6 ? 2 : 1) : 0, bekalan: L >= 4 ? (L >= 7 ? 2 : 1) : 0, udara: L >= 5 ? (L >= 7 ? 2 : 1) : 0, laut: L >= 6 ? 1 : 0, balistik: L >= 7 && kini() >= (S.balistikSedia || 0) ? 1 : 0 },
-    logistik: kosLogistik(lawan), risik: false, doktrin: S.doktrin || 'kilat', radar: false,
-    propaganda: S.buff.propaganda > 0, proksi: S.buff.proksi > 0, palsu: S.buff.palsu > 0,
+    logistik: mesra ? { kos: 0, diskaun: 0 } : kosLogistik(lawan), risik: false, doktrin: S.doktrin || 'kilat', radar: false,
+    propaganda: !mesra && S.buff.propaganda > 0, proksi: !mesra && S.buff.proksi > 0, palsu: !mesra && S.buff.palsu > 0,
     bantuan: S.bantuan.slice(), rampas: { dana: 0, minyak: 0, nadir: 0 }, jumlahLoot: { dana: 0, minyak: 0, nadir: 0 },
     istanaMati: false, jumlah: blds.filter(b => b.t !== 'tembok' && b.t !== 'periuk_api').length, musnah: 0, sekat, dinding, kilat: 0, pilih: null,
   };
   for (const b of blds) if (b.loot) for (const r in b.loot) BT.jumlahLoot[r] += b.loot[r];
   BT.pilih = Object.keys(BT.tentera)[0] || (BT.wira.komander === 'sedia' ? 'komander' : BT.bantuan.length ? 'bantuan' : null);
-  mode = 'perang'; pilihan = null; S.letak = null;
+  mode = 'perang'; pilihan = null; S.letak = null; LAWAT = null; $('#hudLawat').hidden = true;
   $('#hudKampung').hidden = true; $('#hudPerang').hidden = false; tutupModal();
   kameraAsal(); binaKadPerang(); paparHudPerang(); sfx('gong');
 }
@@ -892,6 +893,12 @@ function lukisApungan(dt) {
 function tamatPerang() {
   if (BT.tamat) return; BT.tamat = true;
   const bin = bintangPerang(), menang = bin > 0, lw = BT.lawan, peratus = Math.round(100 * BT.musnah / BT.jumlah);
+  if (lw.jenis === 'mesra') {
+    // latihan mesra: tiada rampasan, pengaruh, ketegangan atau statistik; keputusan dicatat untuk rakan
+    catatLawatan(lw.uid, { bin, pct: peratus }); simpan(); sfx(menang ? 'menang' : 'kalah');
+    setTimeout(() => paparKeputusan({ bin, menang, peratus, dapat: { dana: 0, minyak: 0, nadir: 0 }, maruah: 0, bonus: null, lw, tegang: 0 }), 700);
+    return;
+  }
   const dapat = {};
   const fRampas = BT.palsu ? 1.3 : 1;
   for (const r of ['dana', 'minyak', 'nadir']) dapat[r] = Math.floor(tambah(r, Math.floor(BT.rampas[r] * fRampas)));
@@ -983,6 +990,9 @@ function binaHUD() {
   $('#navTetapan').onclick = () => { bukaAudio(); bukaTetapan(); };
   $('#letakOk').onclick = sahLetak; $('#letakBatal').onclick = batalLetak;
   $('#modalTutup').onclick = tutupModal;
+  $('#lawatPulang').onclick = pulangDariLawat;
+  $('#lawatCabar').onclick = () => LAWAT && LAWAT.uid && cabarRakan(LAWAT.uid);
+  $('#lawatAset').onclick = () => { if (!LAWAT) return; asetLihat = LAWAT.negara; bukaOps('aset'); };
   $('#modal').addEventListener('pointerdown', e => { if (e.target.id === 'modal') tutupModal(); });
 }
 function lencana(id, n) { const t = $('#' + id + ' .titik'); if (!t) return; t.hidden = !n; t.textContent = n > 9 ? '9+' : n; }
@@ -1352,7 +1362,8 @@ function bukaKitab(tab) {
 }
 function bukaSerang() {
   pilihan = null; paparPanel();
-  bukaModal('Operasi', [['jiran', 'Cari sasaran'], ['kempen', 'Latihan OPFOR']], (t, isi) => {
+  bukaModal('Operasi', [['jiran', 'Cari sasaran'], ['kempen', 'Latihan OPFOR'], ['lawat', 'Lawat pangkalan']], (t, isi) => {
+    if (t === 'lawat') { renderLawat(isi); return; }
     const jumlah = Object.values(S.army).reduce((a, b) => a + b, 0), ada = jumlah > 0 || wiraSedia('komander') || S.bantuan.length;
     const ringkas = Object.entries(S.army).filter(([, n]) => n > 0).map(([k, n]) => `${namaUnit(k)} × ${n}`).join(', ') || 'Tiada unit';
     const buff = [S.buff.propaganda && `Propaganda ×${S.buff.propaganda}`, S.buff.proksi && `Proksi ×${S.buff.proksi}`, S.buff.palsu && `Alasan perang ×${S.buff.palsu}`].filter(Boolean).join(' · ');
@@ -1498,6 +1509,7 @@ function paparKeputusan(r) {
       ${r.bonus ? `<p>Bonus tahap kuasa: ${ik('dana')} ${fmtN(r.bonus.dana)} · ${ik('minyak')} ${fmtN(r.bonus.minyak)}</p>` : ''}
       ${BT && BT.karam ? '<p><b>Simpanan strategik ditemui!</b> Rampasan pangkalan ini luar biasa besar.</p>' : ''}
       ${r.lw.jenis === 'kempen' && r.menang && kk ? `<p>${esc(kk.n)} selesai. Doktrin kau semakin matang.</p>` : ''}
+      ${r.lw.jenis === 'mesra' ? '<p>Latihan mesra: tiada rampasan, pengaruh atau ketegangan. Rakan kau akan nampak keputusan ini.</p>' : ''}
       ${!r.menang ? '<p>Cuba susunan lain: musnahkan Radar dahulu, hantar Kereta Kebal untuk menarik tembakan, lumpuhkan pertahanan dengan Perang Elektronik, kemudian unit udara.</p>' : ''}
       <button class="btn hijau" id="pulang" style="font-size:18px;padding:12px 22px">Pulang ke pangkalan</button></div>`;
     $('#pulang').onclick = pulangKota;
@@ -1572,7 +1584,7 @@ function paparHudPerang() {
   if (!BT) return;
   const baki = r => Math.max(0, BT.jumlahLoot[r] - BT.rampas[r]);
   const lg = BT.logistik, bf = [BT.propaganda && 'Propaganda +10%', BT.proksi && 'Proksi: pertahanan −20%', BT.palsu && 'Alasan perang'].filter(Boolean);
-  $('#perangAtasKiri').innerHTML = `<h4>${esc(BT.lawan.nama)}</h4><div class="rampasan">${['dana', 'minyak', 'nadir'].filter(r => BT.jumlahLoot[r] > 0).map(r => `<div>${ik(r)}<span class="nombor">${fmtN(baki(r))}</span></div>`).join('')}</div><div class="kecil">Rampasan tersedia${BT.karam ? ' · simpanan strategik!' : ''}</div>
+  $('#perangAtasKiri').innerHTML = `<h4>${esc(BT.lawan.nama)}</h4><div class="rampasan">${['dana', 'minyak', 'nadir'].filter(r => BT.jumlahLoot[r] > 0).map(r => `<div>${ik(r)}<span class="nombor">${fmtN(baki(r))}</span></div>`).join('')}</div><div class="kecil">${BT.lawan.jenis === 'mesra' ? 'Latihan mesra · tiada rampasan' : 'Rampasan tersedia'}${BT.karam ? ' · simpanan strategik!' : ''}</div>
     <div class="kecil logistik">${BT.mula ? 'Logistik dibayar' : 'Logistik'} ${ik('minyak')} <b class="nombor">${fmtN(lg.kos)}</b> · ${fmtN(BT.lawan.jarak)} km${lg.diskaun ? ` · diskaun ${Math.round(lg.diskaun * 100)}%` : ''}</div>
     <div class="kecil">${BT.radar ? 'Radar lawan aktif: jarak pertahanan +15%' : 'Radar lawan lumpuh'}${bf.length ? ' · ' + bf.join(' · ') : ''}</div>`;
   $('#perangTengah').innerHTML = BT.mula ? `<small>Tamat dalam</small><b class="nombor">${masa(BT.masa)}</b>` : `<small>Perancangan · ${esc(DOKTRIN[BT.doktrin].n)}</small><b style="font-size:15px">Ketik di luar kawasan merah</b>`;
@@ -1580,7 +1592,7 @@ function paparHudPerang() {
 }
 
 /* ================= Gelung utama ================= */
-let lalu = performance.now(), akum = 0, detik = 0, detikSimpan = 0, detikPuak = 0;
+let lalu = performance.now(), akum = 0, detik = 0, detikSimpan = 0, detikPuak = 0, detikDunia = 0;
 function gelung(t) {
   const dt = Math.min(.1, (t - lalu) / 1000); lalu = t;
   try {
@@ -1595,11 +1607,175 @@ function gelung(t) {
       document.querySelectorAll('[data-sampai]').forEach(e => e.textContent = masa((+e.dataset.sampai - kini()) / 1000));
       document.querySelectorAll('[data-meter-mula]').forEach(e => e.style.width = 100 * clamp((kini() - e.dataset.meterMula) / (e.dataset.meterTamat - e.dataset.meterMula), 0, 1) + '%');
     }
+    detikDunia += dt; if (detikDunia > 20) { detikDunia = 0; terbitPangkalan(); }
     if (detikPuak > 1) { detikPuak = 0; puakDetik(); if (perluRenderPuak && modalCur && S.puak && modalCur.tajuk === S.puak.nama && modalCur.tab === 'sembang' && !tekanModal && document.activeElement?.id !== 'inputSembang') { const el = $('#modalIsi'), bawah = el.scrollHeight - el.scrollTop - el.clientHeight < 40; renderSembang(); if (bawah) el.scrollTop = el.scrollHeight; S.puak.belumBaca = 0; } }
     if (detikSimpan > 5) { detikSimpan = 0; simpan(); if (!sudahIngatRehat && kini() - mulaSesi > 45 * 60e3) { sudahIngatRehat = true; toast('Dah 45 minit bermain. Rehat sekejap; pangkalan kau terus berkembang semasa kau tiada.'); } }
     lukis(t / 1000, dt);
   } catch (e) { console.error(e); }
   requestAnimationFrame(gelung);
+}
+
+/* ================= Lawat pangkalan: rakan (berbilang pemain) dan negara dunia =================
+   Dalam artifact claude.ai yang dikongsi, setiap pemain menerbitkan salinan pangkalannya ke `pangkalan/<id>`
+   dan log lawatannya ke `lawatan/<id>` (db: semua boleh baca, masing-masing hanya tulis dokumen sendiri).
+   `room` menunjukkan siapa sedang online dan siapa sedang melawat. Tanpa keupayaan ini, hanya negara dunia
+   boleh dilawati. Data rakan ialah input tidak dipercayai: disaring sebelum dilukis. */
+let LAWAT = null;
+const DUNIA = { db: null, user: null, room: null, uid: null, pangkalan: new Map(), lawatan: new Map(), peers: [], bolehTulis: null, hashAkhir: '', tulisAkhir: 0, rantai: Promise.resolve(), log: {}, sudahMaklum: new Set() };
+function snapKu() {
+  return { v: 1, nama: String(S.nama).slice(0, 20), negara: S.negara || 'MY', L: istLv(), maruah: Math.round(S.maruah), menang: S.stat.menang,
+    bld: S.bld.filter(b => b.lv >= 1).map(b => [b.t, b.x, b.y, b.lv]), army: { ...S.army } };
+}
+function bersihSnap(d) {
+  if (!d || typeof d !== 'object' || !Array.isArray(d.bld)) return null;
+  const bld = [];
+  for (const e of d.bld.slice(0, 400)) {
+    if (!Array.isArray(e)) continue;
+    const [t, x, y, lv] = e; if (!B[t] || t === 'periuk_api') continue;
+    const s = B[t].s, xi = Math.round(+x), yi = Math.round(+y), li = Math.round(+lv);
+    if (!(xi >= 0 && yi >= 0 && xi + s <= G && yi + s <= G && li >= 1)) continue;
+    bld.push({ t, x: xi, y: yi, lv: Math.min(li, B[t].max) });
+  }
+  if (!bld.some(b => b.t === 'markas')) return null;
+  const army = {}; if (d.army && typeof d.army === 'object') for (const [k, n] of Object.entries(d.army)) if (TR[k]) army[k] = clamp(Math.round(+n) || 0, 0, 300);
+  return { nama: String(d.nama || 'Komander').slice(0, 20), negara: negaraDari(d.negara) ? d.negara : 'MY', L: clamp(Math.round(+d.L) || 1, 1, 7),
+    maruah: Math.max(0, Math.round(+d.maruah) || 0), menang: Math.max(0, Math.round(+d.menang) || 0), bld, army, kemaskini: +d.kemaskini || 0 };
+}
+function pangkalanDariSnap(sn) {
+  return { blds: sn.bld.map((b, i) => ({ id: i + 1, t: b.t, x: b.x, y: b.y, lv: b.lv })), karam: false, loot: { dana: 0, minyak: 0, nadir: 0 } };
+}
+async function mulaDunia() {
+  if (typeof window.claude?.use !== 'function') return;
+  const [db, user, room] = await Promise.all(['db', 'user', 'room'].map(n => window.claude.use(n).catch(() => null)));
+  DUNIA.user = user; DUNIA.room = room;
+  DUNIA.uid = user ? await user.id() : null;
+  if (db && DUNIA.uid) {
+    DUNIA.db = db;
+    const bc = await user.can('data.write'); DUNIA.bolehTulis = bc === false ? false : null;
+    db.collection('pangkalan').onSnapshot(sn => {
+      DUNIA.pangkalan = new Map(); for (const d of sn.docs) { const b = bersihSnap(d.data()); if (b) DUNIA.pangkalan.set(d.id, b); }
+      segarLawat();
+    }, () => {});
+    db.collection('lawatan').onSnapshot(sn => {
+      DUNIA.lawatan = new Map(); for (const d of sn.docs) { const v = d.data() && d.data().v; if (v && typeof v === 'object') DUNIA.lawatan.set(d.id, v); }
+      const ku = DUNIA.lawatan.get(DUNIA.uid); if (ku && !Object.keys(DUNIA.log).length) DUNIA.log = { ...ku };
+      maklumPelawat(); segarLawat();
+    }, () => {});
+    terbitPangkalan(true);
+  }
+  if (room) {
+    room.presence({ uid: DUNIA.uid, lawat: null }).catch(() => {});
+    room.onPeers(ch => {
+      DUNIA.peers = ch.peers;
+      for (const p of [...ch.joined, ...ch.updated]) {
+        if (p.isMe || p.kind !== 'viewer' || !DUNIA.uid || p.presence.lawat !== DUNIA.uid) continue;
+        const k = p.peer + ':' + p.presence.lawat; if (DUNIA.sudahMaklum.has(k)) continue; DUNIA.sudahMaklum.add(k);
+        namaRakan([p.by || p.presence.uid]).then(n => toast(`${n[0]} sedang melawat pangkalan kau!`));
+      }
+      for (const p of ch.left) DUNIA.sudahMaklum.forEach(k => { if (k.startsWith(p.peer + ':')) DUNIA.sudahMaklum.delete(k); });
+      segarLawat();
+    });
+  }
+}
+/* Terbit salinan pangkalan sendiri hanya apabila ia berubah. */
+function terbitPangkalan(paksa) {
+  if (!DUNIA.db || !DUNIA.uid || DUNIA.bolehTulis === false || !S.negara) return;
+  const sn = snapKu(), h = JSON.stringify(sn);
+  if (h === DUNIA.hashAkhir && !paksa) return;
+  DUNIA.hashAkhir = h;
+  DUNIA.rantai = DUNIA.rantai.then(() => DUNIA.db.doc('pangkalan/' + DUNIA.uid).set({ ...sn, kemaskini: Date.now() }))
+    .then(() => { DUNIA.bolehTulis = true; DUNIA.tulisAkhir = Date.now(); })
+    .catch(e => { if (e && e.code === 'invalid_argument') DUNIA.bolehTulis = false; else DUNIA.hashAkhir = ''; segarLawat(); });
+}
+/* Log lawatan sendiri: { v: { <idRakan>: { t, bin?, pct? } } }, 20 terkini. */
+function catatLawatan(sasar, hasil) {
+  if (!DUNIA.db || !DUNIA.uid || !sasar || sasar === DUNIA.uid || DUNIA.bolehTulis === false) return;
+  DUNIA.log[sasar] = { t: Date.now(), ...(hasil || {}) };
+  const v = Object.fromEntries(Object.entries(DUNIA.log).sort((a, b) => b[1].t - a[1].t).slice(0, 20));
+  DUNIA.log = v;
+  DUNIA.rantai = DUNIA.rantai.then(() => DUNIA.db.doc('lawatan/' + DUNIA.uid).set({ v })).catch(() => {});
+}
+function pelawatKu() {
+  const out = [];
+  for (const [dari, v] of DUNIA.lawatan) { if (dari === DUNIA.uid) continue; const e = v[DUNIA.uid]; if (e && +e.t) out.push({ dari, t: +e.t, bin: e.bin == null ? null : clamp(Math.round(+e.bin), 0, 3), pct: e.pct == null ? null : clamp(Math.round(+e.pct), 0, 100) }); }
+  return out.sort((a, b) => b.t - a.t).slice(0, 10);
+}
+function maklumPelawat() {
+  const baru = pelawatKu().filter(p => p.t > (S.lihatPelawat || 0) && p.t > kini() - 864e5);
+  if (!baru.length) return;
+  S.lihatPelawat = Math.max(...baru.map(p => p.t));
+  namaRakan(baru.map(p => p.dari)).then(ns => toast(baru[0].bin != null ? `${ns[0]} mencabar pangkalan kau: ${baru[0].bin}★ ${baru[0].pct}%` : `${ns[0]} melawat pangkalan kau.`));
+}
+async function namaRakan(ids) {
+  const ps = DUNIA.user ? await DUNIA.user.profiles(ids) : {};
+  return ids.map(id => (ps[id] && ps[id].name) || (DUNIA.pangkalan.get(id) || {}).nama || 'Seorang rakan');
+}
+const rakanOnline = id => DUNIA.peers.some(p => !p.isMe && p.kind === 'viewer' && (p.by || p.presence.uid) === id);
+function segarLawat() { if (modalCur && modalCur.tajuk === 'Operasi' && modalCur.tab === 'lawat' && !tekanModal) renderModal(); }
+function sedia(t) { const s = Math.max(0, (kini() - t) / 1000); return s < 60 ? 'baru tadi' : s < 3600 ? Math.floor(s / 60) + ' minit lalu' : s < 86400 ? Math.floor(s / 3600) + ' jam lalu' : Math.floor(s / 86400) + ' hari lalu'; }
+async function renderLawat(isi) {
+  const rakan = [...DUNIA.pangkalan.entries()].filter(([id]) => id !== DUNIA.uid).sort((a, b) => (rakanOnline(b[0]) - rakanOnline(a[0])) || b[1].kemaskini - a[1].kemaskini);
+  const pel = pelawatKu(), ids = [...new Set([...rakan.map(r => r[0]), ...pel.map(p => p.dari)])];
+  const ps = DUNIA.user && ids.length ? await DUNIA.user.profiles(ids) : {};
+  const nm = id => (ps[id] && ps[id].name) || 'Seorang rakan';
+  const ada = Object.values(S.army).some(n => n > 0);
+  let status;
+  if (!DUNIA.db) status = '<p class="kecil">Lawatan rakan berfungsi apabila permainan dibuka sebagai artifact claude.ai yang dikongsi dan kau log masuk. Kongsi pautan artifact dengan rakan; mereka perlukan akses <b>Contributor</b> supaya pangkalan mereka juga boleh dilawati.</p>';
+  else if (DUNIA.bolehTulis === false) status = '<p class="kecil">Kau boleh melawat rakan, tetapi pangkalan kau belum dikongsi: akses kau hanya Viewer. Minta pemilik artifact beri akses <b>Contributor</b>.</p>';
+  else status = `<p class="kecil">Pangkalan kau dikongsi dengan rakan${DUNIA.tulisAkhir ? ` · dikemas kini ${sedia(DUNIA.tulisAkhir)}` : ''}. Rakan yang buka artifact ini akan muncul di bawah.</p>`;
+  const tapis = tapisLawat;
+  const negara = NEGARA.filter(n => n.k !== S.negara && (tapis === 'Semua' || n.wil === tapis)).sort((a, b) => b.belanja - a.belanja);
+  isi.innerHTML = `<h3>Rakan</h3>${status}
+    ${rakan.length ? rakan.map(([id, r]) => `<div class="baris"><span class="titik-online ${rakanOnline(id) ? 'on' : ''}" title="${rakanOnline(id) ? 'Online' : 'Offline'}"></span><div class="teks"><b data-nama="${esc(id)}"></b><small>${esc(r.nama)} · ${esc(negaraDari(r.negara).n)} · Markas ${r.L} · Pengaruh ${fmtN(r.maruah)}</small><small>${rakanOnline(id) ? 'Online sekarang' : 'Dikemas kini ' + sedia(r.kemaskini)}</small></div><div class="butang-lawat"><button class="btn krim" data-lawat-r="${esc(id)}">Lawat</button><button class="btn merah ${ada ? '' : 'mati'}" data-cabar="${esc(id)}">Cabar</button></div></div>`).join('') : DUNIA.db ? '<p>Belum ada rakan. Kongsi pautan artifact ini dengan member kau.</p>' : ''}
+    ${pel.length ? `<h3>Pelawat terkini</h3>${pel.map(p => `<div class="baris"><div class="teks"><b data-nama="${esc(p.dari)}"></b><small>${p.bin != null ? `Latihan mesra: ${p.bin}★ · ${p.pct}% musnah` : 'Melawat'} · ${sedia(p.t)}</small></div>${DUNIA.pangkalan.has(p.dari) ? `<button class="btn krim" data-lawat-r="${esc(p.dari)}">Lawat balik</button>` : ''}</div>`).join('')}` : ''}
+    <h3>Kem pangkalan negara dunia</h3><p class="kecil">Lawatan sahaja: lihat susunan pangkalan dan aset setiap negara. Operasi ketenteraan hanya ke atas negara rekaan.</p>
+    <div class="cip-baris" style="margin-bottom:8px">${['Semua', ...new Set(NEGARA.map(n => n.wil))].map(w => `<button class="cip ${w === tapis ? 'aktif' : ''}" data-tapis-lawat="${esc(w)}">${esc(w)}</button>`).join('')}</div>
+    <div class="senarai-negara">${negara.map(n => `<div class="baris"><span class="kod">${n.k}</span><div class="teks"><b>${esc(n.n)}</b><small>Markas ${clamp(tierNegara(n), 1, 7)} · ${esc(n.blok.join(' · ') || 'Tiada blok')}${ASET[n.k] ? ` · ${ASET[n.k].length} aset` : ''}</small></div><button class="btn krim" data-lawat-n="${n.k}">Lawat</button></div>`).join('')}</div>`;
+  isi.querySelectorAll('[data-nama]').forEach(el => { el.textContent = nm(el.dataset.nama); });
+  isi.querySelectorAll('[data-lawat-r]').forEach(b => b.onclick = () => lawatRakan(b.dataset.lawatR));
+  isi.querySelectorAll('[data-cabar]').forEach(b => b.onclick = () => cabarRakan(b.dataset.cabar));
+  isi.querySelectorAll('[data-lawat-n]').forEach(b => b.onclick = () => lawatNegara(b.dataset.lawatN));
+  isi.querySelectorAll('[data-tapis-lawat]').forEach(b => b.onclick = () => { tapisLawat = b.dataset.tapisLawat; renderLawat(isi); });
+}
+let tapisLawat = 'Semua';
+function mulaLawat(L) {
+  LAWAT = L; mode = 'lawat'; pilihan = null; S.letak = null;
+  $('#hudKampung').hidden = true; $('#hudLawat').hidden = false; tutupModal(true); paparPanel(); kameraAsal(); sfx('gong');
+  if (DUNIA.room) DUNIA.room.presence({ lawat: L.uid || null }).catch(() => {});
+  paparHudLawat();
+}
+async function paparHudLawat() {
+  const L = LAWAT; if (!L) return;
+  const n = negaraDari(L.negara), nama = L.uid ? (await namaRakan([L.uid]))[0] : n.n;
+  if (LAWAT !== L) return;
+  $('#lawatAtas').innerHTML = `<small>${L.uid ? 'Melawat pangkalan rakan' : 'Melawat kem pangkalan negara'}</small><b></b><div class="kecil"></div>`;
+  $('#lawatAtas b').textContent = L.uid ? `${nama} · ${L.nama}` : n.n;
+  $('#lawatAtas .kecil').textContent = `${n.n} · Markas ${L.L}${L.uid ? ` · Pengaruh ${fmtN(L.maruah)}` : ` · ${n.nota}`}`;
+  $('#lawatCabar').hidden = !L.uid;
+  $('#lawatAset').hidden = !ASET[L.negara];
+}
+function pulangDariLawat() {
+  LAWAT = null; mode = 'kampung';
+  $('#hudLawat').hidden = true; $('#hudKampung').hidden = false;
+  if (DUNIA.room) DUNIA.room.presence({ lawat: null }).catch(() => {});
+  kameraAsal(); kemaskiniHUD(); paparPanel();
+}
+function lawatRakan(id) {
+  const r = DUNIA.pangkalan.get(id); if (!r) { toast('Pangkalan rakan ini tidak ditemui.', true); return; }
+  const blds = pangkalanDariSnap(r).blds;
+  catatLawatan(id, null);
+  mulaLawat({ uid: id, nama: r.nama, negara: r.negara, L: r.L, maruah: r.maruah, blds, army: r.army });
+}
+function lawatNegara(k) {
+  const n = negaraDari(k), L = clamp(tierNegara(n), 1, 7), pg = janaPangkalan(L, cincang('negara:' + k));
+  const army = { infantri: 8 + L * 4, penembak: L * 2 }; if (L >= 3) army.kereta_kebal = L - 1; if (L >= 6) army.helikopter = 2;
+  mulaLawat({ uid: null, nama: n.n, negara: k, L, maruah: 0, blds: pg.blds.filter(b => b.t !== 'periuk_api'), army });
+}
+function cabarRakan(id) {
+  const r = DUNIA.pangkalan.get(id); if (!r) { toast('Pangkalan rakan ini tidak ditemui.', true); return; }
+  if (!Object.values(S.army).some(n => n > 0)) { toast('Latih unit dahulu untuk latihan mesra.', true); sfx('salah'); return; }
+  if (mode === 'lawat') pulangDariLawat();
+  mulaPerang({ jenis: 'mesra', uid: id, nama: `Latihan mesra · ${r.nama}`, L: r.L, seed: 1, jarak: 0, snap: r });
 }
 
 /* ================= Mula ================= */
@@ -1626,6 +1802,7 @@ function mula(data) {
     });
   }
   requestAnimationFrame(t => { lalu = t; requestAnimationFrame(gelung); });
+  mulaDunia();
 }
 addEventListener('resize', ubahSaiz);
 document.addEventListener('visibilitychange', () => { if (document.hidden) simpan(); });

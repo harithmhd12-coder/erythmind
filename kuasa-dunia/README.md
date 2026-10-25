@@ -39,6 +39,19 @@ Collect resources, then upgrade, then train units, then plan the operation, then
 
 All military operations target **fictional countries and forces** (`NAMA_LAWAN`, `KEMPEN`). Real countries are used only for country choice, blocs, allies and resource bonuses.
 
+## Visiting bases (multiplayer)
+
+Menu **Operasi → Lawat pangkalan**:
+
+- **Rakan (friends).** When the game is opened as a shared claude.ai artifact, each signed-in player publishes a copy of their base to the `db` capability.
+  - `pangkalan/<id>` holds the base snapshot.
+  - `lawatan/<id>` holds the visit log.
+  - Everyone can read these; each player writes only their own document. Friends need **Contributor** access for their own base to be visitable.
+  - **Lawat** shows a friend's base live.
+  - **Latihan mesra** attacks a copy of their base, with no loot, influence or tension. The result appears in the friend's list of recent visitors.
+  - The `room` capability shows who is online and sends the notification "X sedang melawat pangkalan kau".
+- **World countries.** View the base camp of every country in the dataset; the base level follows its military spending. These are visits only, with no attacks.
+
 ## Country dataset
 
 `data.js` → `NEGARA`: about 45 countries with rounded 2024/2025 estimates from public sources (IMF, SIPRI). To add a country, copy one line:

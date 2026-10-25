@@ -304,3 +304,14 @@ button.cip.aktif { background: #4d5a3a; color: #fff; border-color: #1f2a1c; }
   .btn.nav-btn { font-size: 9.5px; height: 58px; }
   .btn.nav-btn svg { width: 28px; height: 28px; }
 }
+
+/* ---------- Lawat pangkalan ---------- */
+#lawatAtas { position: absolute; top: var(--atas); left: 50%; transform: translateX(-50%); padding: 8px 16px; text-align: center; width: min(460px, calc(100vw - 20px)); }
+#lawatAtas small { display: block; font-size: 11px; color: var(--diraja); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+#lawatAtas b { display: block; font-family: var(--f-papar); font-weight: 400; font-size: 19px; line-height: 1.15; }
+#lawatAtas .kecil { font-size: 12px; color: var(--krim-2); margin-top: 2px; }
+#lawatBawah { position: absolute; left: 50%; transform: translateX(-50%); bottom: var(--bawah); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: min(560px, calc(100vw - 20px)); }
+#lawatBawah .btn { font-size: 15px; padding: 12px 16px; }
+.titik-online { flex: none; width: 12px; height: 12px; border-radius: 50%; background: #a9ad9a; border: 2px solid #5c6150; }
+.titik-online.on { background: #4fd14f; border-color: #1f6b1f; box-shadow: 0 0 0 3px rgba(79,209,79,.25); }
+.butang-lawat { display: flex; gap: 6px; flex: none; }

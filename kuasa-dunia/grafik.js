@@ -635,7 +635,7 @@ const G3 = (() => {
       if (b.t === 'telaga_minyak') { d.pam = new T.Mesh(modelPam(), MAT); d.pam.position.set(-.3, 1.32 + TAPAK_H, .1); d.pam.castShadow = true; g.add(d.pam); }
       if (POS_ISI[b.t]) { d.isi = new T.Mesh(modelIsi(b.t), MAT); d.isi.castShadow = true; d.isi.position.set(POS_ISI[b.t][0], POS_ISI[b.t][1] + TAPAK_H, POS_ISI[b.t][2]); g.add(d.isi); }
       if (b.t === 'kem') { d.api = new T.Mesh(modelApi(), new T.MeshStandardMaterial({ vertexColors: true, emissive: 0xff7a20, emissiveIntensity: .9 })); d.api.userData.matSendiri = true; d.api.position.y = .12 + TAPAK_H; g.add(d.api); }
-      const benderaMarkas = perangKah() ? '#8a1d1d' : (S.negara === 'MY' ? 'jalur' : '#2b4a7a');
+      const benderaMarkas = perangKah() ? '#8a1d1d' : (negaraPapar() === 'MY' ? 'jalur' : '#2b4a7a');
       const bnd = { markas: [-1.6, 3.45, -1.6, benderaMarkas], berek: [1.2, 2.58, -.85, '#4d5a2a'], pusat_pakatan: [0, 2.0, -.3, '#2f6fba'] }[b.t];
       if (bnd) { d.bendera = new T.Mesh(geoBendera, teksturBendera(bnd[3])); d.bendera.position.set(bnd[0], bnd[1] + TAPAK_H, bnd[2]); d.bendera.castShadow = true; g.add(d.bendera); }
       if (b.t === 'menara_mesingan') { d.figur = new T.Mesh(modelUnit('infantri'), MAT); d.figur.position.y = 2.04 + lv * .05 + TAPAK_H; d.figur.castShadow = true; g.add(d.figur); }
@@ -648,8 +648,11 @@ const G3 = (() => {
   // tapak konkrit individu di bawah setiap bangunan (gaya diorama)
   const TAPAK_H = .07;
   const modelTapak = s => ingat(`T${s}`, () => new Bina().kotak(s - .04, TAPAK_H + .02, s - .04, '#dcd7ca', 0, -.02, 0, { r: .05 }).kotak(s - .3, .012, s - .3, '#e6e2d6', 0, TAPAK_H - .004, 0, { r: .004 }).geo());
-  const kunciB = (b, mati) => `${b.t}:${Math.max(1, b.lv)}:${mati ? 1 : 0}${b.t === 'markas' ? ':' + (perangKah() ? 'L' : S.negara) : ''}`;
+  const kunciB = (b, mati) => `${b.t}:${Math.max(1, b.lv)}:${mati ? 1 : 0}${b.t === 'markas' ? ':' + (perangKah() ? 'L' : negaraPapar()) : ''}`;
   const perangKah = () => mode === 'perang' && !!BT;
+  const lawatKah = () => mode === 'lawat' && !!LAWAT;
+  const negaraPapar = () => lawatKah() ? LAWAT.negara : S.negara;
+  const sumberB = () => perangKah() ? BT.blds : lawatKah() ? LAWAT.blds : S.bld;
   const POS_ISI = { zon_industri: [.75, .12, .85], bank: [0, .36, 1.15], depot_minyak: [.75, .12, .8], telaga_minyak: [-.85, .12, .95], gudang_nadir: [0, 1.22, -.05], lombong_nadir: [-.5, .12, -1.05] };
   const mtT = new T.Matrix4();
   function kemaskiniTembok(senarai, perang) {
@@ -670,7 +673,7 @@ const G3 = (() => {
     for (const [k, im] of tembok) { im.count = kira.get(k) || 0; im.instanceMatrix.needsUpdate = true; }
   }
   function segerakBangunan(ts) {
-    const perang = mode === 'perang' && BT, senarai = perang ? BT.blds : S.bld;
+    const perang = mode === 'perang' && BT, lawat = lawatKah(), senarai = sumberB();
     if (senarai !== sumberLalu) { for (const g of objB.values()) buang(g); objB.clear(); sumberLalu = senarai; }
     const ada = new Set();
     for (const b of senarai) {
@@ -688,7 +691,8 @@ const G3 = (() => {
       if (d.laras) d.laras.rotation.y = -(b.sudut ?? Math.PI / 4) + (b.t === 'artileri' ? 0 : 0);
       if (d.laras && b.kilat > 0) d.laras.position.x = -Math.cos(b.sudut) * .06; else if (d.laras) d.laras.position.x = 0;
       let isi = 0;
-      if (B[b.t].hasil) isi = perang ? (b.lootBaki ? .7 : 0) : b.store / capPengumpul(b);
+      if (lawat) isi = .65;
+      else if (B[b.t].hasil) isi = perang ? (b.lootBaki ? .7 : 0) : b.store / capPengumpul(b);
       else if (B[b.t].simpan) isi = perang ? (b.lootBaki ? (b.lootBaki.dana + b.lootBaki.minyak + b.lootBaki.nadir) / Math.max(1, b.lootJum) : 0) : S.res[B[b.t].simpan] / Math.max(1, capSumber(B[b.t].simpan));
       if (d.isi) { const f = clamp(isi, 0, 1); d.isi.visible = f > .04; d.isi.scale.set(.5 + f * .5, .35 + f * .65, .5 + f * .5); }
       if (d.pam) d.pam.rotation.z = Math.sin(ts * 2.2 + b.id) * .28;
@@ -701,7 +705,7 @@ const G3 = (() => {
         else d.figur.rotation.y = -Math.PI / 4 + Math.sin(ts * .7 + b.id) * .4;
       }
       // perancah
-      const sibuk = !perang && (b.busy || b.lv === 0);
+      const sibuk = !perang && !lawat && (b.busy || b.lv === 0);
       if (sibuk && !d.perancah) { d.perancah = new T.Mesh(modelPerancah(s), MAT); d.perancah.castShadow = true; g.add(d.perancah); }
       if (!sibuk && d.perancah) { g.remove(d.perancah); d.perancah = null; }
     }
@@ -735,9 +739,10 @@ const G3 = (() => {
     // kampung: tentera di Medan Kawad dan tukang
     const mahu = [];
     if (!perang) {
-      for (const u of tenteraKem()) mahu.push({ t: u.t, x: u.x, y: u.y, menghadap: [u.kx - u.x, u.ky - u.y], bob: Math.abs(Math.sin(ts * 2 + u.x * 3)) * .02 });
-      let lapang = tukangLapang();
-      for (const b of S.bld) {
+      const lw = lawatKah();
+      for (const u of lw ? tenteraKem(LAWAT.blds, LAWAT.army) : tenteraKem()) mahu.push({ t: u.t, x: u.x, y: u.y, menghadap: [u.kx - u.x, u.ky - u.y], bob: Math.abs(Math.sin(ts * 2 + u.x * 3)) * .02 });
+      let lapang = lw ? 0 : tukangLapang();
+      for (const b of lw ? [] : S.bld) {
         const s = B[b.t].s;
         if (b.busy || b.lv === 0) mahu.push({ t: 'tukang', x: b.x + s + .15, y: b.y + s / 2 + .2, menghadap: [-1, 0], tukul: true, id: b.id });
         else if (b.t === 'pejabat_jurutera' && lapang-- > 0) mahu.push({ t: 'tukang', x: b.x + s + .05, y: b.y + s - .1, menghadap: [1, 1], bob: 0 });
@@ -915,7 +920,8 @@ const G3 = (() => {
     const kena = ray.intersectObjects(sasar, false)[0];
     if (kena) return kena.object.userData.b;
     const [gx, gy] = skrinKeDunia(sx, sy);
-    for (let i = S.bld.length - 1; i >= 0; i--) { const b = S.bld[i], s = B[b.t].s; if (gx >= b.x && gx < b.x + s && gy >= b.y && gy < b.y + s) return b; }
+    const sen = sumberB();
+    for (let i = sen.length - 1; i >= 0; i--) { const b = sen[i], s = B[b.t].s; if (gx >= b.x && gx < b.x + s && gy >= b.y && gy < b.y + s) return b; }
     return null;
   }
   const tinggi = (t, lv) => t === 'tembok' ? .9 : modelBangunan(t, Math.max(1, lv)).boundingBox.max.y + TAPAK_H;
