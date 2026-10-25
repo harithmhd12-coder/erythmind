@@ -36,5 +36,7 @@
  "puma": "assets/puma.gltf.json",
  "animPumaSwing": "assets/anim-puma-swing.gltf.json",
  "pokokRendang": "assets/pokok-rendang.gltf.json",
- "pokokPain": "assets/pokok-pain.gltf.json"
+ "pokokPain": "assets/pokok-pain.gltf.json",
+ "rtsPokok": "assets/rts-tree.gltf.json",
+ "rtsBatu": "assets/rts-rock.gltf.json"
 }

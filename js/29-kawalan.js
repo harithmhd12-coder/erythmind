@@ -8,7 +8,7 @@
    Tetapan holds the switch and the mouse speed. */
 const PL = {on:LS.get('erythmind.plock', true), sens:+LS.get('erythmind.plockSens', 1), locked:false, aim:false, fail:false, off:new THREE.Vector3(), fov:55, hintT:0, zoom:false};
 const canLock = () => matchMedia('(pointer: fine)').matches && 'requestPointerLock' in Element.prototype;
-const plFree = () => !!session && $('#panel').hidden && $('#gate').hidden && !typing() && !ride;
+const plFree = () => !!session && $('#panel').hidden && $('#gate').hidden && !typing() && !ride && REAL.view !== 'rts';     // the strategy view keeps its cursor
 
 /* --- screen: crosshair and the hint --- */
 const plStyle = document.createElement('style');

@@ -10,12 +10,12 @@ if(!GFX_MODES[gfxMode]) gfxMode = 'penuh';
 const canPost = !!(THREE.EffectComposer && THREE.RenderPass && THREE.ShaderPass && THREE.UnrealBloomPass);
 
 const GradeShader = {
-  uniforms:{tDiffuse:{value:null}, night:{value:0}, warm:{value:0}, time:{value:0}, res:{value:new THREE.Vector2(1, 1)}},
+  uniforms:{tDiffuse:{value:null}, night:{value:0}, warm:{value:0}, rts:{value:0}, edge:{value:0}, time:{value:0}, res:{value:new THREE.Vector2(1, 1)}},
   vertexShader:'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
-  fragmentShader:`uniform sampler2D tDiffuse; uniform float night; uniform float warm; uniform float time; uniform vec2 res; varying vec2 vUv;
+  fragmentShader:`uniform sampler2D tDiffuse; uniform float night; uniform float warm; uniform float rts; uniform float edge; uniform float time; uniform vec2 res; varying vec2 vUv;
     float gh(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     void main(){
-      vec3 c = texture2D(tDiffuse, vUv).rgb;
+      vec3 c = texture2D(tDiffuse, vUv).rgb, c0 = c;
       c = c / (1. + max(c - .82, 0.) * 1.6);                      // soft shoulder for blown highlights
       float l = dot(c, vec3(.2126, .7152, .0722));
       c = mix(vec3(l), c, mix(.84, .78, night));                   // a little less saturated, painterly
@@ -28,6 +28,23 @@ const GradeShader = {
       vec2 d = vUv - .5; d.x *= res.x / res.y;
       c *= mix(1., smoothstep(1.05, .32, length(d)), .55);         // vignette
       c += (gh(vUv * res + fract(time) * 91.) - .5) * .028;        // grain
+      if(rts > .01){                                               // Gaya RTS: crisp and saturated, warm light, cool shade, no grain
+        vec3 r = c0 / (1. + max(c0 - .9, 0.) * 1.4); float lr = dot(r, vec3(.2126, .7152, .0722));
+        r = mix(vec3(lr), r, 1.1);
+        r *= mix(vec3(.94, .99, 1.07), vec3(1.06, 1.01, .93), smoothstep(.12, .8, lr));
+        r = mix(r, r * r * (3. - 2. * r), .25);
+        r *= mix(1., .8, night); r += vec3(.006, .008, .016);
+        r *= mix(1., smoothstep(1.3, .45, length(d)), .28);
+        if(edge > .01){                                            // ink edges: strong changes of light outline roofs, trees and walls
+          vec2 px = 1.25 / res; vec3 W = vec3(.2126, .7152, .0722);
+          float a = dot(texture2D(tDiffuse, vUv + px * vec2(-1., -1.)).rgb, W), b = dot(texture2D(tDiffuse, vUv + px * vec2(0., -1.)).rgb, W), e2 = dot(texture2D(tDiffuse, vUv + px * vec2(1., -1.)).rgb, W),
+                f = dot(texture2D(tDiffuse, vUv + px * vec2(-1., 0.)).rgb, W), g = dot(texture2D(tDiffuse, vUv + px * vec2(1., 0.)).rgb, W),
+                h = dot(texture2D(tDiffuse, vUv + px * vec2(-1., 1.)).rgb, W), i = dot(texture2D(tDiffuse, vUv + px * vec2(0., 1.)).rgb, W), j = dot(texture2D(tDiffuse, vUv + px * vec2(1., 1.)).rgb, W);
+          float gx = (e2 + 2. * g + j) - (a + 2. * f + h), gy = (h + 2. * i + j) - (a + 2. * b + e2);
+          r *= 1. - smoothstep(.22, .55, length(vec2(gx, gy))) * .42 * edge;
+        }
+        c = mix(c, r, rts);
+      }
       gl_FragColor = vec4(c, 1.);
     }`,
 };

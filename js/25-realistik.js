@@ -152,15 +152,19 @@ const fpsHand = new THREE.Group(); camera.add(fpsHand); if(!camera.parent) scene
 fpsHand.position.set(.5, -.48, -1.05); fpsHand.rotation.set(-1.05, -.3, -.25); fpsHand.visible = false;
 let fpsSword = null, fpsBob = 0;
 const camBtn = document.createElement('button'); camBtn.className = 'tbtn'; camBtn.id = 'bCam'; camBtn.type = 'button';
-document.getElementById('bView').after(camBtn); camBtn.addEventListener('click', () => setView(REAL.view === 'fps' ? 'tps' : 'fps'));
-function renderCamBtn(){ camBtn.innerHTML = `Kamera: ${REAL.view === 'fps' ? 'Mata pertama' : 'Orang ketiga'} <b>V</b>`; camBtn.classList.toggle('on', REAL.view === 'fps'); }
+const NEXT_VIEW = {tps:'fps', fps:'rts', rts:'tps'}, VIEW_NAME = {tps:'Orang ketiga', fps:'Mata pertama', rts:'Pandangan RTS'};
+if(!NEXT_VIEW[REAL.view]) REAL.view = 'tps';
+document.getElementById('bView').after(camBtn); camBtn.addEventListener('click', () => setView(NEXT_VIEW[REAL.view]));
+function renderCamBtn(){ camBtn.innerHTML = `Kamera: ${VIEW_NAME[REAL.view]} <b>V</b>`; camBtn.classList.toggle('on', REAL.view !== 'tps'); }
 function setView(v){
   REAL.view = v; LS.set('erythmind.view', v); renderCamBtn();
   if(v === 'fps'){ cam.pitch = .45; toast('Mata pertama (FPS): seret untuk memandang, W A S D untuk bergerak. Tekan V untuk kembali.', 'ok', 4000); }
   else { me.g.visible = true; fpsHand.visible = false; camera.fov = 55; camera.updateProjectionMatrix(); if(meLabel.maxOld != null){ meLabel.max = meLabel.maxOld; meLabel.maxOld = null; } }
+  if(v === 'rts'){ cam.tdist = Math.max(cam.tdist, 160); toast('Pandangan RTS: kamera strategi tiga suku dengan grid. Seret untuk memusing, roda untuk zum. Tekan V untuk kembali.', 'ok', 4500); }
+  else if(v === 'tps' && cam.tdist > 60 && cam.tdist < 300) cam.tdist = 13;
 }
 renderCamBtn();
-addEventListener('keydown', e => { if(e.code === 'KeyV' && session && !ride && !typing() && $('#panel').hidden && !e.repeat){ setView(REAL.view === 'fps' ? 'tps' : 'fps'); e.preventDefault(); } });
+addEventListener('keydown', e => { if(e.code === 'KeyV' && session && !ride && !typing() && $('#panel').hidden && !e.repeat){ setView(NEXT_VIEW[REAL.view]); e.preventDefault(); } });
 const _eye = new THREE.Vector3(), _look = new THREE.Vector3();
 const _updateCameraR = updateCamera;
 updateCamera = function(dt, t){
