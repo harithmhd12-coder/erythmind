@@ -315,3 +315,9 @@ button.cip.aktif { background: #4d5a3a; color: #fff; border-color: #1f2a1c; }
 .titik-online { flex: none; width: 12px; height: 12px; border-radius: 50%; background: #a9ad9a; border: 2px solid #5c6150; }
 .titik-online.on { background: #4fd14f; border-color: #1f6b1f; box-shadow: 0 0 0 3px rgba(79,209,79,.25); }
 .butang-lawat { display: flex; gap: 6px; flex: none; }
+@media (max-width: 560px) {
+  .baris:has(.butang-lawat) { flex-wrap: wrap; }
+  .baris:has(.butang-lawat) .teks { flex: 1 1 70%; }
+  .butang-lawat { width: 100%; justify-content: flex-end; }
+  .butang-lawat .btn { flex: 1; }
+}

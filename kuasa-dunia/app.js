@@ -622,12 +622,12 @@ function janaPangkalan(L, seed) {
 }
 /* Logistik: kos minyak ikut jarak; pangkalan sekutu berdekatan (pakatan) memberi diskaun. */
 function kosLogistik(lw) {
-  const asas = lw.jarak * .06 * (.7 + istLv() * .3);
+  const asas = Math.min(lw.jarak, 8000) * .06 * (.7 + istLv() * .3); // jarak kos dihadkan 8 000 km
   const diskaun = (S.puak ? .25 : 0) + (negaraKu().kuat.includes('minyak') ? .1 : 0);
   return { kos: Math.round(asas * (1 - diskaun)), diskaun };
 }
 function mulaPerang(lawan) {
-  const pg = lawan.snap ? pangkalanDariSnap(lawan.snap) : janaPangkalan(lawan.L, lawan.seed), mesra = lawan.jenis === 'mesra';
+  const pg = lawan.snap ? pangkalanDariSnap(lawan.snap, lawan.jenis === 'pvp' ? lootTersedia(lawan.uid) : null) : janaPangkalan(lawan.L, lawan.seed), mesra = lawan.jenis === 'mesra';
   const mf = lawan.jenis === 'kempen' && (S.kempen[lawan.idx] || 0) > 0 ? .3 : 1;
   const hpF = S.buff.proksi > 0 ? .8 : 1;
   const blds = pg.blds.map(b => ({ ...b, maxHp: hpBangunan(b.t, b.lv) * (B[b.t].def || b.t === 'radar' ? hpF : 1), hp: hpBangunan(b.t, b.lv) * (B[b.t].def || b.t === 'radar' ? hpF : 1), mati: false, cd: acak(), sudut: Math.PI / 4, kena: 0, kilat: 0 }));
@@ -903,13 +903,16 @@ function tamatPerang() {
   const fRampas = BT.palsu ? 1.3 : 1;
   for (const r of ['dana', 'minyak', 'nadir']) dapat[r] = Math.floor(tambah(r, Math.floor(BT.rampas[r] * fRampas)));
   let maruah = 0, bonus = null, tegang = 0;
-  if (lw.jenis === 'jiran' && BT.mula) { tegang = BT.palsu ? 0 : 6 + Math.round(BT.musnah / BT.jumlah * 6); S.tegang = clamp(S.tegang + tegang, 0, 100); }
-  if (lw.jenis === 'jiran') {
+  const pvp = lw.jenis === 'pvp';
+  if ((lw.jenis === 'jiran' || pvp) && BT.mula) { tegang = BT.palsu ? 0 : 6 + Math.round(BT.musnah / BT.jumlah * 6); S.tegang = clamp(S.tegang + tegang, 0, 100); }
+  if (lw.jenis === 'jiran' || pvp) {
     if (menang) { maruah = 8 + bin * 6 + Math.floor(acak() * 6); const lg = ligaDari(S.maruah); if (lg.bonus) { const n = Math.round(lg.bonus * bin / 3); bonus = { dana: Math.floor(tambah('dana', n)), minyak: Math.floor(tambah('minyak', n)) }; } }
     else maruah = -(6 + Math.floor(acak() * 8));
     S.maruah = Math.max(0, S.maruah + maruah);
   }
   if (lw.jenis === 'kempen') S.kempen[lw.idx] = Math.max(S.kempen[lw.idx] || 0, bin);
+  // PvP: catat serangan; pemain yang diserang menerapkan kerugian di pihaknya sendiri
+  if (pvp && BT.mula) catatSerangan(lw.uid, { bin, pct: peratus, rampas: { dana: Math.floor(BT.rampas.dana), minyak: Math.floor(BT.rampas.minyak), nadir: Math.floor(BT.rampas.nadir) }, m: maruah });
   if (menang) { S.stat.menang++; misi('menang'); tambahXP(5 + bin * 5); } else S.stat.kalah++;
   S.stat.bintang += bin; misi('bintang', bin); if (bin === 3) S.stat.bintang3++;
   if (S.puak && dapat.dana > 0) { S.puak.goal.prog = Math.min(S.puak.goal.sasaran, S.puak.goal.prog + dapat.dana); S.puak.goal.aku += dapat.dana; }
@@ -919,6 +922,7 @@ function tamatPerang() {
 }
 function pulangKota() {
   BT = null; mode = 'kampung';
+  if (DUNIA.room) DUNIA.room.presence({ serang: null }).catch(() => {});
   $('#hudPerang').hidden = true; $('#hudKampung').hidden = false;
   tutupModal(); kameraAsal(); kemaskiniHUD(); paparPanel(); simpan();
 }
@@ -992,6 +996,7 @@ function binaHUD() {
   $('#modalTutup').onclick = tutupModal;
   $('#lawatPulang').onclick = pulangDariLawat;
   $('#lawatCabar').onclick = () => LAWAT && LAWAT.uid && cabarRakan(LAWAT.uid);
+  $('#lawatSerang').onclick = () => LAWAT && LAWAT.uid && serangRakan(LAWAT.uid);
   $('#lawatAset').onclick = () => { if (!LAWAT) return; asetLihat = LAWAT.negara; bukaOps('aset'); };
   $('#modal').addEventListener('pointerdown', e => { if (e.target.id === 'modal') tutupModal(); });
 }
@@ -1354,8 +1359,8 @@ function bukaKitab(tab) {
       isi.innerHTML = `<p>Fail terbuka apabila negara kau maju. Setiap fail ialah ringkasan fakta geopolitik sebenar. <b>${n} / ${HIKAYAT.length}</b> dikumpul.</p><div class="hikayat">${HIKAYAT.map(h => S.hikayat[h.k] ? `<div class="kad-hikayat"><div class="jalur"></div><div class="dalam"><small>${esc(h.era)}</small><b>${esc(h.t)}</b><p>${esc(h.p)}</p></div></div>` : `<div class="kad-hikayat kunci"><div class="dalam"><small>Terkunci</small><b>${esc(h.t)}</b><p>Syarat: ${esc(h.s)}</p></div></div>`).join('')}</div>`;
     } else {
       S.laporanBaru = 0;
-      isi.innerHTML = S.laporan.length ? S.laporan.map((l, i) => `<div class="baris"><div style="display:flex;flex:none">${[0, 1, 2].map(j => `<span style="width:18px;height:18px;display:inline-block">${IKON.bintang(j < l.bin)}</span>`).join('')}</div><div class="teks"><b>${l.bin === 0 ? 'Berjaya dipertahankan' : 'Pangkalan diserang'}: ${esc(l.nama)}</b><small>${new Date(l.masa).toLocaleString('ms-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · Markas ${l.L} · Pengaruh ${l.m > 0 ? '+' : ''}${l.m}${l.hilang.dana || l.hilang.minyak ? ` · hilang ${fmtN(l.hilang.dana)} dana, ${fmtN(l.hilang.minyak)} minyak` : ''}</small></div>${l.bin > 0 && !l.balas ? `<button class="btn merah" data-balas="${i}">Balas</button>` : ''}</div>`).join('') : '<p>Belum ada serangan ke atas pangkalan kau. Pangkalan diserang hanya semasa kau tiada; ketegangan tinggi menambah kekerapan. Perisai melindungi selepas kekalahan besar.</p>';
-      isi.querySelectorAll('[data-balas]').forEach(b => b.onclick = () => { const l = S.laporan[+b.dataset.balas]; if (!Object.values(S.army).some(n => n > 0)) { toast('Latih unit dahulu.', true); return; } l.balas = true; mulaPerang({ jenis: 'jiran', nama: l.nama, L: l.L, seed: l.seed, jarak: l.jarak || 2000 }); });
+      isi.innerHTML = S.laporan.length ? S.laporan.map((l, i) => `<div class="baris"><div style="display:flex;flex:none">${[0, 1, 2].map(j => `<span style="width:18px;height:18px;display:inline-block">${IKON.bintang(j < l.bin)}</span>`).join('')}</div><div class="teks"><b>${l.bin === 0 ? 'Berjaya dipertahankan' : 'Pangkalan diserang'}: ${esc(l.nama)}${l.uid ? ' <span class="cip" style="--w:#b8322f">Pemain</span>' : ''}</b><small>${new Date(l.masa).toLocaleString('ms-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · Markas ${l.L} · Pengaruh ${l.m > 0 ? '+' : ''}${l.m}${l.hilang.dana || l.hilang.minyak ? ` · hilang ${fmtN(l.hilang.dana)} dana, ${fmtN(l.hilang.minyak)} minyak` : ''}</small></div>${l.bin > 0 && !l.balas ? `<button class="btn merah" data-balas="${i}">Balas</button>` : ''}</div>`).join('') : '<p>Belum ada serangan ke atas pangkalan kau. Pangkalan diserang hanya semasa kau tiada; ketegangan tinggi menambah kekerapan. Perisai melindungi selepas kekalahan besar.</p>';
+      isi.querySelectorAll('[data-balas]').forEach(b => b.onclick = () => { const l = S.laporan[+b.dataset.balas]; if (!Object.values(S.army).some(n => n > 0)) { toast('Latih unit dahulu.', true); return; } if (l.uid) { if (serangRakan(l.uid)) l.balas = true; return; } l.balas = true; mulaPerang({ jenis: 'jiran', nama: l.nama, L: l.L, seed: l.seed, jarak: l.jarak || 2000 }); });
     }
     kemaskiniHUD();
   }, tab);
@@ -1504,8 +1509,9 @@ function paparKeputusan(r) {
     const kk = KEMPEN[r.lw.idx];
     isi.innerHTML = `<div class="keputusan"><div class="bintang-besar">${[0, 1, 2].map(i => IKON.bintang(i < r.bin)).join('')}</div><h3>${esc(r.lw.nama)} · ${r.peratus}% musnah</h3>
       <div class="angka">${['dana', 'minyak', 'nadir'].filter(x => r.dapat[x] > 0 || x !== 'nadir').map(x => `<span>${ik(x)} ${fmtN(r.dapat[x])}</span>`).join('')}</div>
-      ${r.lw.jenis === 'jiran' ? `<p>Pengaruh ${r.maruah >= 0 ? '+' : ''}${r.maruah} · kini ${fmtN(S.maruah)} (${ligaDari(S.maruah).n})</p>` : ''}
-      ${r.lw.jenis === 'jiran' ? `<p>${r.palsu ? 'Alasan perang digunakan: ketegangan tidak naik, rampasan +30%.' : `Ketegangan +${r.tegang} · kini ${ketegangan()}`}</p>` : ''}
+      ${r.lw.jenis === 'jiran' || r.lw.jenis === 'pvp' ? `<p>Pengaruh ${r.maruah >= 0 ? '+' : ''}${r.maruah} · kini ${fmtN(S.maruah)} (${ligaDari(S.maruah).n})</p>` : ''}
+      ${r.lw.jenis === 'pvp' ? '<p>Serangan sebenar ke atas rakan: sumber yang dirampas ditolak daripada pangkalan mereka.</p>' : ''}
+      ${r.lw.jenis === 'jiran' || r.lw.jenis === 'pvp' ? `<p>${r.palsu ? 'Alasan perang digunakan: ketegangan tidak naik, rampasan +30%.' : `Ketegangan +${r.tegang} · kini ${ketegangan()}`}</p>` : ''}
       ${r.bonus ? `<p>Bonus tahap kuasa: ${ik('dana')} ${fmtN(r.bonus.dana)} · ${ik('minyak')} ${fmtN(r.bonus.minyak)}</p>` : ''}
       ${BT && BT.karam ? '<p><b>Simpanan strategik ditemui!</b> Rampasan pangkalan ini luar biasa besar.</p>' : ''}
       ${r.lw.jenis === 'kempen' && r.menang && kk ? `<p>${esc(kk.n)} selesai. Doktrin kau semakin matang.</p>` : ''}
@@ -1621,9 +1627,10 @@ function gelung(t) {
    `room` menunjukkan siapa sedang online dan siapa sedang melawat. Tanpa keupayaan ini, hanya negara dunia
    boleh dilawati. Data rakan ialah input tidak dipercayai: disaring sebelum dilukis. */
 let LAWAT = null;
-const DUNIA = { db: null, user: null, room: null, uid: null, pangkalan: new Map(), lawatan: new Map(), peers: [], bolehTulis: null, hashAkhir: '', tulisAkhir: 0, rantai: Promise.resolve(), log: {}, sudahMaklum: new Set() };
+const DUNIA = { serangan: new Map(), seranganKu: null, db: null, user: null, room: null, uid: null, pangkalan: new Map(), lawatan: new Map(), peers: [], bolehTulis: null, hashAkhir: '', tulisAkhir: 0, rantai: Promise.resolve(), log: {}, sudahMaklum: new Set() };
 function snapKu() {
   return { v: 1, nama: String(S.nama).slice(0, 20), negara: S.negara || 'MY', L: istLv(), maruah: Math.round(S.maruah), menang: S.stat.menang,
+    res: { dana: Math.floor(S.res.dana), minyak: Math.floor(S.res.minyak), nadir: Math.floor(S.res.nadir) }, perisai: S.perisai || 0,
     bld: S.bld.filter(b => b.lv >= 1).map(b => [b.t, b.x, b.y, b.lv]), army: { ...S.army } };
 }
 function bersihSnap(d) {
@@ -1639,10 +1646,79 @@ function bersihSnap(d) {
   if (!bld.some(b => b.t === 'markas')) return null;
   const army = {}; if (d.army && typeof d.army === 'object') for (const [k, n] of Object.entries(d.army)) if (TR[k]) army[k] = clamp(Math.round(+n) || 0, 0, 300);
   return { nama: String(d.nama || 'Komander').slice(0, 20), negara: negaraDari(d.negara) ? d.negara : 'MY', L: clamp(Math.round(+d.L) || 1, 1, 7),
-    maruah: Math.max(0, Math.round(+d.maruah) || 0), menang: Math.max(0, Math.round(+d.menang) || 0), bld, army, kemaskini: +d.kemaskini || 0 };
+    maruah: Math.max(0, Math.round(+d.maruah) || 0), menang: Math.max(0, Math.round(+d.menang) || 0), bld, army, kemaskini: +d.kemaskini || 0,
+    res: Object.fromEntries(['dana', 'minyak', 'nadir'].map(r => [r, clamp(Math.floor(+(d.res && d.res[r])) || 0, 0, 1e7)])), perisai: +d.perisai || 0 };
 }
-function pangkalanDariSnap(sn) {
-  return { blds: sn.bld.map((b, i) => ({ id: i + 1, t: b.t, x: b.x, y: b.y, lv: b.lv })), karam: false, loot: { dana: 0, minyak: 0, nadir: 0 } };
+function pangkalanDariSnap(sn, loot) {
+  return { blds: sn.bld.map((b, i) => ({ id: i + 1, t: b.t, x: b.x, y: b.y, lv: b.lv })), karam: false, loot: loot || { dana: 0, minyak: 0, nadir: 0 } };
+}
+/* ---------- PvP: serangan sebenar antara pemain ----------
+   Penyerang menulis `serangan/<id sendiri>` = { r: [{ id, sasar, t, bin, pct, rampas, m }] } (30 terkini).
+   Pemain yang diserang membaca rekod yang menyasarkannya, MENYARING dan MENGEHADKAN setiap tuntutan
+   (rampasan maksimum 25% dana/minyak dan 6% unsur nadir yang dimilikinya; pengaruh ±40), lalu menerapkannya sekali sahaja. */
+const KADAR_RAMPAS = { dana: .2, minyak: .2, nadir: .05 }, HAD_RUGI = { dana: .25, minyak: .25, nadir: .06 };
+function rekodKe(uid) {
+  const out = [];
+  for (const [dari, r] of DUNIA.serangan) if (dari !== uid) for (const e of r) if (e && e.sasar === uid) out.push({ dari, ...e });
+  return out;
+}
+function belumDiterap(uid) { const sn = DUNIA.pangkalan.get(uid); return rekodKe(uid).filter(e => +e.t > (sn ? sn.kemaskini : 0)); }
+function lootTersedia(uid) {
+  const sn = DUNIA.pangkalan.get(uid); if (!sn) return { dana: 0, minyak: 0, nadir: 0 };
+  const tunggu = { dana: 0, minyak: 0, nadir: 0 };
+  for (const e of belumDiterap(uid)) for (const r in tunggu) tunggu[r] += Math.max(0, +(e.rampas && e.rampas[r]) || 0);
+  return Object.fromEntries(Object.entries(KADAR_RAMPAS).map(([r, k]) => [r, Math.floor(Math.max(0, sn.res[r] - tunggu[r]) * k)]));
+}
+function perisaiSasaran(uid) {
+  const sn = DUNIA.pangkalan.get(uid); if (!sn) return 0;
+  let p = sn.perisai || 0;
+  for (const e of belumDiterap(uid)) p = Math.max(p, +e.t + (e.bin >= 2 ? 30 : 5) * 60e3);
+  return p;
+}
+function jarakNegara(a, b) {
+  const [la1, lo1] = negaraDari(a).ll, [la2, lo2] = negaraDari(b).ll, d = Math.PI / 180;
+  const h = Math.sin((la2 - la1) * d / 2) ** 2 + Math.cos(la1 * d) * Math.cos(la2 * d) * Math.sin((lo2 - lo1) * d / 2) ** 2;
+  return Math.max(300, Math.round(12742 * Math.asin(Math.sqrt(h))));
+}
+function catatSerangan(sasar, hasil) {
+  if (!DUNIA.db || !DUNIA.uid || !sasar || DUNIA.bolehTulis === false) return;
+  const e = { id: DUNIA.uid.slice(-6) + '-' + Date.now().toString(36) + Math.floor(acak() * 1e4).toString(36), sasar, t: Date.now(), ...hasil };
+  DUNIA.seranganKu = [e, ...(DUNIA.seranganKu || [])].slice(0, 30);
+  const r = DUNIA.seranganKu;
+  DUNIA.rantai = DUNIA.rantai.then(() => DUNIA.db.doc('serangan/' + DUNIA.uid).set({ r })).catch(() => toast('Rekod serangan gagal dihantar kepada rakan.', true));
+}
+async function terapSerangan() {
+  if (!DUNIA.uid || !S || !S.negara) return;
+  const siap = new Set(S.pvpProses || []), baru = rekodKe(DUNIA.uid).filter(e => typeof e.id === 'string' && !siap.has(e.id) && +e.t > kini() - 3 * 864e5 && +e.t <= kini() + 6e4).sort((a, b) => a.t - b.t);
+  if (!baru.length) return;
+  const nama = await namaRakan(baru.map(e => e.dari));
+  baru.forEach((e, i) => {
+    if (siap.has(e.id)) return; siap.add(e.id);
+    const bin = clamp(Math.round(+e.bin) || 0, 0, 3), hilang = {};
+    for (const r of ['dana', 'minyak', 'nadir']) { hilang[r] = Math.floor(Math.min(Math.max(0, +(e.rampas && e.rampas[r]) || 0), S.res[r] * HAD_RUGI[r])); S.res[r] -= hilang[r]; }
+    const m = -clamp(Math.round(+e.m) || 0, -40, 40);
+    S.maruah = Math.max(0, S.maruah + m);
+    if (bin === 0) S.stat.pertahan++;
+    if (bin >= 2) S.perisai = Math.max(S.perisai || 0, +e.t + 30 * 60e3);
+    const sn = DUNIA.pangkalan.get(e.dari);
+    S.laporan.unshift({ masa: +e.t, nama: nama[i], L: sn ? sn.L : istLv(), bin, hilang, m, uid: e.dari, balas: false });
+    S.laporanBaru++;
+  });
+  S.laporan = S.laporan.slice(0, 20); S.pvpProses = [...siap].slice(-200);
+  const e = baru[baru.length - 1];
+  toast(e.bin > 0 ? `${nama[nama.length - 1]} menyerang pangkalan kau: ${clamp(+e.bin, 0, 3)}★. Lihat Arkib → Pertahanan.` : `Pangkalan kau berjaya menangkis serangan ${nama[nama.length - 1]}!`, e.bin > 0);
+  sfx(e.bin > 0 ? 'kalah' : 'menang'); semakHikayat(); kemaskiniHUD(); simpan(); terbitPangkalan(true);
+}
+function serangRakan(id) {
+  const r = DUNIA.pangkalan.get(id); if (!r) { toast('Pangkalan rakan ini tidak ditemui.', true); return false; }
+  if (!DUNIA.db || DUNIA.bolehTulis === false) { toast('Serangan sebenar perlukan akses Contributor supaya keputusan dapat dihantar.', true); return false; }
+  if (!Object.values(S.army).some(n => n > 0)) { toast('Latih unit dahulu.', true); sfx('salah'); return false; }
+  const p = perisaiSasaran(id); if (p > kini()) { toast(`Pangkalan ini dilindungi perisai selama ${masa((p - kini()) / 1000)}.`, true); sfx('salah'); return false; }
+  if (mode === 'lawat') pulangDariLawat();
+  if (S.perisai > kini()) { S.perisai = 0; toast('Perisai kau dibatalkan kerana menyerang.'); }
+  mulaPerang({ jenis: 'pvp', uid: id, nama: r.nama, L: r.L, seed: 1, jarak: jarakNegara(S.negara, r.negara), snap: r });
+  if (DUNIA.room) DUNIA.room.presence({ serang: id }).catch(() => {});
+  return true;
 }
 async function mulaDunia() {
   if (typeof window.claude?.use !== 'function') return;
@@ -1656,6 +1732,11 @@ async function mulaDunia() {
       DUNIA.pangkalan = new Map(); for (const d of sn.docs) { const b = bersihSnap(d.data()); if (b) DUNIA.pangkalan.set(d.id, b); }
       segarLawat();
     }, () => {});
+    db.collection('serangan').onSnapshot(sn => {
+      DUNIA.serangan = new Map(); for (const d of sn.docs) { const r = d.data() && d.data().r; if (Array.isArray(r)) DUNIA.serangan.set(d.id, r.slice(0, 30).filter(e => e && typeof e === 'object')); }
+      if (!DUNIA.seranganKu) DUNIA.seranganKu = (DUNIA.serangan.get(DUNIA.uid) || []).slice();
+      terapSerangan(); segarLawat();
+    }, () => {});
     db.collection('lawatan').onSnapshot(sn => {
       DUNIA.lawatan = new Map(); for (const d of sn.docs) { const v = d.data() && d.data().v; if (v && typeof v === 'object') DUNIA.lawatan.set(d.id, v); }
       const ku = DUNIA.lawatan.get(DUNIA.uid); if (ku && !Object.keys(DUNIA.log).length) DUNIA.log = { ...ku };
@@ -1668,6 +1749,10 @@ async function mulaDunia() {
     room.onPeers(ch => {
       DUNIA.peers = ch.peers;
       for (const p of [...ch.joined, ...ch.updated]) {
+        if (!p.isMe && p.kind === 'viewer' && DUNIA.uid && p.presence.serang === DUNIA.uid) {
+          const k = p.peer + ':serang:' + p.updatedAt;
+          if (![...DUNIA.sudahMaklum].some(x => x.startsWith(p.peer + ':serang'))) { DUNIA.sudahMaklum.add(k); namaRakan([p.by || p.presence.uid]).then(n => { toast(`${n[0]} sedang menyerang pangkalan kau!`, true); sfx('gong'); }); }
+        } else DUNIA.sudahMaklum.forEach(x => { if (x.startsWith(p.peer + ':serang')) DUNIA.sudahMaklum.delete(x); });
         if (p.isMe || p.kind !== 'viewer' || !DUNIA.uid || p.presence.lawat !== DUNIA.uid) continue;
         const k = p.peer + ':' + p.presence.lawat; if (DUNIA.sudahMaklum.has(k)) continue; DUNIA.sudahMaklum.add(k);
         namaRakan([p.by || p.presence.uid]).then(n => toast(`${n[0]} sedang melawat pangkalan kau!`));
@@ -1722,18 +1807,19 @@ async function renderLawat(isi) {
   let status;
   if (!DUNIA.db) status = '<p class="kecil">Lawatan rakan berfungsi apabila permainan dibuka sebagai artifact claude.ai yang dikongsi dan kau log masuk. Kongsi pautan artifact dengan rakan; mereka perlukan akses <b>Contributor</b> supaya pangkalan mereka juga boleh dilawati.</p>';
   else if (DUNIA.bolehTulis === false) status = '<p class="kecil">Kau boleh melawat rakan, tetapi pangkalan kau belum dikongsi: akses kau hanya Viewer. Minta pemilik artifact beri akses <b>Contributor</b>.</p>';
-  else status = `<p class="kecil">Pangkalan kau dikongsi dengan rakan${DUNIA.tulisAkhir ? ` · dikemas kini ${sedia(DUNIA.tulisAkhir)}` : ''}. Rakan yang buka artifact ini akan muncul di bawah.</p>`;
+  else status = `<p class="kecil">Pangkalan kau dikongsi dengan rakan${DUNIA.tulisAkhir ? ` · dikemas kini ${sedia(DUNIA.tulisAkhir)}` : ''}. <b>Latihan</b> tiada rampasan. <b>Serang</b> merampas sehingga 20% dana dan minyak rakan; mereka boleh membalas, dan yang kalah teruk dapat perisai 30 minit.${S.perisai > kini() ? ` Perisai kau: ${masa((S.perisai - kini()) / 1000)} (batal jika kau menyerang).` : ''}</p>`;
   const tapis = tapisLawat;
   const negara = NEGARA.filter(n => n.k !== S.negara && (tapis === 'Semua' || n.wil === tapis)).sort((a, b) => b.belanja - a.belanja);
   isi.innerHTML = `<h3>Rakan</h3>${status}
-    ${rakan.length ? rakan.map(([id, r]) => `<div class="baris"><span class="titik-online ${rakanOnline(id) ? 'on' : ''}" title="${rakanOnline(id) ? 'Online' : 'Offline'}"></span><div class="teks"><b data-nama="${esc(id)}"></b><small>${esc(r.nama)} · ${esc(negaraDari(r.negara).n)} · Markas ${r.L} · Pengaruh ${fmtN(r.maruah)}</small><small>${rakanOnline(id) ? 'Online sekarang' : 'Dikemas kini ' + sedia(r.kemaskini)}</small></div><div class="butang-lawat"><button class="btn krim" data-lawat-r="${esc(id)}">Lawat</button><button class="btn merah ${ada ? '' : 'mati'}" data-cabar="${esc(id)}">Cabar</button></div></div>`).join('') : DUNIA.db ? '<p>Belum ada rakan. Kongsi pautan artifact ini dengan member kau.</p>' : ''}
+    ${rakan.length ? rakan.map(([id, r]) => `<div class="baris"><span class="titik-online ${rakanOnline(id) ? 'on' : ''}" title="${rakanOnline(id) ? 'Online' : 'Offline'}"></span><div class="teks"><b data-nama="${esc(id)}"></b><small>${esc(r.nama)} · ${esc(negaraDari(r.negara).n)} · Markas ${r.L} · Pengaruh ${fmtN(r.maruah)}</small><small>${rakanOnline(id) ? 'Online sekarang' : 'Dikemas kini ' + sedia(r.kemaskini)}</small></div><div class="butang-lawat"><button class="btn krim" data-lawat-r="${esc(id)}">Lawat</button><button class="btn kayu ${ada ? '' : 'mati'}" data-cabar="${esc(id)}" title="Latihan mesra: tiada rampasan">Latihan</button><button class="btn merah ${ada && perisaiSasaran(id) <= kini() ? '' : 'mati'}" data-serang="${esc(id)}">${perisaiSasaran(id) > kini() ? `Perisai ${masa((perisaiSasaran(id) - kini()) / 1000)}` : 'Serang'}</button></div></div>`).join('') : DUNIA.db ? '<p>Belum ada rakan. Kongsi pautan artifact ini dengan member kau.</p>' : ''}
     ${pel.length ? `<h3>Pelawat terkini</h3>${pel.map(p => `<div class="baris"><div class="teks"><b data-nama="${esc(p.dari)}"></b><small>${p.bin != null ? `Latihan mesra: ${p.bin}★ · ${p.pct}% musnah` : 'Melawat'} · ${sedia(p.t)}</small></div>${DUNIA.pangkalan.has(p.dari) ? `<button class="btn krim" data-lawat-r="${esc(p.dari)}">Lawat balik</button>` : ''}</div>`).join('')}` : ''}
-    <h3>Kem pangkalan negara dunia</h3><p class="kecil">Lawatan sahaja: lihat susunan pangkalan dan aset setiap negara. Operasi ketenteraan hanya ke atas negara rekaan.</p>
+    <h3>Kem pangkalan negara dunia</h3><p class="kecil">Lawatan sahaja: lihat susunan pangkalan dan aset setiap negara. Serangan hanya ke atas negara rekaan dan pangkalan rakan pemain.</p>
     <div class="cip-baris" style="margin-bottom:8px">${['Semua', ...new Set(NEGARA.map(n => n.wil))].map(w => `<button class="cip ${w === tapis ? 'aktif' : ''}" data-tapis-lawat="${esc(w)}">${esc(w)}</button>`).join('')}</div>
     <div class="senarai-negara">${negara.map(n => `<div class="baris"><span class="kod">${n.k}</span><div class="teks"><b>${esc(n.n)}</b><small>Markas ${clamp(tierNegara(n), 1, 7)} · ${esc(n.blok.join(' · ') || 'Tiada blok')}${ASET[n.k] ? ` · ${ASET[n.k].length} aset` : ''}</small></div><button class="btn krim" data-lawat-n="${n.k}">Lawat</button></div>`).join('')}</div>`;
   isi.querySelectorAll('[data-nama]').forEach(el => { el.textContent = nm(el.dataset.nama); });
   isi.querySelectorAll('[data-lawat-r]').forEach(b => b.onclick = () => lawatRakan(b.dataset.lawatR));
   isi.querySelectorAll('[data-cabar]').forEach(b => b.onclick = () => cabarRakan(b.dataset.cabar));
+  isi.querySelectorAll('[data-serang]').forEach(b => b.onclick = () => serangRakan(b.dataset.serang));
   isi.querySelectorAll('[data-lawat-n]').forEach(b => b.onclick = () => lawatNegara(b.dataset.lawatN));
   isi.querySelectorAll('[data-tapis-lawat]').forEach(b => b.onclick = () => { tapisLawat = b.dataset.tapisLawat; renderLawat(isi); });
 }
@@ -1751,7 +1837,7 @@ async function paparHudLawat() {
   $('#lawatAtas').innerHTML = `<small>${L.uid ? 'Melawat pangkalan rakan' : 'Melawat kem pangkalan negara'}</small><b></b><div class="kecil"></div>`;
   $('#lawatAtas b').textContent = L.uid ? `${nama} · ${L.nama}` : n.n;
   $('#lawatAtas .kecil').textContent = `${n.n} · Markas ${L.L}${L.uid ? ` · Pengaruh ${fmtN(L.maruah)}` : ` · ${n.nota}`}`;
-  $('#lawatCabar').hidden = !L.uid;
+  $('#lawatCabar').hidden = !L.uid; $('#lawatSerang').hidden = !L.uid;
   $('#lawatAset').hidden = !ASET[L.negara];
 }
 function pulangDariLawat() {

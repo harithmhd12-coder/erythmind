@@ -50,7 +50,12 @@ Menu **Operasi → Lawat pangkalan**:
   - **Lawat** shows a friend's base live.
   - **Latihan mesra** attacks a copy of their base, with no loot, influence or tension. The result appears in the friend's list of recent visitors.
   - The `room` capability shows who is online and sends the notification "X sedang melawat pangkalan kau".
-- **World countries.** View the base camp of every country in the dataset; the base level follows its military spending. These are visits only, with no attacks.
+  - **Serang** is a real attack (PvP) on a friend's base copy.
+    - Loot is up to 20% of the friend's dana and minyak and 5% of their unsur nadir; influence moves between the two players and tension rises.
+    - The attacker records the attack in `serangan/<own id>`. The defender's game reads it, checks it, caps each loss (at most 25% / 6% of what they hold, influence ±40), applies it once, and adds an entry in Arkib → Pertahanan with a **Balas** (revenge) button.
+    - A defender who loses with 2★ or more gets a 30-minute shield. Attacking cancels your own shield.
+    - The room capability notifies the defender: "X sedang menyerang pangkalan kau!".
+- **World countries.** View the base camp of every country in the dataset; the base level follows its military spending. These are visits only, with no attacks: attacks target only fictional countries and other players' bases.
 
 ## Country dataset
 
