@@ -13,6 +13,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Erythmind</title>
+<link rel="stylesheet" href="app/cinematic.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Cinzel:wght@600&family=EB+Garamond:wght@500&display=swap">
@@ -450,16 +451,16 @@ body:not(.glass) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!i
 <section id="panel" hidden aria-modal="false" role="dialog"></section>
 <div id="gate"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/meshopt_decoder.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="vendor/three/three.min.js"></script>
+<script src="vendor/three/GLTFLoader.js"></script>
+<script src="vendor/three/meshopt_decoder.js"></script>
+<script src="vendor/three/SkeletonUtils.js"></script>
+<script src="vendor/three/CopyShader.js"></script>
+<script src="vendor/three/LuminosityHighPassShader.js"></script>
+<script src="vendor/three/EffectComposer.js"></script>
+<script src="vendor/three/RenderPass.js"></script>
+<script src="vendor/three/ShaderPass.js"></script>
+<script src="vendor/three/UnrealBloomPass.js"></script>
 <script src="app/config.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="app/supabase-shim.js"></script>
@@ -493,7 +494,10 @@ body:not(.glass) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!i
 <script src="js/28-bunyi.js" charset="utf-8"></script>
 <script src="js/29-kawalan.js" charset="utf-8"></script>
 <script src="js/30-gaya-rts.js" charset="utf-8"></script>
+<script src="app/fantasy.js"></script>
 <script src="app/kawalan.js"></script>
+<script src="app/cinematic-media.js"></script>
+<script src="app/cinematic.js"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>

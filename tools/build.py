@@ -25,6 +25,25 @@ APP_TEXT = {
     ],
 }
 
+# Keep app-specific rendering/startup fixes when regenerating from the world artifact.
+APP_TEXT.update({
+    'js/08-main.js': [
+        ("async function boot(){\n  const db", "async function boot(){\n  loadHiggsfield();\n  const db"),
+        ('startRoom(); loadHiggsfield();', 'startRoom();'),
+    ],
+    'js/22-sinematik.js': [
+        ("if(!session && !gateEl.hidden) return;", "if(!session && !gateEl.hidden && !window.ERYTH_CINEMA?.visible) return;"),
+        ('smoothstep(1.05, .32, length(d)), .55', '(1. - smoothstep(.32, 1.05, length(d))), .25'),
+        ('* .028;', '* .008;'),
+        ('gl_FragColor = vec4(c, 1.);\n    }', 'gl_FragColor = vec4(c, 1.);\n      #include <encodings_fragment>\n    }'),
+    ],
+    'js/30-gaya-rts.js': [
+        ("LS.get('erythmind.gaya', 'rts')", "LS.get('erythmind.gaya', 'real')"),
+        ('Realistik · tekstur foto', 'Sci-fi Fantasy · realistik & atmosfera'),
+        ('g.children.filter(c => c !== g.userData.rtsTree)', 'g.children.filter(c => c !== g.userData.rtsTree && c !== g.userData.fantasyTree)'),
+    ],
+})
+
 HEAD_EXTRA = '''<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#070a12">
 <meta name="description" content="Erythmind: dunia 3D peribadi yang disulitkan dengan PIN.">
@@ -32,6 +51,7 @@ HEAD_EXTRA = '''<meta name="viewport" content="width=device-width, initial-scale
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Erythmind">
+<link rel="stylesheet" href="app/cinematic.css">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -40,13 +60,18 @@ RUNTIME = '''<script src="app/config.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="app/supabase-shim.js"></script>
 '''
-TAIL = '''<script src="app/kawalan.js"></script>
+TAIL = '''<script src="app/fantasy.js"></script>
+<script src="app/kawalan.js"></script>
+<script src="app/cinematic-media.js"></script>
+<script src="app/cinematic.js"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 '''
 
 
 def main():
     page = (SRC / 'erythmind.html').read_text(encoding='utf-8')
+    # Three.js is vendored at the same pinned release for offline and CDN-independent startup.
+    page = re.sub(r'https://(?:cdnjs.cloudflare.com/ajax/libs/three.js/r128|cdn.jsdelivr.net/npm/three@0.128.0/(?:build|examples/js/[^/]+))/(\w[\w.-]*\.js)', r'vendor/three/\1', page)
     if not (SRC / 'js').is_dir():
         sys.exit(f'Tiada folder js/ di {SRC}')
     # page: fragment -> full document

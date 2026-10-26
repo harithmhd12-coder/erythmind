@@ -26,8 +26,8 @@ const GradeShader = {
       c *= mix(1., .8, night);                                     // deeper moonlit nights
       c += vec3(.012, .016, .03);                                  // inky lifted blacks
       vec2 d = vUv - .5; d.x *= res.x / res.y;
-      c *= mix(1., smoothstep(1.05, .32, length(d)), .55);         // vignette
-      c += (gh(vUv * res + fract(time) * 91.) - .5) * .028;        // grain
+      c *= mix(1., (1. - smoothstep(.32, 1.05, length(d))), .25);         // vignette
+      c += (gh(vUv * res + fract(time) * 91.) - .5) * .008;        // grain
       if(rts > .01){                                               // Gaya RTS: crisp and saturated, warm light, cool shade, no grain
         vec3 r = c0 / (1. + max(c0 - .9, 0.) * 1.4); float lr = dot(r, vec3(.2126, .7152, .0722));
         r = mix(vec3(lr), r, 1.1);
@@ -46,6 +46,7 @@ const GradeShader = {
         c = mix(c, r, rts);
       }
       gl_FragColor = vec4(c, 1.);
+      #include <encodings_fragment>
     }`,
 };
 
@@ -87,7 +88,7 @@ moon.material.color.setHex(0xfffbec);
 
 const gateEl = document.getElementById('gate');
 function renderWorld(dt){
-  if(!session && !gateEl.hidden) return;             // the gate covers the whole screen: leave the device free for typing
+  if(!session && !gateEl.hidden && !window.ERYTH_CINEMA?.visible) return;             // the gate covers the whole screen: leave the device free for typing
   if(!composer || (typeof Q !== 'undefined' && Q.noPost)){ renderer.render(scene, camera); return; }
   const indoor = indoorLayer(player.layer), warm = player.layer === 4 || (player.layer === 2 && nivRegion(player.x, player.z) === 'gua') ? 1 : 0;
   gradePass.uniforms.night.value = indoor ? (player.layer === 5 ? .8 : .2) : nightLevel;

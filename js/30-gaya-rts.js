@@ -9,7 +9,7 @@
    2. Light and colour: a crisp, saturated grade with warm light and cool shade, no film grain, a lighter vignette.
    3. Pandangan RTS: a three-quarter strategy camera (V cycles Orang ketiga → Mata pertama → RTS) with a faint
       4 m tile grid on the ground, ready for placing things on later. */
-const RTS = {on:LS.get('erythmind.gaya', 'rts') === 'rts', tex:{}, U:{uT:{value:0}, uGrid:{value:0}}};
+const RTS = {on:LS.get('erythmind.gaya', 'real') === 'rts', tex:{}, U:{uT:{value:0}, uGrid:{value:0}}};
 function rtsTex(n){
   if(RTS.tex[n]) return RTS.tex[n];
   const t = texLoader.load('assets/tex/rts-' + n + '.jpg'); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
@@ -128,7 +128,7 @@ let rtsRocks = null;
 function syncProps(){
   const on = RTS.on && REAL.on;
   if(RTS.tree) swayGroups.forEach(g => {
-    const kids = g.children.filter(c => c !== g.userData.rtsTree);
+    const kids = g.children.filter(c => c !== g.userData.rtsTree && c !== g.userData.fantasyTree);
     if(kids.length < 2 || kids.length > 3 || !kids.every(c => c.isMesh) || kids[0].geometry.type !== 'CylinderGeometry' || !kids.slice(1).every(c => /Cone|Icosahedron/.test(c.geometry.type))) return;
     if(on && !g.userData.rtsTree){ const bb = new THREE.Box3(); kids.forEach(c => bb.expandByObject(c)); const h = (bb.max.y - bb.min.y) * 1.05;
       const t = new THREE.Mesh(RTS.tree.geo, RTS.tree.mat); t.scale.setScalar(h / 8.5); t.position.y = bb.min.y - g.getWorldPosition(_rv).y; t.rotation.y = (g.position.x * 7.3 + g.position.z * 3.1) % 6.283; t.castShadow = true; t.receiveShadow = true; g.add(t); g.userData.rtsTree = t; }
@@ -174,7 +174,7 @@ updateCamera = function(dt, t){
 function setGaya(on){ RTS.on = on; LS.set('erythmind.gaya', on ? 'rts' : 'real'); applyRealism(); }
 const _gfxSettingsHtmlG = gfxSettingsHtml;
 gfxSettingsHtml = function(){
-  return _gfxSettingsHtmlG() + `<div class="field"><label for="gayaSel">Gaya grafik</label><select id="gayaSel"><option value="rts" ${RTS.on ? 'selected' : ''}>RTS Klasik · lukisan tangan, warna tajam</option><option value="real" ${RTS.on ? '' : 'selected'}>Realistik · tekstur foto</option></select></div>`;
+  return _gfxSettingsHtmlG() + `<div class="field"><label for="gayaSel">Gaya grafik</label><select id="gayaSel"><option value="rts" ${RTS.on ? 'selected' : ''}>RTS Klasik · lukisan tangan, warna tajam</option><option value="real" ${RTS.on ? '' : 'selected'}>Sci-fi Fantasy · realistik & atmosfera</option></select></div>`;
 };
 document.addEventListener('change', e => { if(e.target.id === 'gayaSel') setGaya(e.target.value === 'rts'); });
 syncGaya();

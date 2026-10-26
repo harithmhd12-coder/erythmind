@@ -425,6 +425,8 @@ function start(){ setSelfLook(); updateChips(); updatePrayerChip(); renderGate('
 
 /* ================= boot ================= */
 async function boot(){
+  // Artwork can load while authentication connects; the intro needs no vault access.
+  loadHiggsfield();
   const db = await use('db');
   const user = db ? await use('user') : null;
   if(user){ try{ artifactOwner = (await user.isOwner()) || (await user.canEdit()); }catch(e){} }
@@ -445,7 +447,7 @@ async function boot(){
   }, onVault);
   store.watchPublic(posts => { pub.board = posts; drawBoard(posts); if(ui.view === 'komuniti') openKomuniti(); }, book => { pub.guestbook = book; if(ui.view === 'komuniti') openKomuniti(); });
   setTimeout(decide, 6000);
-  startRoom(); loadHiggsfield();
+  startRoom();
 }
 if(document.readyState === 'loading') addEventListener('DOMContentLoaded', start); else start();
 
