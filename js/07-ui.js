@@ -108,12 +108,13 @@ function updatePrayerChip(now = myNow()){
 }
 function updateRadioChip(){ const b = $('#bRadio'); b.classList.toggle('on', AU.on); b.firstChild.textContent = AU.on ? (MOOD_LABEL[AU.mood] || 'Bunyi aktif') + ' ' : 'Bunyi dimatikan '; }
 function showAzanCard(k, n, at){
-  const links = [YT.azan]; if(k === 'maghrib') links.push(YT.quran); if(k === 'isyak') links.push(YT.malam);
+  const links = []; if(k === 'maghrib') links.push(YT.quran); if(k === 'isyak') links.push(YT.malam);
   const c = $('#azan'); c.hidden = false;
   c.innerHTML = `<div class="eyebrow">Menara Jam · ${esc(zoneInfo()[1])}</div><strong>Telah masuk waktu ${n} · ${fmtHM(at)}</strong>
-    <div class="row">${links.map(l => `<a class="btn pri" href="${l.url}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`).join('')}<button class="btn ghost" type="button" id="azanX">Tutup</button></div>
-    <div class="note">Muzik latar diperlahankan selama 6 minit.</div>`;
+    <div class="row"><button class="btn pri" type="button" id="azanPlay">${typeof azanPlaying === 'function' && azanPlaying() ? 'Hentikan azan' : 'Dengar azan'}</button>${links.map(l => `<a class="btn" href="${l.url}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`).join('')}<button class="btn ghost" type="button" id="azanX">Tutup</button></div>
+    <div class="note">Muzik latar diperlahankan semasa azan.</div>`;
   $('#azanX').addEventListener('click', () => c.hidden = true);
+  $('#azanPlay').addEventListener('click', () => { if(typeof azanPlaying !== 'function') return; if(azanPlaying()) stopAzan(); else { unlockAudio(); playAzan(true); } });
   setTimeout(() => { c.hidden = true; }, 10 * 60e3);
 }
 

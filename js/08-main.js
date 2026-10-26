@@ -425,7 +425,6 @@ function start(){ setSelfLook(); updateChips(); updatePrayerChip(); renderGate('
 
 /* ================= boot ================= */
 async function boot(){
-  // Artwork can load while authentication connects; the intro needs no vault access.
   loadHiggsfield();
   const db = await use('db');
   const user = db ? await use('user') : null;

@@ -14,7 +14,7 @@ SRC = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT.parent / 'erythmin
 # claude.ai wording that means something else in the app
 APP_TEXT = {
     'js/07-ui.js': [
-        ('<h1>ERYTH<span>MIND</span></h1>', '<h1><img style="width:210px;max-height:165px;object-fit:contain" src="app/media/logo.webp" alt="Erythmind"></h1>'),
+        ('<h1>ERYTH<span>MIND</span></h1>', '<h1><img class="gate-brand-logo" src="app/media/logo.webp" alt="Erythmind"></h1>'),
         ('Kongsikan pautan artifak ini dengan mereka (sebagai Contributor supaya laporan bot dan buku pelawat berfungsi) dan beritahu PIN mereka secara bersemuka.',
          'Kongsikan pautan app ini dengan mereka (Kawalan Penuh → Salin pautan) dan beritahu PIN mereka secara bersemuka.'),
         ('Laporan daripada pelayar tetamu hanya tersimpan jika tetamu dikongsi sebagai Contributor atau lebih. Tetamu peringkat Viewer hanya dipantau secara langsung semasa kau berada dalam dunia.',
@@ -52,6 +52,7 @@ HEAD_EXTRA = '''<meta name="viewport" content="width=device-width, initial-scale
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>.gate-brand-logo{width:210px;max-height:165px;object-fit:contain;display:block;margin:0 auto}</style>
 '''
 RUNTIME = '''<script src="app/config.js"></script>
 <script src="vendor/supabase.js"></script>

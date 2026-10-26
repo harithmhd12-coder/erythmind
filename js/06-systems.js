@@ -271,7 +271,7 @@ function updateClock(){
   }
 }
 function prayerArrived(k, n, at){
-  if(AU.ctx && AU.on){ sfx.bell(k === 'maghrib' ? 3 : 1); AU.duckUntil = performance.now() + 6 * 60e3; }
+  if(AU.ctx && AU.on){ if(!(typeof playAzan === 'function' && playAzan())) sfx.bell(k === 'maghrib' ? 3 : 1); AU.duckUntil = performance.now() + 6 * 60e3; }     // the recorded azan (28-bunyi.js), else the bell
   bellLight.intensity = 3; setTimeout(() => bellLight.intensity = 0, 12000);
   showAzanCard(k, n, at);
 }

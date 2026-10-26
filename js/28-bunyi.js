@@ -31,6 +31,7 @@ function unlockAudio(){
   }
   if(silentEl && silentEl.paused) silentEl.play().catch(() => {});
   if(!SFX.ready) loadSfx();
+  primeAzan();
 }
 ['touchend', 'click', 'keydown'].forEach(ev => addEventListener(ev, unlockAudio, {capture:true, passive:true}));
 document.addEventListener('visibilitychange', () => { if(!document.hidden && AU.ctx && AU.ctx.state !== 'running') AU.ctx.resume().catch(() => {}); });
@@ -73,3 +74,32 @@ gfxSettingsHtml = function(){
     <ul class="facts">${Object.entries(SFX_NAMES).map(([k, n]) => `<li>${SFX.files[k] ? '✓' : '·'} ${esc(n)}${SFX.buf[k] ? ` <button class="btn" type="button" data-sfxtest="${k}">Dengar</button>` : ''}</li>`).join('')}</ul>`;
 };
 document.addEventListener('click', e => { const k = e.target?.dataset?.sfxtest; if(k){ unlockAudio(); playSfx(k); } });
+
+/* --- 3. the azan: the recorded call to prayer (assets/azan.mp3) at every prayer time, in place of the bell --- */
+// a long recording is streamed by an <audio> element, not decoded whole into memory; a phone only lets an element
+// play by itself later if it was started once during a tap, so the first tap starts it silently and stops it again
+const AZAN = {on:LS.get('erythmind.azan', true), primed:false};
+const azanEl = new Audio(); azanEl.preload = 'none'; azanEl.setAttribute('playsinline', ''); azanEl.src = 'assets/azan.mp3';
+function primeAzan(){
+  if(AZAN.primed || azanPlaying()) return; AZAN.primed = true; azanEl.muted = true;
+  const pr = azanEl.play(); if(pr && pr.then) pr.then(() => { if(azanEl.muted){ azanEl.pause(); azanEl.currentTime = 0; azanEl.muted = false; } }).catch(() => { AZAN.primed = false; azanEl.muted = false; });
+}
+const azanPlaying = () => !azanEl.paused && !azanEl.muted;
+// true when the azan is playing (so the bell stays quiet); `force` plays it even with the setting off (the card's button, the test button)
+function playAzan(force){
+  if(!force && (!AZAN.on || !AU.on)) return false;
+  azanEl.muted = false; azanEl.currentTime = 0; azanEl.volume = clamp(AU.vol?.master ?? 1, 0, 1);
+  const pr = azanEl.play(); if(pr && pr.catch) pr.catch(() => toast('Azan tidak dapat dimainkan sendiri pada peranti ini. Tekan "Dengar azan".', 'bad', 6000));
+  AU.duckUntil = performance.now() + 260e3; azanBtn(); return true;
+}
+function stopAzan(){ azanEl.pause(); azanEl.currentTime = 0; AU.duckUntil = 0; azanBtn(); }
+function azanBtn(){ ['#azanPlay', '#azanTest'].forEach(id => { const b = $(id); if(b) b.textContent = azanPlaying() ? 'Hentikan azan' : 'Dengar azan'; }); }
+azanEl.addEventListener('ended', () => { AU.duckUntil = 0; azanBtn(); });
+azanEl.addEventListener('pause', azanBtn); azanEl.addEventListener('playing', azanBtn);
+const _gfxSettingsHtmlA = gfxSettingsHtml;
+gfxSettingsHtml = function(){
+  return _gfxSettingsHtmlA() + `<h3>Azan</h3><div class="checks"><label for="azanOn"><input type="checkbox" id="azanOn" ${AZAN.on ? 'checked' : ''}> Azan berkumandang setiap kali masuk waktu solat (Subuh, Zohor, Asar, Maghrib, Isyak) mengikut zon waktu kau</label></div>
+    <div class="row"><button class="btn" type="button" id="azanTest">${azanPlaying() ? 'Hentikan azan' : 'Dengar azan'}</button></div>`;
+};
+document.addEventListener('change', e => { if(e.target.id === 'azanOn'){ AZAN.on = e.target.checked; LS.set('erythmind.azan', AZAN.on); if(!AZAN.on && azanPlaying()) stopAzan(); } });
+document.addEventListener('click', e => { if(e.target?.id === 'azanTest'){ if(azanPlaying()) stopAzan(); else { unlockAudio(); playAzan(true); } } });
