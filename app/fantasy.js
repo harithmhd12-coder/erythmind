@@ -2,18 +2,11 @@
 /* Erythmind art direction: physically shaded surfaces, a living ocean and a celestial sky.
    Decorations have no colliders and inherit the existing world-layer visibility. */
 const FANTASY = {enabled:!RTS.on, time:{value:0}, strength:{value:1}};
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
-
-// Colour photographs are sRGB; water normals and relief data remain linear.
-const _realTexFantasy = realTex;
-realTex = function(name){
-  const tex = _realTexFantasy(name);
-  if(name !== 'waternormal' && tex.encoding !== THREE.sRGBEncoding){ tex.encoding = THREE.sRGBEncoding; tex.needsUpdate = true; }
-  return tex;
-};
-Object.entries(REAL.tex).forEach(([name, t]) => { if(name !== 'waternormal'){ t.encoding = THREE.sRGBEncoding; t.needsUpdate = true; } });
+// Match the world's authored palette and its custom terrain/post-processing shaders.
+// A global sRGB/ACES switch double-encodes custom texture samples and shifts existing colours.
+renderer.outputEncoding = THREE.LinearEncoding;
+renderer.toneMapping = THREE.NoToneMapping;
+renderer.toneMappingExposure = 1;
 
 // Layered atmospheric scattering, slow cloud banks and an aurora at night.
 const fantasySky = sky.material;
@@ -169,20 +162,6 @@ const _applyModelFantasy=applyModel;
 applyModel=function(key,gltf){const result=_applyModelFantasy(key,gltf);fantasyTrees();return result;};
 const _applyRealismFantasy=applyRealism;
 applyRealism=function(){_applyRealismFantasy();fantasyTrees();};
-function fantasySurfaces(){
-  // Process asynchronously loaded models once; preserve their authored maps and skinning.
-  scene.traverse(o=>{
-    if(!o.isMesh) return;
-    [].concat(o.material).forEach(m=>{
-      if(!m?.isMeshStandardMaterial || m.userData.fantasySurface) return;
-      m.userData.fantasySurface=true;
-      // Hex colours were authored for the old unencoded renderer; convert for a linear PBR pipeline.
-      if(m.color)m.color.convertSRGBToLinear();
-      if(m.map){ m.map.encoding=THREE.sRGBEncoding; m.map.needsUpdate=true; }
-      m.envMapIntensity=m.metalness>.5 ? .8 : .48;
-    });
-  });
-}
 const _updateEnvironmentFantasy=updateEnvironment;
 updateEnvironment=function(dt,t){
   _updateEnvironmentFantasy(dt,t);
@@ -198,7 +177,6 @@ updateEnvironment=function(dt,t){
     // More neutral daylight; interiors retain their own warm lighting and weather remains live.
     hemi.groundColor.lerp(new THREE.Color(0x29434a),.3);
     hemi.intensity*=1.1;
-    renderer.toneMappingExposure=lerp(1.08,1.16,nightLevel);
     const distance=camera.far*.62;
     planetGroup.position.copy(camera.position).add(fPos.set(-.62,.34,-.7).normalize().multiplyScalar(distance));
     planetGroup.scale.setScalar(distance*.11);
@@ -213,9 +191,8 @@ updateEnvironment=function(dt,t){
   }
   shards.instanceMatrix.needsUpdate=true;
   fDecor.forEach((r,i)=>r.rotation.z=t*.012*(i?1:-1));
-  fScan-=dt;if(fScan<=0){fScan=4;fantasySurfaces();fantasyTrees();}
+  fScan-=dt;if(fScan<=0){fScan=4;fantasyTrees();}
 };
-fantasySurfaces();
 
 /* Distant floating islets and streaming waterfalls echo the opening's archipelago.
    Decorative only: they do not move the map's existing destinations or collision surfaces. */

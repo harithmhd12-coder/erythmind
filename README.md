@@ -66,11 +66,11 @@ supabase/setup.sql    jadual dan peraturan keselamatan
 sw.js, manifest.webmanifest, icons/   app boleh dipasang dan dibuka tanpa internet
 ```
 
-## Grafik Sci-fi Fantasy & intro
+## Grafik dan warna dunia
 
-Dunia kini menggunakan pipeline warna sRGB/ACES, material bertekstur dan relief tanah, langit berawan dengan aurora, planet bercincin, air beralun, pokok fotografi, aksen tenaga, pulau terapung dan air terjun hiasan. Tetapan **Gaya grafik → Sci-fi Fantasy** memilih rupa baharu; **RTS Klasik** kekal tersedia. Kualiti Auto masih menyesuaikan peranti, termasuk mengurangkan kesan pada GPU perisian.
+Dunia menggunakan pipeline warna asal yang serasi dengan shader tanah dan gred filem sedia ada, material bertekstur dan relief tanah, langit berawan dengan aurora, planet bercincin, air beralun, pokok fotografi, aksen tenaga, pulau terapung dan air terjun hiasan. Tetapan **Gaya grafik → Sci-fi Fantasy** memilih rupa baharu; **RTS Klasik** kekal sebagai gaya lalai; pilihan yang sudah disimpan tidak diubah. Kualiti Auto masih menyesuaikan peranti, termasuk mengurangkan kesan pada GPU perisian.
 
-Opening menggunakan adaptasi logo dan artwork rujukan, dengan video 18 saat, butang langkau, ulang tayang dan kawalan audio. Tetapan aset berada dalam `app/cinematic-media.js`; butiran dalam `app/media/cinematic/README.md`. Opening tidak membuka vault atau menukar PIN/sesi. Model 3D dimuat selari dengan sambungan akaun, jadi intro tidak perlu menunggu Supabase. Semua library Three.js r128 kini disimpan dalam `vendor/three/` bersama lesen MIT.
+Game terus membuka pintu akses tanpa intro atau video. Logo dikekalkan di pintu akses dan ikon app. Model 3D dimuat selari dengan sambungan akaun. Semua library Three.js r128 disimpan dalam `vendor/three/` bersama lesen MIT.
 
 Untuk pembangunan biasa, tiada langkah bina diperlukan:
 
@@ -85,4 +85,4 @@ Ujian browser menggunakan Node, Playwright dan Chromium yang tersedia dalam pers
 node tests/graphics-smoke.cjs
 ```
 
-Ujian mengasingkan sambungan akaun dalam browser kepada storan tempatan sementara. Ia menyemak 40 model, layout desktop/telefon, video/audio, tamat video, langkau/ulang, pengasingan PIN, shader pada tiga tahap kualiti, penukaran gaya, enam lapisan dunia dan fallback video. Ia tidak menguji akaun atau pangkalan data Supabase sebenar. `CHROMIUM_PATH` dan `TEST_ORIGIN` boleh menggantikan lokasi browser/server.
+Ujian mengasingkan sambungan akaun dalam browser kepada storan tempatan sementara. Ia menyemak 40 model, pintu akses terus tanpa intro, warna material dan output renderer, shader pada tiga tahap kualiti, penukaran gaya serta enam lapisan dunia. Ia tidak menguji akaun atau pangkalan data Supabase sebenar. `CHROMIUM_PATH` dan `TEST_ORIGIN` boleh menggantikan lokasi browser/server.

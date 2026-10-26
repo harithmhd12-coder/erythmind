@@ -14,6 +14,7 @@ SRC = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT.parent / 'erythmin
 # claude.ai wording that means something else in the app
 APP_TEXT = {
     'js/07-ui.js': [
+        ('<h1>ERYTH<span>MIND</span></h1>', '<h1><img style="width:210px;max-height:165px;object-fit:contain" src="app/media/logo.webp" alt="Erythmind"></h1>'),
         ('Kongsikan pautan artifak ini dengan mereka (sebagai Contributor supaya laporan bot dan buku pelawat berfungsi) dan beritahu PIN mereka secara bersemuka.',
          'Kongsikan pautan app ini dengan mereka (Kawalan Penuh → Salin pautan) dan beritahu PIN mereka secara bersemuka.'),
         ('Laporan daripada pelayar tetamu hanya tersimpan jika tetamu dikongsi sebagai Contributor atau lebih. Tetamu peringkat Viewer hanya dipantau secara langsung semasa kau berada dalam dunia.',
@@ -32,13 +33,10 @@ APP_TEXT.update({
         ('startRoom(); loadHiggsfield();', 'startRoom();'),
     ],
     'js/22-sinematik.js': [
-        ("if(!session && !gateEl.hidden) return;", "if(!session && !gateEl.hidden && !window.ERYTH_CINEMA?.visible) return;"),
         ('smoothstep(1.05, .32, length(d)), .55', '(1. - smoothstep(.32, 1.05, length(d))), .25'),
         ('* .028;', '* .008;'),
-        ('gl_FragColor = vec4(c, 1.);\n    }', 'gl_FragColor = vec4(c, 1.);\n      #include <encodings_fragment>\n    }'),
     ],
     'js/30-gaya-rts.js': [
-        ("LS.get('erythmind.gaya', 'rts')", "LS.get('erythmind.gaya', 'real')"),
         ('Realistik · tekstur foto', 'Sci-fi Fantasy · realistik & atmosfera'),
         ('g.children.filter(c => c !== g.userData.rtsTree)', 'g.children.filter(c => c !== g.userData.rtsTree && c !== g.userData.fantasyTree)'),
     ],
@@ -51,7 +49,6 @@ HEAD_EXTRA = '''<meta name="viewport" content="width=device-width, initial-scale
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Erythmind">
-<link rel="stylesheet" href="app/cinematic.css">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -62,8 +59,6 @@ RUNTIME = '''<script src="app/config.js"></script>
 '''
 TAIL = '''<script src="app/fantasy.js"></script>
 <script src="app/kawalan.js"></script>
-<script src="app/cinematic-media.js"></script>
-<script src="app/cinematic.js"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 '''
 

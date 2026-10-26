@@ -13,7 +13,6 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Erythmind</title>
-<link rel="stylesheet" href="app/cinematic.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Cinzel:wght@600&family=EB+Garamond:wght@500&display=swap">
@@ -51,6 +50,8 @@ button{cursor:pointer}
 .lbl.name.male{color:var(--male)}
 .lbl.name.female{color:var(--female)}
 .lbl.sat{color:var(--holo);background:rgba(7,10,18,.4)}
+
+.gate-brand-logo{width:210px;max-height:165px;object-fit:contain;display:block;margin:0 auto}
 
 /* HUD */
 .hud{position:fixed;z-index:5}
@@ -496,8 +497,6 @@ body:not(.glass) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!i
 <script src="js/30-gaya-rts.js" charset="utf-8"></script>
 <script src="app/fantasy.js"></script>
 <script src="app/kawalan.js"></script>
-<script src="app/cinematic-media.js"></script>
-<script src="app/cinematic.js"></script>
 <script>if('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>

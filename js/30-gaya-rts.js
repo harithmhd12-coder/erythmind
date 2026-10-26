@@ -9,7 +9,7 @@
    2. Light and colour: a crisp, saturated grade with warm light and cool shade, no film grain, a lighter vignette.
    3. Pandangan RTS: a three-quarter strategy camera (V cycles Orang ketiga → Mata pertama → RTS) with a faint
       4 m tile grid on the ground, ready for placing things on later. */
-const RTS = {on:LS.get('erythmind.gaya', 'real') === 'rts', tex:{}, U:{uT:{value:0}, uGrid:{value:0}}};
+const RTS = {on:LS.get('erythmind.gaya', 'rts') === 'rts', tex:{}, U:{uT:{value:0}, uGrid:{value:0}}};
 function rtsTex(n){
   if(RTS.tex[n]) return RTS.tex[n];
   const t = texLoader.load('assets/tex/rts-' + n + '.jpg'); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());

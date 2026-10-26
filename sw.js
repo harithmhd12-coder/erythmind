@@ -2,8 +2,8 @@
    App files: network first, so updates arrive at once; the saved copy is used when offline.
    3D models, fonts and libraries: saved after the first load and served from the device after that.
    Supabase traffic (data, room) is never cached. */
-const VER = 'erythmind-fantasy-56777ef4ce';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './app/cinematic.css', './app/cinematic-media.js', './app/cinematic.js', './app/fantasy.js'];
+const VER = 'erythmind-colours-0ebecf6b17';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './app/fantasy.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VER).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('erythmind-') && k !== VER).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {

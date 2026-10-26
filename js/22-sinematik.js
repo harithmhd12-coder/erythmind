@@ -46,7 +46,6 @@ const GradeShader = {
         c = mix(c, r, rts);
       }
       gl_FragColor = vec4(c, 1.);
-      #include <encodings_fragment>
     }`,
 };
 
@@ -88,7 +87,7 @@ moon.material.color.setHex(0xfffbec);
 
 const gateEl = document.getElementById('gate');
 function renderWorld(dt){
-  if(!session && !gateEl.hidden && !window.ERYTH_CINEMA?.visible) return;             // the gate covers the whole screen: leave the device free for typing
+  if(!session && !gateEl.hidden) return;             // the gate covers the whole screen: leave the device free for typing
   if(!composer || (typeof Q !== 'undefined' && Q.noPost)){ renderer.render(scene, camera); return; }
   const indoor = indoorLayer(player.layer), warm = player.layer === 4 || (player.layer === 2 && nivRegion(player.x, player.z) === 'gua') ? 1 : 0;
   gradePass.uniforms.night.value = indoor ? (player.layer === 5 ? .8 : .2) : nightLevel;

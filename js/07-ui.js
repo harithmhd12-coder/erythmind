@@ -586,7 +586,7 @@ function renderGate(state){
   if(gateMsg) msg = gateMsg;
   const loadingWorld = !HF.allDone;
   if(loadingWorld){ pad = false; msg = HF.stage || (HF.total ? `Memuat dunia 3D: ${HF.done} daripada ${HF.total} model.` : 'Memuat dunia 3D…'); }
-  g.innerHTML = `<div class="gcard" id="gcard"><h1>ERYTH<span>MIND</span></h1><div class="gsub">${sub}</div>
+  g.innerHTML = `<div class="gcard" id="gcard"><h1><img class="gate-brand-logo" src="app/media/logo.webp" alt="Erythmind"></h1><div class="gsub">${sub}</div>
     <div class="gmsg ${gateMsg ? 'bad' : ''}">${esc(msg)}</div>
     ${loadingWorld ? `<div class="bar" style="width:100%"><i style="width:${HF.stage ? 100 : HF.total ? Math.round(HF.done / HF.total * 100) : 3}%"></i></div><div class="note">Kali pertama mengambil masa lebih lama. Selepas itu dunia dimuat terus dari peranti.</div>` : ''}
     ${gateBusy ? '<div class="scan"></div><div class="gmsg">Bavar-373 sedang mengesahkan kunci…</div>' : ''}
