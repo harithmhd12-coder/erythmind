@@ -1,6 +1,16 @@
 /* Ruang Ilmu · kandungan contoh.
    Dalam produksi, data ini datang dari CMS (lihat Studio). Di sini ia disimpan sebagai fail statik
-   supaya prototaip boleh dibuka tanpa pelayan. Teks ==begini== dipaparkan sebagai sorotan. */
+   supaya prototaip boleh dibuka tanpa pelayan. Teks ==begini== dipaparkan sebagai sorotan.
+
+   Skema bahan (Kandungan). Struktur ini dibina untuk menutup lubang yang didedahkan oleh
+   Ryan Holiday dalam "Trust Me, I'm Lying" (lihat TAKTIK di bawah):
+   - tajuk, dek, ringkas60  Tajuk yang berbentuk soalan mesti dijawab dalam ringkas60 (lawan umpan klik).
+   - rujukan[]              { j, t }  j = primer | ulasan | rasmi | esei | pengiraan. Sumber asal, bukan "menurut laporan".
+   - dakwaan[]              { t, j, s }  Dakwaan utama. j = fakta | pengiraan | tafsiran | dibahas | riwayat | pendapat | nasihat.
+                            s = indeks rujukan yang menyokongnya. Fakta dan pengiraan wajib ada s.
+   - terbit, kemas          Tarikh. Sejarah versi dan pembetulan dijana daripada ini dan daripada Studio.
+   - pasangan               Produk Sip 'n Go yang dipaparkan bersama. Sentiasa disertakan pendedahan kepentingan.
+*/
 
 const KATEGORI = [
   { id: 'agama', nama: 'Agama & Kerohanian', ringkas: 'Tafsir, hadis, sirah, adab, turath dan pemikiran Islam.' },
@@ -45,9 +55,15 @@ const KANDUNGAN = [
     ],
     refleksi: 'Bilakah kali terakhir kau rasa sesuatu "sangat tepat tentang diri aku"? Adakah ia juga tepat untuk orang lain?',
     rujukan: [
-      'Forer, B. R. (1949). The fallacy of personal validation. Journal of Abnormal and Social Psychology, 44(1), 118–123.',
-      'Meehl, P. E. (1956). Wanted — a good cookbook. American Psychologist, 11(6), 263–272.',
-      'Dickson, D. H., & Kelly, I. W. (1985). The "Barnum effect" in personality assessment: A review of the literature. Psychological Reports, 57(2), 367–382.'
+      { j: 'primer', t: 'Forer, B. R. (1949). The fallacy of personal validation. Journal of Abnormal and Social Psychology, 44(1), 118–123.' },
+      { j: 'primer', t: 'Meehl, P. E. (1956). Wanted — a good cookbook. American Psychologist, 11(6), 263–272.' },
+      { j: 'ulasan', t: 'Dickson, D. H., & Kelly, I. W. (1985). The "Barnum effect" in personality assessment: A review of the literature. Psychological Reports, 57(2), 367–382.' }
+    ],
+    dakwaan: [
+      { t: "Pelajar Forer menilai teks umum yang sama sebagai purata 4.26 daripada 5 untuk ketepatan.", j: 'fakta', s: [0] },
+      { t: "Istilah \"kesan Barnum\" diperkenalkan oleh Paul Meehl pada tahun 1956.", j: 'fakta', s: [1] },
+      { t: "Kesan ini berulang dalam banyak kajian penilaian personaliti selepas Forer.", j: 'fakta', s: [2] },
+      { t: "Ingatan yang memilih menguatkan kepercayaan kepada ramalan.", j: 'tafsiran', s: [] }
     ],
     berkaitan: ['bias-pengesahan', 'menulis-untuk-berfikir'], pasangan: 'classic'
   },
@@ -80,8 +96,13 @@ const KANDUNGAN = [
     ],
     refleksi: 'Pilih satu pendapat kuat yang kau pegang. Apakah bukti yang akan membuatkan kau mengubahnya?',
     rujukan: [
-      'Wason, P. C. (1960). On the failure to eliminate hypotheses in a conceptual task. Quarterly Journal of Experimental Psychology, 12(3), 129–140.',
-      'Nickerson, R. S. (1998). Confirmation bias: A ubiquitous phenomenon in many guises. Review of General Psychology, 2(2), 175–220.'
+      { j: 'primer', t: 'Wason, P. C. (1960). On the failure to eliminate hypotheses in a conceptual task. Quarterly Journal of Experimental Psychology, 12(3), 129–140.' },
+      { j: 'ulasan', t: 'Nickerson, R. S. (1998). Confirmation bias: A ubiquitous phenomenon in many guises. Review of General Psychology, 2(2), 175–220.' }
+    ],
+    dakwaan: [
+      { t: "Dalam ujian 2-4-6, kebanyakan peserta hanya menguji contoh yang mengesahkan tekaan mereka.", j: 'fakta', s: [0] },
+      { t: "Bias pengesahan dilaporkan dalam pelbagai bidang termasuk perubatan, undang-undang dan sains.", j: 'fakta', s: [1] },
+      { t: "Menulis syarat yang akan mengubah fikiran membantu menguji kepercayaan sendiri.", j: 'nasihat', s: [] }
     ],
     berkaitan: ['kenapa-percaya-ramalan', 'kenapa-bertangguh']
   },
@@ -114,9 +135,15 @@ const KANDUNGAN = [
     ],
     refleksi: 'Apakah satu tugas yang kau tangguh sekarang? Apakah langkah dua minit pertamanya?',
     rujukan: [
-      'Steel, P. (2007). The nature of procrastination: A meta-analytic and theoretical review. Psychological Bulletin, 133(1), 65–94.',
-      'Gollwitzer, P. M. (1999). Implementation intentions: Strong effects of simple plans. American Psychologist, 54(7), 493–503.',
-      'Sirois, F., & Pychyl, T. (2013). Procrastination and the priority of short-term mood regulation. Social and Personality Psychology Compass, 7(2), 115–127.'
+      { j: 'ulasan', t: 'Steel, P. (2007). The nature of procrastination: A meta-analytic and theoretical review. Psychological Bulletin, 133(1), 65–94.' },
+      { j: 'ulasan', t: 'Gollwitzer, P. M. (1999). Implementation intentions: Strong effects of simple plans. American Psychologist, 54(7), 493–503.' },
+      { j: 'ulasan', t: 'Sirois, F., & Pychyl, T. (2013). Procrastination and the priority of short-term mood regulation. Social and Personality Psychology Compass, 7(2), 115–127.' }
+    ],
+    dakwaan: [
+      { t: "Bertangguh paling kuat dikaitkan dengan tugas tidak menyeronokkan, ganjaran yang jauh dan sifat mudah terganggu.", j: 'fakta', s: [0] },
+      { t: "Pelan jika-maka meningkatkan kemungkinan seseorang bertindak.", j: 'fakta', s: [1] },
+      { t: "Bertangguh boleh difahami sebagai cara mengurus emosi jangka pendek.", j: 'tafsiran', s: [2] },
+      { t: "Berjanji untuk bermula selama dua minit memudahkan langkah pertama.", j: 'nasihat', s: [] }
     ],
     berkaitan: ['pengulangan-berjarak', 'kuasa-pertumbuhan-berganda'], pasangan: 'caramel'
   },
@@ -149,9 +176,15 @@ const KANDUNGAN = [
     ],
     refleksi: 'Pilih satu perkara yang kau pelajari minggu ini. Bila kau akan mengujinya semula?',
     rujukan: [
-      'Ebbinghaus, H. (1885/1913). Memory: A Contribution to Experimental Psychology. Teachers College, Columbia University.',
-      'Cepeda, N. J., et al. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. Psychological Bulletin, 132(3), 354–380.',
-      'Roediger, H. L., & Karpicke, J. D. (2006). Test-enhanced learning. Psychological Science, 17(3), 249–255.'
+      { j: 'primer', t: 'Ebbinghaus, H. (1885/1913). Memory: A Contribution to Experimental Psychology. Teachers College, Columbia University.' },
+      { j: 'ulasan', t: 'Cepeda, N. J., et al. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. Psychological Bulletin, 132(3), 354–380.' },
+      { j: 'primer', t: 'Roediger, H. L., & Karpicke, J. D. (2006). Test-enhanced learning. Psychological Science, 17(3), 249–255.' }
+    ],
+    dakwaan: [
+      { t: "Ingatan merosot paling cepat sejurus selepas belajar.", j: 'fakta', s: [0] },
+      { t: "Ulang kaji yang dijarakkan lebih berkesan daripada ulang kaji yang dilonggokkan.", j: 'fakta', s: [1] },
+      { t: "Menguji diri menghasilkan ingatan jangka panjang yang lebih baik daripada membaca semula.", j: 'fakta', s: [2] },
+      { t: "Jadual 1, 3, 7 dan 30 hari ialah titik mula yang mudah.", j: 'nasihat', s: [] }
     ],
     berkaitan: ['menulis-untuk-berfikir', 'adab-menuntut-ilmu']
   },
@@ -184,8 +217,13 @@ const KANDUNGAN = [
     ],
     refleksi: 'Tulis satu perenggan tentang artikel terakhir yang kau baca di sini, tanpa melihatnya semula.',
     rujukan: [
-      'Rozenblit, L., & Keil, F. (2002). The misunderstood limits of folk science: An illusion of explanatory depth. Cognitive Science, 26(5), 521–562.',
-      'Graham, P. (2022). Putting Ideas into Words. paulgraham.com.'
+      { j: 'primer', t: 'Rozenblit, L., & Keil, F. (2002). The misunderstood limits of folk science: An illusion of explanatory depth. Cognitive Science, 26(5), 521–562.' },
+      { j: 'esei', t: 'Graham, P. (2022). Putting Ideas into Words. paulgraham.com.' }
+    ],
+    dakwaan: [
+      { t: "Penilaian kefahaman peserta jatuh selepas mereka cuba menerangkan langkah demi langkah.", j: 'fakta', s: [0] },
+      { t: "Menulis mendedahkan bahawa kita tidak tahu sebaik yang disangka.", j: 'pendapat', s: [1] },
+      { t: "Satu perenggan selepas membaca sudah cukup untuk bermula.", j: 'nasihat', s: [] }
     ],
     berkaitan: ['pengulangan-berjarak', 'bias-pengesahan'], pasangan: 'caramel'
   },
@@ -222,9 +260,15 @@ const KANDUNGAN = [
     ],
     refleksi: 'Apakah persamaan antara gerakan terjemahan Baghdad dengan cara ilmu tersebar di internet hari ini?',
     rujukan: [
-      'Gutas, D. (1998). Greek Thought, Arabic Culture: The Graeco-Arabic Translation Movement in Baghdad. Routledge.',
-      'Al-Khalili, J. (2011). The House of Wisdom: How Arabic Science Saved Ancient Knowledge. Penguin.',
-      'Rashed, R. (ed.) (2009). Al-Khwarizmi: The Beginnings of Algebra. Saqi Books.'
+      { j: 'ulasan', t: 'Gutas, D. (1998). Greek Thought, Arabic Culture: The Graeco-Arabic Translation Movement in Baghdad. Routledge.' },
+      { j: 'ulasan', t: 'Al-Khalili, J. (2011). The House of Wisdom: How Arabic Science Saved Ancient Knowledge. Penguin.' },
+      { j: 'primer', t: 'Rashed, R. (ed.) (2009). Al-Khwarizmi: The Beginnings of Algebra. Saqi Books.' }
+    ],
+    dakwaan: [
+      { t: "Gerakan terjemahan karya Yunani ke bahasa Arab berkembang di Baghdad pada zaman Abbasiyah.", j: 'fakta', s: [0] },
+      { t: "Perkataan \"algebra\" berasal daripada al-jabr dalam tajuk kitab al-Khwarizmi.", j: 'fakta', s: [2] },
+      { t: "Baghdad ditawan dan dimusnahkan oleh tentera Mongol pada tahun 1258.", j: 'fakta', s: [1] },
+      { t: "Bentuk sebenar Baitul Hikmah, sama ada perpustakaan, akademi atau rangkaian sarjana, masih dibahas.", j: 'dibahas', s: [0] }
     ],
     berkaitan: ['ibn-al-haytham', 'adab-menuntut-ilmu']
   },
@@ -257,8 +301,13 @@ const KANDUNGAN = [
     ],
     refleksi: 'Apakah satu perkara yang kau percaya hanya kerana orang lain berkata begitu? Bagaimana kau boleh mengujinya?',
     rujukan: [
-      'Sabra, A. I. (trans.) (1989). The Optics of Ibn al-Haytham, Books I–III. Warburg Institute.',
-      'Lindberg, D. C. (1976). Theories of Vision from al-Kindi to Kepler. University of Chicago Press.'
+      { j: 'primer', t: 'Sabra, A. I. (trans.) (1989). The Optics of Ibn al-Haytham, Books I–III. Warburg Institute.' },
+      { j: 'ulasan', t: 'Lindberg, D. C. (1976). Theories of Vision from al-Kindi to Kepler. University of Chicago Press.' }
+    ],
+    dakwaan: [
+      { t: "Kitab al-Manazir berhujah bahawa cahaya dari objek masuk ke mata.", j: 'fakta', s: [0, 1] },
+      { t: "Terjemahan Latinnya dibaca oleh sarjana Eropah termasuk Roger Bacon dan Kepler.", j: 'fakta', s: [1] },
+      { t: "Gelaran \"perintis kaedah saintifik\" ialah tafsiran yang lazim tetapi dibahas oleh sejarawan sains.", j: 'dibahas', s: [1] }
     ],
     berkaitan: ['baitul-hikmah', 'langit-biru']
   },
@@ -291,8 +340,13 @@ const KANDUNGAN = [
     ],
     refleksi: 'Apakah fenomena harian lain yang kau lihat setiap hari tetapi belum tahu sebabnya?',
     rujukan: [
-      'Strutt, J. W. (Lord Rayleigh) (1871). On the light from the sky, its polarization and colour. Philosophical Magazine, 41, 107–120.',
-      'Bohren, C. F. (1987). Clouds in a Glass of Beer: Simple Experiments in Atmospheric Physics. Wiley.'
+      { j: 'primer', t: 'Strutt, J. W. (Lord Rayleigh) (1871). On the light from the sky, its polarization and colour. Philosophical Magazine, 41, 107–120.' },
+      { j: 'ulasan', t: 'Bohren, C. F. (1987). Clouds in a Glass of Beer: Simple Experiments in Atmospheric Physics. Wiley.' }
+    ],
+    dakwaan: [
+      { t: "Penyerakan oleh zarah yang sangat kecil berkadar songsang dengan kuasa empat panjang gelombang.", j: 'fakta', s: [0] },
+      { t: "Biru (~450 nm) diserakkan kira-kira 5–6 kali lebih banyak daripada merah (~700 nm).", j: 'pengiraan', s: [0] },
+      { t: "Langit tidak kelihatan ungu kerana pancaran matahari, penyerapan atmosfera dan sensitiviti mata.", j: 'fakta', s: [1] }
     ],
     berkaitan: ['ibn-al-haytham', 'kafein-dan-tidur']
   },
@@ -329,9 +383,15 @@ const KANDUNGAN = [
     ],
     refleksi: 'Apakah niat kau ketika membuka Ruang Ilmu hari ini?',
     rujukan: [
-      'Az-Zarnuji, B. Ta\'lim al-Muta\'allim Tariq at-Ta\'allum. Pelbagai edisi dan terjemahan.',
-      'Al-Ghazali, A. H. Ihya\' Ulum al-Din, Kitab al-\'Ilm. Pelbagai edisi.',
-      'Sunan Ibn Majah, Kitab al-Muqaddimah, hadis tentang kewajipan menuntut ilmu.'
+      { j: 'primer', t: 'Az-Zarnuji, B. Ta\'lim al-Muta\'allim Tariq at-Ta\'allum. Pelbagai edisi dan terjemahan.' },
+      { j: 'primer', t: 'Al-Ghazali, A. H. Ihya\' Ulum al-Din, Kitab al-\'Ilm. Pelbagai edisi.' },
+      { j: 'primer', t: 'Sunan Ibn Majah, Kitab al-Muqaddimah, hadis tentang kewajipan menuntut ilmu.' }
+    ],
+    dakwaan: [
+      { t: "Hadis tentang kewajipan menuntut ilmu diriwayatkan oleh Ibn Majah.", j: 'fakta', s: [2] },
+      { t: "Ta'lim al-Muta'allim membincangkan niat, pemilihan guru, kesabaran dan ulang kaji.", j: 'fakta', s: [0] },
+      { t: "Kisah pesanan ibu Imam Malik ialah riwayat yang masyhur dalam tradisi keilmuan.", j: 'riwayat', s: [] },
+      { t: "Ukuran ilmu yang bermanfaat ialah perubahan diri.", j: 'tafsiran', s: [1] }
     ],
     berkaitan: ['hadis-niat', 'baitul-hikmah']
   },
@@ -364,9 +424,14 @@ const KANDUNGAN = [
     ],
     refleksi: 'Pilih satu rutin harian kau. Apakah niat yang boleh menjadikannya lebih bermakna?',
     rujukan: [
-      'Sahih al-Bukhari, Kitab Bad\' al-Wahy, hadis no. 1.',
-      'Sahih Muslim, Kitab al-Imarah, hadis no. 1907.',
-      'Ibn Rajab al-Hanbali. Jami\' al-\'Ulum wa al-Hikam, syarah hadis pertama.'
+      { j: 'primer', t: 'Sahih al-Bukhari, Kitab Bad\' al-Wahy, hadis no. 1.' },
+      { j: 'primer', t: 'Sahih Muslim, Kitab al-Imarah, hadis no. 1907.' },
+      { j: 'ulasan', t: 'Ibn Rajab al-Hanbali. Jami\' al-\'Ulum wa al-Hikam, syarah hadis pertama.' }
+    ],
+    dakwaan: [
+      { t: "Hadis niat diriwayatkan oleh Umar ibn al-Khattab dan direkodkan oleh al-Bukhari dan Muslim.", j: 'fakta', s: [0, 1] },
+      { t: "Al-Bukhari meletakkannya sebagai hadis pertama dalam Sahihnya.", j: 'fakta', s: [0] },
+      { t: "Sebahagian ulama menganggap hadis ini merangkumi sebahagian besar ilmu.", j: 'tafsiran', s: [2] }
     ],
     berkaitan: ['adab-menuntut-ilmu', 'kenapa-bertangguh']
   },
@@ -399,9 +464,14 @@ const KANDUNGAN = [
     ],
     refleksi: 'Di manakah "ruang ilmu" kau sendiri: tempat kau paling banyak berbincang dan belajar?',
     rujukan: [
-      'Hattox, R. S. (1985). Coffee and Coffeehouses: The Origins of a Social Beverage in the Medieval Near East. University of Washington Press.',
-      'Ellis, M. (2004). The Coffee House: A Cultural History. Weidenfeld & Nicolson.',
-      'Pendergrast, M. (2010). Uncommon Grounds: The History of Coffee and How It Transformed Our World. Basic Books.'
+      { j: 'ulasan', t: 'Hattox, R. S. (1985). Coffee and Coffeehouses: The Origins of a Social Beverage in the Medieval Near East. University of Washington Press.' },
+      { j: 'ulasan', t: 'Ellis, M. (2004). The Coffee House: A Cultural History. Weidenfeld & Nicolson.' },
+      { j: 'ulasan', t: 'Pendergrast, M. (2010). Uncommon Grounds: The History of Coffee and How It Transformed Our World. Basic Books.' }
+    ],
+    dakwaan: [
+      { t: "Bukti terawal yang kukuh tentang minuman kopi datang dari biara sufi di Yaman pada pertengahan abad ke-15.", j: 'fakta', s: [0, 2] },
+      { t: "Kisah Kaldi dan kambingnya hanya muncul dalam tulisan pada tahun 1671.", j: 'fakta', s: [2] },
+      { t: "Rumah kopi London digelar \"penny universities\".", j: 'fakta', s: [1] }
     ],
     berkaitan: ['sains-espresso', 'baitul-hikmah'], pasangan: 'classic'
   },
@@ -434,8 +504,13 @@ const KANDUNGAN = [
     ],
     refleksi: 'Apakah satu proses harian lain yang kualitinya bergantung pada keseimbangan masa dan suhu?',
     rujukan: [
-      'Illy, A., & Viani, R. (eds.) (2005). Espresso Coffee: The Science of Quality (2nd ed.). Elsevier Academic Press.',
-      'Specialty Coffee Association. Coffee Brewing Control Chart dan garis panduan pengekstrakan.'
+      { j: 'ulasan', t: 'Illy, A., & Viani, R. (eds.) (2005). Espresso Coffee: The Science of Quality (2nd ed.). Elsevier Academic Press.' },
+      { j: 'rasmi', t: 'Specialty Coffee Association. Coffee Brewing Control Chart dan garis panduan pengekstrakan.' }
+    ],
+    dakwaan: [
+      { t: "Espresso lazimnya dibancuh pada tekanan sekitar 9 bar dan suhu air 90–96°C.", j: 'fakta', s: [0] },
+      { t: "Kurang ekstrak menghasilkan rasa masam; terlebih ekstrak menghasilkan rasa pahit.", j: 'fakta', s: [0, 1] },
+      { t: "Crema terbentuk daripada karbon dioksida dalam biji yang baru dipanggang.", j: 'fakta', s: [0] }
     ],
     berkaitan: ['sejarah-kopi', 'kafein-dan-tidur'], pasangan: 'mocha'
   },
@@ -468,9 +543,15 @@ const KANDUNGAN = [
     ],
     refleksi: 'Pukul berapa cawan kopi terakhir kau semalam? Bagaimana tidur kau?',
     rujukan: [
-      'Drake, C., et al. (2013). Caffeine effects on sleep taken 0, 3, or 6 hours before going to bed. Journal of Clinical Sleep Medicine, 9(11), 1195–1200.',
-      'EFSA Panel on Dietetic Products, Nutrition and Allergies (2015). Scientific Opinion on the safety of caffeine. EFSA Journal, 13(5), 4102.',
-      'Institute of Medicine (2001). Caffeine for the Sustainment of Mental Task Performance. National Academies Press.'
+      { j: 'primer', t: 'Drake, C., et al. (2013). Caffeine effects on sleep taken 0, 3, or 6 hours before going to bed. Journal of Clinical Sleep Medicine, 9(11), 1195–1200.' },
+      { j: 'rasmi', t: 'EFSA Panel on Dietetic Products, Nutrition and Allergies (2015). Scientific Opinion on the safety of caffeine. EFSA Journal, 13(5), 4102.' },
+      { j: 'ulasan', t: 'Institute of Medicine (2001). Caffeine for the Sustainment of Mental Task Performance. National Academies Press.' }
+    ],
+    dakwaan: [
+      { t: "400 mg kafein enam jam sebelum tidur mengurangkan jumlah tidur lebih daripada sejam.", j: 'fakta', s: [0] },
+      { t: "Sehingga 400 mg kafein sehari dianggap selamat untuk orang dewasa yang sihat, dan 200 mg untuk wanita hamil.", j: 'fakta', s: [1] },
+      { t: "Separuh hayat kafein berbeza antara individu, dengan purata sekitar lima jam.", j: 'fakta', s: [2] },
+      { t: "Untuk nasihat peribadi, rujuk pengamal perubatan.", j: 'nasihat', s: [] }
     ],
     berkaitan: ['sains-espresso', 'pengulangan-berjarak'], pasangan: 'choc'
   },
@@ -503,10 +584,63 @@ const KANDUNGAN = [
     ],
     refleksi: 'Apakah satu tabiat kecil yang, jika diulang setiap hari selama setahun, akan memberi kesan besar?',
     rujukan: [
-      'Pengiraan nilai masa depan anuiti: RM100 sebulan, kadar 5% setahun dikompaun bulanan.',
-      'Bank Negara Malaysia. Portal pendidikan kewangan (bnm.gov.my) untuk bahan literasi kewangan.'
+      { j: 'pengiraan', t: 'Pengiraan nilai masa depan anuiti: RM100 sebulan, kadar 5% setahun dikompaun bulanan.' },
+      { j: 'rasmi', t: 'Bank Negara Malaysia. Portal pendidikan kewangan (bnm.gov.my) untuk bahan literasi kewangan.' }
+    ],
+    dakwaan: [
+      { t: "RM100 sebulan pada 5% setahun menjadi ~RM41,000 selepas 20 tahun dan ~RM83,000 selepas 30 tahun.", j: 'pengiraan', s: [0] },
+      { t: "Peraturan 72 memberi anggaran cepat tempoh wang berganda.", j: 'pengiraan', s: [0] },
+      { t: "Angka ialah ilustrasi, bukan nasihat kewangan.", j: 'nasihat', s: [1] }
     ],
     berkaitan: ['kenapa-bertangguh', 'pengulangan-berjarak']
+  },
+  {
+    slug: 'taktik-manipulasi-media',
+    tajuk: 'Trust Me, I\'m Lying: bagaimana berita palsu naik tangga',
+    dek: 'Seorang pemasar mendedahkan cara dia memanipulasi blog dan media. Tujuannya bukan untuk ditiru, tetapi supaya kita boleh mengenalinya.',
+    kategori: 'kreatif', tag: ['celik media', 'manipulasi', 'pemikiran kritis'], tahap: 'Pertengahan',
+    terbit: '2026-10-24', kemas: '2026-10-24', pilihan: true,
+    ringkas60: 'Dalam Trust Me, I\'m Lying (2012), Ryan Holiday menerangkan bagaimana cerita kecil di blog kecil dipetik oleh laman yang lebih besar sehingga menjadi berita nasional, tanpa sesiapa menyemak sumber asalnya. Sistem yang dibayar mengikut pageview menggalakkan tajuk yang membangkitkan emosi dan berita yang diterbitkan dahulu, disemak kemudian. Pembetulan pula jarang sampai kepada pembaca asal.',
+    bahagian: [
+      { h: 'Pengakuan seorang pemasar', v: '2012', p: [
+        'Ryan Holiday pernah menjadi pengarah pemasaran American Apparel. Dalam Trust Me, I\'m Lying, dia menceritakan bagaimana dia sendiri mencipta liputan media untuk pelanggannya, termasuk merosakkan papan iklan sebuah filem yang dipromosikannya, kemudian menghantar gambarnya kepada blog secara tanpa nama.',
+        'Buku itu ditulis sebagai pengakuan. Holiday berhujah bahawa ==masalahnya bukan pada seorang manipulator, tetapi pada sistem yang memberi ganjaran kepada manipulasi==.'
+      ]},
+      { h: 'Naik tangga', v: 'Kecil → besar', p: [
+        'Taktik paling terkenal dalam buku itu ialah "trading up the chain". Cerita dimulakan di blog kecil yang mudah menerima tip. Laman yang lebih besar memetik blog itu, kemudian akhbar memetik laman besar itu. Pada setiap anak tangga, sumber asal semakin jauh dan semakin sedikit orang yang menyemaknya.',
+        'Holiday memanggil ini ilusi sumber dalam "ekonomi pautan": setiap laman memautkan laman sebelumnya, jadi cerita kelihatan disahkan oleh banyak pihak walaupun semuanya bersandar pada satu tip yang sama.'
+      ]},
+      { h: 'Apa yang tersebar, bukan apa yang benar', v: 'Marah > sedih', p: [
+        'Holiday memetik kajian Jonah Berger dan Katherine Milkman (2012) terhadap artikel New York Times. Artikel yang membangkitkan emosi berintensiti tinggi seperti kagum, marah dan cemas lebih kerap dikongsi. Artikel yang membuatkan pembaca sedih kurang dikongsi.',
+        'Apabila pendapatan bergantung pada pageview, penerbit terdorong memilih apa yang tersebar. Tajuk menjadi produk, dan ==kemarahan menjadi bahan api yang paling murah==.'
+      ]},
+      { h: 'Terbit dahulu, betulkan kemudian', v: 'Mitos pembetulan', p: [
+        'Holiday mengkritik apa yang dipanggilnya kewartawanan berulang: terbitkan dengan cepat, kemudian kemas kini jika ada yang salah. Masalahnya, pembetulan jarang dibaca oleh orang yang membaca versi asal.',
+        'Dia mencadangkan model langganan sebagai jalan keluar, kerana penerbit yang dibayar oleh pembaca setia lebih bergantung pada kepercayaan berbanding klik sekali lalu.'
+      ]},
+      { h: 'Empat soalan sebelum percaya', v: '4 soalan', p: [
+        'Siapa sumber asal, bukan siapa yang terakhir memetik? Siapa yang mendapat untung jika aku percaya dan berkongsi? Adakah tajuk ini benar-benar dijawab dalam isinya? Bilakah ia dikemas kini, dan apa yang telah dibetulkan?',
+        'Setiap bahan di Ruang Ilmu kini menjawab empat soalan ini dalam ==Kad integriti== di hujung artikel.'
+      ]}
+    ],
+    fakta: ['Cerita boleh "naik tangga" dari blog kecil ke berita nasional tanpa sumber asalnya disemak.', 'Kandungan yang membangkitkan kagum, marah dan cemas lebih kerap dikongsi berbanding kandungan yang menyedihkan.', 'Pembetulan jarang sampai kepada pembaca versi asal.'],
+    kuiz: [
+      { s: 'Apakah maksud "trading up the chain"?', p: ['Cerita dari blog kecil dipetik oleh laman yang semakin besar', 'Menjual saham syarikat media', 'Menulis artikel bersiri'], j: 0, t: 'Setiap anak tangga memetik yang sebelumnya, jadi sumber asal jarang disemak.' },
+      { s: 'Menurut kajian Berger dan Milkman, artikel jenis apa yang paling jarang dikongsi?', p: ['Yang membangkitkan rasa kagum', 'Yang membangkitkan kemarahan', 'Yang membuatkan pembaca sedih'], j: 2, t: 'Emosi berintensiti rendah seperti sedih kurang mendorong perkongsian.' },
+      { s: 'Apakah penyelesaian yang dicadangkan Holiday?', p: ['Lebih banyak iklan', 'Model langganan yang bergantung pada kepercayaan pembaca', 'Tajuk yang lebih pendek'], j: 1, t: 'Pembaca yang membayar memberi ganjaran kepada kepercayaan, bukan klik.' }
+    ],
+    refleksi: 'Fikirkan satu berita yang kau kongsi baru-baru ini. Siapa sumber asalnya?',
+    rujukan: [
+      { j: 'primer', t: 'Holiday, R. (2012). Trust Me, I\'m Lying: Confessions of a Media Manipulator. Portfolio/Penguin. Edisi 2013 dengan prakata dan dua lampiran baharu.' },
+      { j: 'primer', t: 'Berger, J., & Milkman, K. L. (2012). What makes online content viral? Journal of Marketing Research, 49(2), 192–205.' }
+    ],
+    dakwaan: [
+      { t: 'Holiday menerangkan bagaimana cerita dari blog kecil dipetik oleh laman yang lebih besar tanpa sumber asalnya disemak.', j: 'fakta', s: [0] },
+      { t: 'Artikel yang membangkitkan kagum, marah atau cemas lebih kerap dikongsi; artikel yang menyedihkan kurang dikongsi.', j: 'fakta', s: [1] },
+      { t: 'Model bayaran mengikut pageview memberi ganjaran kepada manipulasi.', j: 'pendapat', s: [0] },
+      { t: 'Model langganan lebih selari dengan kepercayaan pembaca.', j: 'pendapat', s: [0] }
+    ],
+    berkaitan: ['bias-pengesahan', 'kenapa-percaya-ramalan']
   }
 ];
 
@@ -514,7 +648,27 @@ const LALUAN = [
   { slug: 'berfikir-jelas', nama: 'Berfikir dengan jelas', ringkas: 'Kenali perangkap minda yang paling biasa dan cara mengelaknya.', kurator: 'Meja Editorial', item: ['kenapa-percaya-ramalan', 'bias-pengesahan', 'menulis-untuk-berfikir', 'kenapa-bertangguh'] },
   { slug: 'tamadun-ilmu', nama: 'Tamadun ilmu', ringkas: 'Dari adab penuntut ilmu ke bilik gelap Ibn al-Haytham.', kurator: 'Meja Editorial', item: ['hadis-niat', 'adab-menuntut-ilmu', 'baitul-hikmah', 'ibn-al-haytham'] },
   { slug: 'biji-ke-cawan', nama: 'Kopi: dari biji ke cawan', ringkas: 'Sejarah, sains dan kesan kopi pada tidur. Sesuai dibaca bersama secawan.', kurator: 'Meja Editorial × Sip \'n Go', item: ['sejarah-kopi', 'sains-espresso', 'kafein-dan-tidur'] },
+  { slug: 'celik-media', nama: 'Celik media', ringkas: 'Kenali cara maklumat dimanipulasi, dan cara membaca dengan skeptikal yang sihat.', kurator: 'Meja Editorial', item: ['taktik-manipulasi-media', 'kenapa-percaya-ramalan', 'bias-pengesahan', 'menulis-untuk-berfikir'] },
   { slug: 'belajar-cara-belajar', nama: 'Belajar cara belajar', ringkas: 'Teknik yang disokong kajian untuk mengingat lebih lama dan bertangguh kurang.', kurator: 'Meja Editorial', item: ['pengulangan-berjarak', 'kenapa-bertangguh', 'menulis-untuk-berfikir', 'kuasa-pertumbuhan-berganda'] }
+];
+
+/* Sembilan taktik dalam "Trust Me, I'm Lying" (Ryan Holiday) dan benteng yang dibina dalam Ruang Ilmu.
+   Dipaparkan di halaman Tentang dan digunakan oleh semakan Studio. */
+const TAKTIK = [
+  { n: 1, taktik: 'Penulis kurang dibayar, jadi bantu bayar bil mereka', bahaya: 'Kandungan siap dari pihak berkepentingan diterbitkan sebagai berita.', benteng: 'Rakan komersial tidak boleh menulis, menyemak atau mengubah isi. Setiap padanan Sip \'n Go dilabel dengan pendedahan kepentingan.' },
+  { n: 2, taktik: 'Beritahu apa yang mereka mahu dengar', bahaya: 'Cerita dipilih kerana sesuai dengan naratif, bukan kerana benar.', benteng: 'Setiap dakwaan utama dilabel fakta, tafsiran, dibahas atau pendapat, dan dipautkan kepada sumbernya.' },
+  { n: 3, taktik: 'Beri apa yang tersebar, bukan apa yang baik', bahaya: 'Kemarahan dan kebimbangan dipilih kerana mudah dikongsi.', benteng: 'Tiada senarai "paling popular". Cadangan berdasarkan minat dan laluan, bukan tontonan. Kami memilih rasa ingin tahu dan kagum, bukan kemarahan.' },
+  { n: 4, taktik: 'Bantu mereka memperdaya pembaca', bahaya: 'Tajuk berbentuk soalan yang tidak pernah dijawab.', benteng: 'Tajuk berbentuk soalan wajib dijawab dalam "Faham dalam 60 saat". Studio menyemak tajuk sebelum terbit.' },
+  { n: 5, taktik: 'Jual sesuatu yang boleh dijual sekali lalu', bahaya: 'Setiap artikel bersaing untuk klik sekali, jadi sensasi menang.', benteng: 'Model langganan: Surat Ilmu mingguan dan keahlian. Ukuran kejayaan ialah pembaca kembali, bukan klik.' },
+  { n: 6, taktik: 'Jadikan semuanya tentang tajuk', bahaya: 'Tajuk menjanjikan lebih daripada isi.', benteng: 'Semakan umpan klik: tiada huruf besar penuh, tiada "!!", tiada frasa seperti "anda tak akan percaya".' },
+  { n: 7, taktik: 'Bunuh dengan kebaikan pageview', bahaya: 'Penerbit dibayar mengikut tontonan, jadi tontonan menjadi matlamat.', benteng: 'Studio tidak memaparkan pageview sebagai ukuran utama. Yang diukur: kadar lengkap, kuiz tepat, disimpan dan pembaca kembali.' },
+  { n: 8, taktik: 'Gunakan teknologi melawan dirinya', bahaya: 'Komen palsu, suntingan dan isyarat trending dimanipulasi.', benteng: 'Tiada komen terbuka atau carta trending. Maklum balas pembaca masuk ke Studio sebagai laporan yang disemak manusia.' },
+  { n: 9, taktik: 'Reka sahaja (semua orang buat)', bahaya: 'Dakwaan tanpa sumber disebarkan, kemudian dipetik semula.', benteng: 'Dakwaan fakta dan pengiraan tanpa sumber disekat oleh semakan integriti data. Sumber dibezakan antara primer, ulasan dan rasmi.' }
+];
+const BENTENG_LAIN = [
+  { n: 'Ekonomi pautan', benteng: 'Sumber dirujuk terus kepada asalnya, dengan jenis sumber dinyatakan. Kad fakta dikongsi bersama sumbernya.' },
+  { n: 'Kewartawanan berulang', benteng: 'Bahan diterbitkan hanya selepas langkah Semakan dalam aliran kerja editorial. Setiap perubahan direkod dalam sejarah versi.' },
+  { n: 'Mitos pembetulan', benteng: 'Pembetulan dipaparkan di atas artikel, dan pembaca yang pernah membuka bahan itu dimaklumkan di halaman utama.' }
 ];
 
 const EBUKU = [
