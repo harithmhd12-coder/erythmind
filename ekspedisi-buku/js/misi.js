@@ -284,7 +284,7 @@
         c.tutupModal(); c.bunyi('betul'); c.tambahXP(10); c.toast('💪 ' + c.L('Kawalan diri! +10 XP|Self-control! +10 XP'));
         c.awan(k.goda.x, k.goda.z, m); k.penggoda.model.visible = false; k.lblG.e.style.display = 'none'; k.lblG.pos.y = -99;
       };
-      p.querySelector('[data-a=ya]').onclick = () => { c.tutupModal(); buangKotak(m); c.gagal(c.L('Kau tewas kepada godaan segera. Bungkusan hilang. −1 nyawa.|You gave in to instant temptation. The package is lost. −1 heart.')); };
+      p.querySelector('[data-a=ya]').onclick = () => { c.tutupModal(); buangKotak(m); c.stat('goda'); c.gagal(c.L('Kau tewas kepada godaan segera. Bungkusan hilang. −1 nyawa.|You gave in to instant temptation. The package is lost. −1 heart.')); };
     },
     serah(c, m) {
       const k = m.kaki[m.k];
