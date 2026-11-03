@@ -70,6 +70,7 @@ js/dunia.js      grid, susun atur peta, model diorama (digabung sebaris), air, k
 js/watak.js      model watak, animasi, A*, pengawal pemain, penduduk
 js/misi.js       pengendali misi umum
 js/signature.js  16 misi signature dan Kebun 1%
+js/awan.js       simpanan awan Supabase dan gabungan simpanan
 js/permainan.js  aliran misi, cabaran, pertarungan kad, nyawa/XP/streak, ulang kaji, album, peta, input, simpanan
 data/*.js        kandungan buku
 ```
@@ -94,6 +95,23 @@ EB.daftar({
 ```
 
 Jawapan betul sentiasa ditulis pertama; game mengocok susunan pilihan. Peta, kabus, misi dan soalan automatik dijana sendiri daripada data ini.
+
+## Simpanan awan (Supabase)
+
+Pemain boleh log masuk dengan emel (pautan log masuk atau kod 6 digit, tanpa kata laluan). Semua pemain di peranti itu kemudian disimpan ke akaun mereka, dan boleh disambung di peranti lain dengan emel yang sama. Pilihan **Guna tanpa emel** menyimpan ke awan untuk peranti itu sahaja.
+
+- Projek Supabase sama dengan Erythmind (`../app/config.js`), tetapi sesi disimpan di bawah kunci berasingan (`ekspedisi-buku.auth`). Log masuk game tidak menyentuh sesi pemilik atau tetamu Erythmind.
+- Jadual `public.eb_simpanan` (`supabase/ekspedisi-buku.sql`): satu baris setiap pemain, dan RLS membenarkan setiap akaun membaca dan menulis baris sendiri sahaja. Had 200 KB setiap baris dan 12 pemain setiap akaun.
+- Penyegerakan berlaku semasa membuka game (jika sudah log masuk), selepas log masuk, 4 saat selepas setiap simpanan, dan apabila rangkaian kembali. Data dari beberapa peranti **digabung**, bukan ditindih: bab terjauh, bintang tertinggi, XP tertinggi, hari kebun dan ulang kaji digabungkan. Pemain bernama sama yang dicipta sebelum log masuk disatukan dengan pemain di awan.
+- Game tidak menghubungi Supabase langsung sehingga pemain memilih untuk log masuk.
+
+### Persediaan sekali (pemilik projek Supabase)
+
+1. **SQL Editor → New query**: tampal seluruh `supabase/ekspedisi-buku.sql` → **Run**. Ia tidak mengubah jadual atau peraturan Erythmind.
+2. **Authentication → URL Configuration → Redirect URLs**: tambah `https://harithmhd12-coder.github.io/erythmind/ekspedisi-buku/**`. Tanpa ini, pautan dalam emel akan membawa pemain ke Site URL (app Erythmind) dan bukan ke game.
+3. **Authentication → Emails → SMTP Settings**: sambungkan SMTP sendiri (contohnya Resend atau Brevo, ada pelan percuma). Perkhidmatan emel bawaan Supabase hanya menghantar kepada ahli pasukan projek dan dengan had yang sangat rendah, jadi pemain awam tidak akan menerima emel tanpa langkah ini.
+4. (Pilihan) **Authentication → Emails → Templates**: dalam templat *Magic Link* dan *Confirm signup*, tambah `{{ .Token }}` supaya emel juga mengandungi kod 6 digit. Ini berguna apabila pemain membuka emel di peranti lain.
+5. *Allow anonymous sign-ins* sudah hidup untuk Erythmind; ia hanya digunakan oleh pilihan **Guna tanpa emel**.
 
 ## Pemain & simpanan
 

@@ -295,3 +295,11 @@ textarea.kod { width: 100%; min-height: 110px; font: 12px/1.4 ui-monospace, mono
 .meter { display: grid; grid-template-columns: 110px 1fr 36px; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; }
 .meter .bar { margin: 0; }
 .label.kebun span { background: rgba(124, 201, 78, .95); color: #fff; }
+
+/* ---------- simpanan awan ---------- */
+.awan-chip { margin-left: 2px; }
+.awan-chip.on { background: #e6f6ff; box-shadow: 0 4px 0 #9cc4ff; }
+.borang-awan { background: #fff; border: 2px solid #ead8b8; border-radius: 14px; padding: 10px 12px; margin: 10px 0; }
+.borang-awan .butang { margin-top: 8px; }
+.input-emel, .input-kod { font: inherit; font-size: 17px; padding: 10px 12px; border-radius: 12px; border: 2px solid #ead8b8; background: #fff; user-select: text; -webkit-user-select: text; width: 100%; }
+.input-kod { letter-spacing: 6px; text-align: center; font-family: ui-monospace, monospace; }

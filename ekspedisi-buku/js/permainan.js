@@ -37,7 +37,9 @@
   const profilAktif = () => P.senarai.find((x) => x.id === P.aktif) || null;
   function simpan() {
     if (!P.aktif) return;
+    S.dikemas = Date.now();
     tulisJSON(kunciData(P.aktif), S);
+    if (EB.awan) EB.awan.tanda();
     const pr = profilAktif(); if (pr) { pr.akhir = Date.now(); pr.xp = S.xp; pr.terakhir = S.terakhir; }
     tulisJSON(KUNCI_PROFIL, P);
   }
@@ -691,6 +693,7 @@
       <label class="baris-tetapan"><span>${esc(t('kualiti'))}</span><span class="tog">${['tinggi', 'sederhana', 'rendah'].map((k) => `<button data-q="${k}" class="${q === k ? 'on' : ''}">${esc(t(k))}</button>`).join('')}</span></label>
       <label class="baris-tetapan"><span>${esc(t('bunyi'))}</span><span class="tog"><button data-b="1" class="${G.bunyi ? 'on' : ''}">On</button><button data-b="0" class="${!G.bunyi ? 'on' : ''}">Off</button></span></label>
       <div class="baris-tetapan"><span>👤 ${esc(pr ? pr.nama : '')}</span><span class="tog"><button data-a="nama">✎ ${esc(L('Tukar nama|Rename'))}</button><button data-a="profil">⇄ ${esc(L('Tukar pemain|Switch player'))}</button></span></div>
+      <div class="baris-tetapan"><span>☁ ${esc(L('Simpanan awan|Cloud save'))}</span><span class="tog"><button data-a="awan">${esc(statusAwan())}</button></span></div>
       <div class="baris-tetapan"><span>💾 ${esc(L('Simpanan|Save data'))}</span><span class="tog"><button data-a="eksport">⤴ ${esc(L('Kod simpanan|Save code'))}</button><button data-a="import">⤵ ${esc(L('Sambung dari kod|Load a code'))}</button></span></div>
       <p class="kecil">${esc(L('Kemajuan disimpan secara automatik dalam peranti ini. Guna Kod simpanan untuk sambung di peranti lain atau selepas membersihkan browser.|Progress saves automatically on this device. Use the Save code to continue on another device or after clearing the browser.'))}</p>
       <p class="kecil">${esc(t(sentuh ? 'kawalanSentuh' : 'kawalan'))}</p>
@@ -702,6 +705,7 @@
     p.querySelector('[data-a=nama]').onclick = () => dialogProfil({ ubah: true });
     p.querySelector('[data-a=profil]').onclick = () => dialogProfil({});
     p.querySelector('[data-a=eksport]').onclick = dialogEksport;
+    p.querySelector('[data-a=awan]').onclick = dialogAwan;
     p.querySelector('[data-a=import]').onclick = dialogImport;
     p.querySelector('[data-a=keluar]').onclick = () => { tutupModal(); paparLayarMula(); };
     p.querySelector('[data-a=padam]').onclick = () => { if (confirm(t('pastiPadam'))) { delete S.buku[buku.id]; Object.keys(S.ulang).forEach((k) => k.startsWith(buku.id + ':') && delete S.ulang[k]); simpan(); tutupModal(); mulaBuku(buku.id); } };
@@ -734,6 +738,8 @@
     const bk = S.terakhir && EB.BUKU.find((b) => b.id === S.terakhir), pg = bk && S.buku[bk.id];
     k.innerHTML = `<div class="pemain-chip"><i style="background:${pr.warna}">${esc(pr.nama.slice(0, 1).toUpperCase())}</i><div><b>${esc(L('Hai|Hi'))}, ${esc(pr.nama)}!</b><small>${esc(t('tahap'))} ${tahap()} · ${S.xp} XP · 🔥 ${S.siri.n || 0}</small></div><button class="btn kecil" data-a="profil">⇄ ${esc(L('Tukar|Switch'))}</button></div>
       ${bk && pg && pg.depan > 0 ? `<button class="btn utama sambung" data-a="sambung">▶ ${esc(t('sambung'))}: ${esc(bk.tajuk)} · ${esc(t('bab'))} ${Math.min(pg.depan + 1, bk.bahagian.reduce((a, bh) => a + bh.bab.length + 1, 0))}</button>` : ''}`;
+    k.querySelector('.pemain-chip').insertAdjacentHTML('beforeend', EB.awan && EB.awan.sedia ? `<button class="btn kecil awan-chip ${EB.awan.masuk ? 'on' : ''}" data-a="awan" title="${esc(L('Simpanan awan|Cloud save'))}">☁ ${esc(EB.awan.masuk ? (EB.awan.tanpaNama ? L('Awan|Cloud') : EB.awan.emel.split('@')[0]) : L('Simpan ke awan|Save to cloud'))}</button>` : '');
+    const ka = k.querySelector('[data-a=awan]'); if (ka) ka.onclick = dialogAwan;
     k.querySelector('[data-a=profil]').onclick = () => dialogProfil({});
     const sb = k.querySelector('[data-a=sambung]'); if (sb) sb.onclick = () => { bunyi('klik'); mulaBuku(bk.id); };
   }
@@ -766,6 +772,7 @@
       const id = b.dataset.padam, sasar = P.senarai.find((q) => q.id === id);
       if (!confirm(L('Padam pemain “|Delete player “') + sasar.nama + L('” dan semua kemajuannya?|” and all their progress?'))) return;
       P.senarai = P.senarai.filter((q) => q.id !== id); try { localStorage.removeItem(kunciData(id)); } catch (e) { /* abaikan */ }
+      if (EB.awan) EB.awan.padam(id);
       if (P.aktif === id) { P.aktif = null; S = lalaiS(); }
       tulisJSON(KUNCI_PROFIL, P); dialogProfil(o); binaKadPemain();
     }));
@@ -781,6 +788,91 @@
     };
     p.querySelector('[data-a=ok]').onclick = sah;
     inp.onkeydown = (e) => { if (e.key === 'Enter') sah(); };
+  }
+  /* ---------- Simpanan awan ---------- */
+  function statusAwan() {
+    const A = EB.awan;
+    if (!A || !A.sedia) return L('Tidak tersedia|Unavailable');
+    if (!A.masuk) return L('Tidak aktif · Aktifkan|Off · Turn on');
+    return (A.tanpaNama ? L('Aktif (peranti ini)|On (this device)') : A.emel) + (A.ralat ? ' ⚠' : '');
+  }
+  function apiAwan() {
+    return {
+      L, toast,
+      senarai: () => P.senarai.map((pr) => ({ id: pr.id, nama: pr.nama, warna: pr.warna, data: pr.id === P.aktif ? S : bacaJSON(kunciData(pr.id)) || lalaiS() })),
+      terima: terimaAwan,
+      berubah: () => { if (layarMula) binaKadPemain(); const d = document.querySelector('.dialog-awan'); if (d && modalTerbuka) dialogAwan(); },
+    };
+  }
+  function terimaAwan(baris) {
+    let ubah = false;
+    const idAwan = new Set(baris.map((r) => r.profil_id));
+    for (const r of baris) {
+      if (!r || !r.data || typeof r.data !== 'object') continue;
+      let pr = P.senarai.find((x) => x.id === r.profil_id);
+      if (!pr) { // pemain sama nama yang dicipta di peranti ini sebelum log masuk → gabung
+        pr = P.senarai.find((x) => x.nama.toLowerCase() === String(r.nama).toLowerCase() && !idAwan.has(x.id));
+        if (pr) {
+          const d = pr.id === P.aktif ? S : bacaJSON(kunciData(pr.id)) || lalaiS();
+          try { localStorage.removeItem(kunciData(pr.id)); } catch (e) { /* abaikan */ }
+          if (P.aktif === pr.id) P.aktif = r.profil_id;
+          pr.id = r.profil_id; tulisJSON(kunciData(pr.id), d);
+        }
+      }
+      if (!pr) {
+        P.senarai.push({ id: r.profil_id, nama: String(r.nama).slice(0, 20), warna: r.warna || WARNA_PEMAIN[0], dibuat: Date.now(), akhir: Date.now(), xp: r.data.xp || 0, terakhir: r.data.terakhir || null });
+        tulisJSON(kunciData(r.profil_id), Object.assign(lalaiS(), r.data)); ubah = true; continue;
+      }
+      const tempatan = pr.id === P.aktif ? S : bacaJSON(kunciData(pr.id)) || lalaiS();
+      const g = Object.assign(lalaiS(), EB.gabungSimpanan(tempatan, r.data));
+      if (JSON.stringify(g) !== JSON.stringify(Object.assign(lalaiS(), tempatan))) ubah = true;
+      if (pr.id === P.aktif) { Object.keys(S).forEach((k) => delete S[k]); Object.assign(S, g); } else tulisJSON(kunciData(pr.id), g);
+      pr.xp = g.xp; pr.terakhir = g.terakhir;
+    }
+    if (!P.aktif && P.senarai.length) { P.aktif = P.senarai[0].id; Object.keys(S).forEach((k) => delete S[k]); Object.assign(S, lalaiS(), bacaJSON(kunciData(P.aktif)) || {}); ubah = true; }
+    tulisJSON(KUNCI_PROFIL, P); if (P.aktif) tulisJSON(kunciData(P.aktif), S);
+    if (ubah) {
+      const pr = profilAktif(); if (pr) warnakanPemain(pr.warna);
+      if (layarMula) { binaKadBuku(); binaKadPemain(); }
+      else if (buku) { prog = kemajuan(buku.id); kemaskiniHad(); kemasLabelNod(); kemasHUD(); }
+    }
+    return ubah;
+  }
+  function dialogAwan() {
+    const A = EB.awan;
+    if (!A || !A.sedia) {
+      const p = bukaModal(`<h2>☁ ${esc(L('Simpanan awan|Cloud save'))}</h2><p>${esc(L('Simpanan awan belum dikonfigurasi untuk laman ini.|Cloud save isn’t configured for this site.'))}</p><div class="butang"><button class="btn utama" data-a="x">${esc(t('tutup'))}</button></div>`, 'kecil dialog-awan');
+      p.querySelector('[data-a=x]').onclick = tutupModal; return;
+    }
+    const ralat = A.ralat ? `<p class="nota">⚠ ${esc(L('Penyegerakan terakhir gagal:|Last sync failed:'))} ${esc(A.ralat)}</p>` : '';
+    let isi;
+    if (A.masuk) {
+      isi = `<p>${A.tanpaNama ? esc(L('Aktif tanpa emel: simpanan awan untuk peranti ini sahaja. Log masuk dengan emel untuk menyambung di peranti lain.|On without email: cloud save for this device only. Sign in with email to continue on other devices.')) : esc(L('Log masuk sebagai|Signed in as')) + ` <b>${esc(A.emel)}</b>. ${esc(L('Semua pemain di peranti ini disimpan ke akaun ini. Log masuk dengan emel yang sama di peranti lain untuk menyambung.|All players on this device are saved to this account. Sign in with the same email on another device to continue.'))}`}</p>
+        <p class="kecil">${esc(L('Segerak terakhir|Last sync'))}: ${A.akhir ? new Date(A.akhir).toLocaleString() : '—'}</p>${ralat}
+        ${A.tanpaNama ? borangEmel(A) : ''}
+        <div class="butang"><button class="btn" data-a="keluar">${esc(L('Log keluar|Sign out'))}</button><button class="btn utama" data-a="segerak">⟳ ${esc(L('Segerak sekarang|Sync now'))}</button></div>`;
+    } else {
+      isi = `<p>${esc(L('Simpan ekspedisi semua pemain di peranti ini ke awan, kemudian sambung di telefon, tablet atau komputer lain dengan log masuk menggunakan emel yang sama. Tiada kata laluan: kami hantar pautan log masuk ke emel kau.|Save every player’s expedition on this device to the cloud, then continue on another phone, tablet or computer by signing in with the same email. No password: we email you a sign-in link.'))}</p>
+        ${borangEmel(A)}${ralat}
+        <p class="kecil"><button class="btn kecil" data-a="anon">${esc(L('Guna tanpa emel (peranti ini sahaja)|Use without email (this device only)'))}</button></p>`;
+    }
+    const p = bukaModal(`<div class="kepala-modal"><h2>☁ ${esc(L('Simpanan awan|Cloud save'))}</h2><button class="btn ikon" data-a="x">✕</button></div>${isi}`, 'kecil dialog-awan');
+    p.querySelector('[data-a=x]').onclick = tutupModal;
+    const cuba = (btn, fn) => async () => { btn.disabled = true; try { await fn(); } catch (e) { A.ralat = e.message === 'emel' ? L('Emel tidak sah|Invalid email') : e.message || String(e); toast('⚠ ' + A.ralat); } btn.disabled = false; if (modalTerbuka) dialogAwan(); };
+    const q = (sel) => p.querySelector(sel);
+    if (q('[data-a=hantar]')) q('[data-a=hantar]').onclick = cuba(q('[data-a=hantar]'), async () => { await A.hantarEmel(q('.input-emel').value); A.ralat = ''; toast('✉ ' + L('Pautan log masuk dihantar. Semak emel kau.|Sign-in link sent. Check your email.')); });
+    if (q('[data-a=kod]')) q('[data-a=kod]').onclick = cuba(q('[data-a=kod]'), async () => { await A.sahkanKod(q('.input-kod').value); A.emelMenunggu = ''; A.ralat = ''; });
+    if (q('[data-a=tukarEmel]')) q('[data-a=tukarEmel]').onclick = () => { A.emelMenunggu = ''; dialogAwan(); };
+    if (q('[data-a=anon]')) q('[data-a=anon]').onclick = cuba(q('[data-a=anon]'), () => A.tanpaEmel());
+    if (q('[data-a=segerak]')) q('[data-a=segerak]').onclick = cuba(q('[data-a=segerak]'), () => A.segerak(true));
+    if (q('[data-a=keluar]')) q('[data-a=keluar]').onclick = cuba(q('[data-a=keluar]'), async () => { await A.keluar(); toast('☁ ' + L('Log keluar. Simpanan tempatan kekal di peranti ini.|Signed out. Local saves stay on this device.')); });
+  }
+  function borangEmel(A) {
+    if (A.emelMenunggu) return `<div class="borang-awan"><p>✉ ${esc(L('Kami telah menghantar emel kepada|We sent an email to'))} <b>${esc(A.emelMenunggu)}</b>. ${esc(L('Klik pautan dalam emel itu di peranti ini, atau masukkan kod 6 digit jika ada:|Click the link in that email on this device, or enter the 6-digit code if it has one:'))}</p>
+      <label class="input-nama"><input class="input-kod" inputmode="numeric" maxlength="8" placeholder="123456"></label>
+      <div class="butang"><button class="btn" data-a="tukarEmel">${esc(L('Tukar emel|Change email'))}</button><button class="btn utama" data-a="kod">${esc(L('Sahkan kod|Verify code'))}</button></div></div>`;
+    return `<div class="borang-awan"><label class="input-nama"><span>${esc(L('Emel|Email'))}</span><input class="input-emel" type="email" autocomplete="email" placeholder="nama@contoh.com"></label>
+      <div class="butang"><button class="btn utama" data-a="hantar">✉ ${esc(L('Hantar pautan log masuk|Send sign-in link'))}</button></div></div>`;
   }
   const kodDari = (obj) => 'EB1.' + btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
   function bacaKod(teks) {
@@ -1075,6 +1167,7 @@
     dunia.buang = (b) => { selepasBuang(b); buangAsal(b); };
     pemain = new EB.Pemain(dunia);
     if (profilAktif()) warnakanPemain(profilAktif().warna);
+    if (EB.awan) EB.awan.mula(apiAwan());
     document.body.classList.toggle('sentuh', sentuh);
     const simpanSekarang = () => { if (prog && !layarMula && pemain) prog.pos = [+pemain.pos.x.toFixed(2), +pemain.pos.y.toFixed(2)]; simpan(); };
     addEventListener('pagehide', simpanSekarang);
@@ -1087,6 +1180,6 @@
     for (let i = 0; i < 3; i++) dunia.pastikanBaris(Math.floor(pemain.pos.y / EB.SUSUN.D), 1e3);
     $('#memuat').remove();
     requestAnimationFrame(gelung);
-    EB._uji = { get S() { return S; }, get P() { return P; }, dialogProfil, dialogEksport, dialogImport, bacaKod, tukarProfil, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, ctx, mulaBuku, bercakapNod, mulaMisi, teleport, mulaCabaran, paparAlbum, paparPeta, tutupModal };
+    EB._uji = { get S() { return S; }, get P() { return P; }, terimaAwan, dialogAwan, dialogProfil, dialogEksport, dialogImport, bacaKod, tukarProfil, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, ctx, mulaBuku, bercakapNod, mulaMisi, teleport, mulaCabaran, paparAlbum, paparPeta, tutupModal };
   };
 })();
