@@ -142,6 +142,7 @@
         if (dd < (akhir ? 0.15 : 0.45)) { this.laluan.shift(); if (!this.laluan.length) this.laluan = null; }
         else { const laju = this.lariLaluan ? LARI : JALAN * 1.2; const perlahan = akhir ? Math.min(1, dd / 0.9) : 1; sasar.set((dx / dd) * laju * Math.max(0.35, perlahan), (dz / dd) * laju * Math.max(0.35, perlahan)); }
       }
+      this.niat = sasar;
       // pecutan & geseran (momentum)
       const pecut = sasar.lengthSq() > this.vel.lengthSq() ? 9 : 11;
       this.vel.x += (sasar.x - this.vel.x) * Math.min(1, dt * pecut);

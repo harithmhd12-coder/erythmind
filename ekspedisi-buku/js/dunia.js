@@ -837,6 +837,7 @@
       const s = this.grid.dapat(x, z);
       if (!(s === RUMPUT || s === JALAN || s === LANTAI || s === JAMBATAN)) return false;
       if (had !== undefined && this.pKemajuan(x, z) > had) return false;
+      if (this.halangan && this.halangan.has((x | 0) + ',' + (z | 0))) return false;
       return true;
     }
     pusingKamera(d) { this.yawSasar += d; }
