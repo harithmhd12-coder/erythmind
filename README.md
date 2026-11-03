@@ -32,6 +32,9 @@ Pautan app: `https://NAMA-GITHUB-KAU.github.io/NAMA-REPO/`
 2. Dalam app (sudah log masuk sebagai pemilik): bina dunia dengan PIN sementara, kemudian **Tetapan & Sandaran → Pulihkan daripada fail sandaran**.
 3. Masuk semula dengan PIN asal kau. Semua rekod, zon dan pas tetamu kembali.
 
+### 5. (Pilihan) Simpanan awan Ekspedisi Buku
+Jalankan [`supabase/ekspedisi-buku.sql`](supabase/ekspedisi-buku.sql) dalam SQL Editor dan ikut langkah dalam [`ekspedisi-buku/README.md`](ekspedisi-buku/README.md#simpanan-awan-supabase): Redirect URL, SMTP, dan templat emel.
+
 ## Pasang di telefon
 - **Android (Chrome)**: buka pautan app → menu ⋮ → *Install app* / *Tambah ke skrin utama*.
 - **iPhone (Safari)**: buka pautan app → butang Kongsi → *Add to Home Screen*.
