@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Ekspedisi Buku</title>
+  <meta name="description" content="Game diorama isometrik untuk memahami buku bab demi bab tanpa membelek halaman.">
+  <meta name="theme-color" content="#bfe3ec">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="ikon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="gaya.css">
+</head>
+<body>
+  <canvas id="kanvas"></canvas>
+  <div id="label"></div>
+  <div id="arah" hidden><i>➤</i><b></b></div>
+  <div id="konfeti"></div>
+
+  <div id="hud" hidden>
+    <div class="hud-kiri">
+      <div class="hud-kad">
+        <div class="hud-baris"><strong id="hud-buku"></strong><span id="hud-kemajuan"></span></div>
+        <div id="hud-bar" class="bar"><i></i></div>
+        <div class="hud-baris kecil">
+          <span id="hud-nyawa" data-tt="nyawa"></span>
+          <span id="hud-siri"></span>
+        </div>
+        <div class="hud-baris kecil"><span id="hud-tahap"></span><div id="hud-xp" class="bar xp"><i></i></div></div>
+      </div>
+      <div id="tracker" class="hud-kad tracker" hidden></div>
+    </div>
+    <div class="hud-kanan">
+      <button id="btn-peta" class="btn bulat" data-tt="peta">🗺</button>
+      <button id="btn-album" class="btn bulat" data-tt="album">🃏</button>
+      <button id="btn-tetapan" class="btn bulat" data-tt="tetapan">⚙</button>
+    </div>
+    <div class="hud-kamera">
+      <button id="btn-kiri" class="btn bulat kecil">⟲</button>
+      <button id="btn-kanan" class="btn bulat kecil">⟳</button>
+    </div>
+    <button id="btn-tindakan" class="btn tindakan" hidden><i>💬</i><span></span></button>
+    <div id="joy"><div id="joy-knob"></div></div>
+  </div>
+
+  <div id="layar-mula" hidden>
+    <div class="mula-isi">
+      <header>
+        <div class="logo">📚</div>
+        <h1 data-t="tajuk">Ekspedisi Buku</h1>
+        <p data-t="sub"></p>
+        <button id="btn-bahasa" class="btn kecil">BM / EN</button>
+      </header>
+      <h2 data-t="pilihBuku"></h2>
+      <div id="senarai-buku"></div>
+    </div>
+  </div>
+
+  <div id="modal" class="modal" hidden></div>
+  <div id="toast"></div>
+  <div id="memuat"><div class="pusing"></div><p>Memuat dunia…</p></div>
+
+  <script src="../vendor/three/three.min.js"></script>
+  <script src="../vendor/three/CopyShader.js"></script>
+  <script src="../vendor/three/EffectComposer.js"></script>
+  <script src="../vendor/three/RenderPass.js"></script>
+  <script src="../vendor/three/ShaderPass.js"></script>
+  <script src="js/dunia.js"></script>
+  <script src="js/watak.js"></script>
+  <script src="js/permainan.js"></script>
+  <script src="data/atomic-habits.js"></script>
+  <script src="data/art-of-thinking-clearly.js"></script>
+  <script src="data/art-of-thinking-clearly-2.js"></script>
+  <script src="data/clear-thinking.js"></script>
+  <script src="data/trust-me-im-lying.js"></script>
+  <script src="data/analisis-kitab-nifaq.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      try { EB.mula(); }
+      catch (e) { document.getElementById('memuat').innerHTML = '<p>Ralat memuat: ' + e.message + '</p>'; throw e; }
+    });
+  </script>
+</body>
+</html>
