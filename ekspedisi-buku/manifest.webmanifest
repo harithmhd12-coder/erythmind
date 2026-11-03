@@ -1,0 +1,12 @@
+{
+  "name": "Ekspedisi Buku",
+  "short_name": "Ekspedisi Buku",
+  "description": "Game diorama isometrik untuk memahami buku bab demi bab.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#bfe3ec",
+  "theme_color": "#bfe3ec",
+  "icons": [{ "src": "ikon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
