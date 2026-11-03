@@ -133,6 +133,7 @@
         n.r = r; n.slot = slot; n.along = along; n.x = x; n.utara = utara;
         n.zPlot = r * D + (utara ? 5.5 : 14.5);
         n.zNpc = r * D + (utara ? 8.4 : 11.6);
+        n.npcPos = { x: x - 0.3, z: r * D + (utara ? 7.6 : 12.4) };
         n.p = r * 1000 + along;
         n.idx = nod.length;
         nod.push(n);

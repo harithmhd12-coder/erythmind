@@ -13,17 +13,39 @@
   EB.B = (t, cerita, titik, soalan, pilihan, terang) => ({ t, cerita, titik, soalan, pilihan, terang });
 
   /* ---------- Simpanan ---------- */
-  const KUNCI = 'ekspedisi-buku.v1';
-  let S;
+  const KUNCI_LAMA = 'ekspedisi-buku.v1', KUNCI_PROFIL = 'ekspedisi-buku.profil', KUNCI_G = 'ekspedisi-buku.tetapan';
+  const kunciData = (id) => 'ekspedisi-buku.data.' + id;
+  let S, G, P; // S = data pemain aktif, G = tetapan peranti, P = senarai profil
+  const bacaJSON = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+  const tulisJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+  const lalaiS = () => ({ xp: 0, nyawa: 5, tNyawa: Date.now(), siri: { hari: '', n: 0 }, buku: {}, ulang: {}, terakhir: null, stat: {}, kebun: {} });
+  const idBaru = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const WARNA_PEMAIN = ['#2e86c1', '#e85d4a', '#2a9d8f', '#8e44ad', '#f4a261', '#ff70a6', '#6a994e', '#264653'];
   function muatS() {
-    try { S = JSON.parse(localStorage.getItem(KUNCI)) || null; } catch (e) { S = null; }
-    S = Object.assign({ bahasa: 'bm', kualiti: null, bunyi: true, xp: 0, nyawa: 5, tNyawa: Date.now(), siri: { hari: '', n: 0 }, buku: {}, ulang: {}, terakhir: null }, S || {});
+    G = Object.assign({ bahasa: 'bm', kualiti: null, bunyi: true }, bacaJSON(KUNCI_G) || {});
+    P = bacaJSON(KUNCI_PROFIL) || { aktif: null, senarai: [] };
+    const lama = bacaJSON(KUNCI_LAMA);
+    if (lama && !P.senarai.length) { // pindahkan simpanan versi lama ke profil pertama
+      ['bahasa', 'kualiti', 'bunyi'].forEach((k) => { if (lama[k] !== undefined) G[k] = lama[k]; });
+      const id = idBaru(); P.senarai.push({ id, nama: 'Pengembara', warna: WARNA_PEMAIN[0], dibuat: Date.now(), akhir: Date.now() }); P.aktif = id;
+      tulisJSON(kunciData(id), lama); tulisJSON(KUNCI_PROFIL, P); tulisJSON(KUNCI_G, G);
+      try { localStorage.removeItem(KUNCI_LAMA); } catch (e) { /* abaikan */ }
+    }
+    if (P.aktif && !P.senarai.some((x) => x.id === P.aktif)) P.aktif = null;
+    S = Object.assign(lalaiS(), (P.aktif && bacaJSON(kunciData(P.aktif))) || {});
   }
-  function simpan() { try { localStorage.setItem(KUNCI, JSON.stringify(S)); } catch (e) { /* storan disekat: teruskan tanpa simpan */ } }
+  const profilAktif = () => P.senarai.find((x) => x.id === P.aktif) || null;
+  function simpan() {
+    if (!P.aktif) return;
+    tulisJSON(kunciData(P.aktif), S);
+    const pr = profilAktif(); if (pr) { pr.akhir = Date.now(); pr.xp = S.xp; pr.terakhir = S.terakhir; }
+    tulisJSON(KUNCI_PROFIL, P);
+  }
+  const simpanG = () => tulisJSON(KUNCI_G, G);
   function kemajuan(id) { if (!S.buku[id]) S.buku[id] = { depan: 0, bintang: {}, pos: null }; return S.buku[id]; }
 
   /* ---------- Bahasa ---------- */
-  const L = (s) => { if (s == null) return ''; const i = String(s).indexOf('|'); if (i < 0) return s; return S.bahasa === 'en' ? String(s).slice(i + 1) : String(s).slice(0, i); };
+  const L = (s) => { if (s == null) return ''; const i = String(s).indexOf('|'); if (i < 0) return s; return G.bahasa === 'en' ? String(s).slice(i + 1) : String(s).slice(0, i); };
   EB.L = L;
   const TXT = {
     tajuk: 'Ekspedisi Buku|Book Expedition',
@@ -69,7 +91,7 @@
   /* ---------- Bunyi sintesis ringkas ---------- */
   let ac = null;
   function bunyi(jenis) {
-    if (!S.bunyi) return;
+    if (!G.bunyi) return;
     try {
       ac = ac || new (window.AudioContext || window.webkitAudioContext)();
       const nada = { ambil: [880, 1320], betul: [660, 990, 1320], salah: [220, 160], buka: [523, 659, 784, 1046], klik: [700], tamat: [523, 659, 784, 1046, 1318] }[jenis] || [600];
@@ -86,7 +108,7 @@
   /* ---------- Keadaan permainan ---------- */
   let dunia, pemain, buku, peta, prog;
   let misi = null; // { nod, jenis, fasa, item:[], masa }
-  let modalTerbuka = false, layarMula = true;
+  let modalTerbuka = false, layarMula = true, labelNama = null;
   const label = [];
   const hariIni = () => new Date().toISOString().slice(0, 10);
 
@@ -181,8 +203,7 @@
     b.npc = []; b.label = [];
     const rnd = EB.rng(dunia.seed + r * 977);
     for (const n of peta.nod.filter((m) => m.r === r)) {
-      const tz = n.utara ? n.r * EB.SUSUN.D + 7.6 : n.r * EB.SUSUN.D + 12.4;
-      n.npcPos = { x: n.x - 0.3, z: tz };
+
       const pen = n.jenis === 'penjaga'
         ? new EB.Penduduk(dunia, n.npcPos.x, n.npcPos.z, rnd, { statik: true, baju: '#5b3f99', jubah: '#3d2a6b', topi: 'mahkota', skala: 1.25, hadap: n.utara ? 0 : Math.PI })
         : new EB.Penduduk(dunia, n.npcPos.x, n.npcPos.z, rnd, { statik: true, baju: buku.warna || '#d9533b', jubah: '#f3e6cc', topi: 'serban', hadap: n.utara ? 0 : Math.PI });
@@ -233,6 +254,8 @@
 
   /* ---------- Misi (pengendali dalam misi.js) ---------- */
   function jenisMisi(n) {
+    const sg = EB.SIGNATURE && EB.SIGNATURE[buku.id], kunci = n.bi + '-' + n.i;
+    if (n.jenis === 'bab' && sg && sg[kunci] && EB.MISI[sg[kunci]]) return sg[kunci];
     if (urutanBab(n)) return 'susun';
     const g = EB.GILIRAN_MISI;
     return g[n.idx % g.length];
@@ -241,7 +264,9 @@
   function objektifMisi(jenis) { return L((EB.MISI[jenis] || EB.MISI.tanya).objektif); }
   const ctx = {
     get dunia() { return dunia; }, get pemain() { return pemain; }, get peta() { return peta; }, get buku() { return buku; },
-    get modalTerbuka() { return modalTerbuka; },
+    get modalTerbuka() { return modalTerbuka; }, get S() { return S; }, get misiAktif() { return misi; },
+    simpan: () => simpan(), kemasTracker: () => kemasTracker(),
+    stat(k, n) { S.stat = S.stat || {}; S.stat[k] = (S.stat[k] || 0) + (n || 1); },
     L, t, esc, bunyi, toast, tambahXP, bukaModal, tutupModal, tambahLabel, buangLabel, kemasHUD,
     kocak: (a, r) => kocak(a, r),
     nod: (m) => peta.nod[m.nod],
@@ -351,9 +376,9 @@
       <div class="objektif"><b>${esc(L(NAMA_MISI[jenis] || 'Misi|Mission'))}</b> ${esc(objektifMisi(jenis))}</div>
       <div class="butang"><button class="btn" data-a="x">${esc(t('nanti'))}</button><button class="btn utama" data-a="ok">${esc(t('terima'))}</button></div>`);
     p.querySelector('[data-a=x]').onclick = tutupModal;
-    p.querySelector('[data-a=ok]').onclick = () => { tutupModal(); mulaMisi(n); bunyi('buka'); };
+    p.querySelector('[data-a=ok]').onclick = () => { tutupModal(); ctx.stat('terima'); mulaMisi(n); bunyi('buka'); };
   }
-  const NAMA_MISI = { jejak: '🧭 Ikut Jejak|🧭 Follow the Trail', siasat: '🔍 Siasat|🔍 Investigate', pencuri: '💰 Kejar Pencuri|💰 Chase the Thief', hantar: '📦 Hantar Barang|📦 Delivery', susun: '🧱 Susun Timbal|🧱 Stack in Order', tanya: '🗣 Tanya Penduduk|🗣 Ask the Villagers', kejar: '⏱ Lawan Masa|⏱ Beat the Clock' };
+  const NAMA_MISI = Object.assign({}, EB.NAMA_SIGNATURE || {}, { jejak: '🧭 Ikut Jejak|🧭 Follow the Trail', siasat: '🔍 Siasat|🔍 Investigate', pencuri: '💰 Kejar Pencuri|💰 Chase the Thief', hantar: '📦 Hantar Barang|📦 Delivery', susun: '🧱 Susun Timbal|🧱 Stack in Order', tanya: '🗣 Tanya Penduduk|🗣 Ask the Villagers', kejar: '⏱ Lawan Masa|⏱ Beat the Clock' });
   function kepalaBab(n, no) {
     return `<div class="kepala"><div class="lencana">${no}</div><div><small>${esc(t('bab'))} ${no} · ${esc(L(buku.bahagian[n.bi].n))}</small><h2>${esc(L(n.bab.t))}</h2></div></div>`;
   }
@@ -446,7 +471,7 @@
       p.querySelectorAll('.kad-tempur').forEach((b, k) => { b.disabled = true; if (tangan[k] === a.c) b.classList.add('betul'); else if (k === i) b.classList.add('salah'); });
       if (a.jenis === 'senario') kemasUlang(a.c.idx, ok);
       if (ok) { st.betulN++; st.hp--; bunyi('betul'); tambahXP(20); p.querySelector('.penjaga-ikon').classList.add('kena'); p.querySelector('.hp-bar i').style.width = (st.hp / st.soalan.length) * 100 + '%'; }
-      else { st.salah++; bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa === 4) S.tNyawa = Date.now(); p.querySelector('.panel').classList.add('gegar'); kemasHUD(); }
+      else { st.salah++; ctx.stat('salah'); bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa === 4) S.tNyawa = Date.now(); p.querySelector('.panel').classList.add('gegar'); kemasHUD(); }
       simpan();
       const mk = p.querySelector('.maklum'); mk.hidden = false;
       const terang = a.jenis === 'senario' ? L(a.c.bab.pilihan[0]) + '\n\n' + L(a.c.bab.terang) : L(a.c.bab.titik[a.idxTitik]);
@@ -479,7 +504,7 @@
       if (q.nod !== undefined && !q.serpihan) kemasUlang(q.nod, betul);
       if (betul) { st.betulN++; bunyi('betul'); tambahXP(st.penjaga ? 20 : 15); }
       else {
-        st.salah++; bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa < 5 && S.nyawa === 4) S.tNyawa = Date.now();
+        st.salah++; ctx.stat('salah'); bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa < 5 && S.nyawa === 4) S.tNyawa = Date.now();
         if (!st.penjaga && !st.ulangan.has(st.i)) { st.ulangan.add(st.soalan.length); st.soalan.push(Object.assign({}, q, { label: q.label + ' · ' + t('cubaLagi') })); }
         kemasHUD();
       }
@@ -520,7 +545,7 @@
       const salahN = [...pilih].filter((i) => !q.betulSet.includes(pilihan[i])).length;
       p.querySelectorAll('.opsyen').forEach((b, k) => { b.disabled = true; if (q.betulSet.includes(pilihan[k])) b.classList.add('betul'); else if (pilih.has(k)) b.classList.add('salah'); });
       const ok = salahN === 0;
-      if (ok) { st.betulN++; bunyi('betul'); tambahXP(20); } else { st.salah++; bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa === 4) S.tNyawa = Date.now(); kemasHUD(); }
+      if (ok) { st.betulN++; bunyi('betul'); tambahXP(20); } else { st.salah++; ctx.stat('salah'); bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa === 4) S.tNyawa = Date.now(); kemasHUD(); }
       simpan();
       const mk = p.querySelector('.maklum'); mk.hidden = false;
       mk.innerHTML = `<b class="${ok ? 'ok' : 'x'}">${esc(ok ? t('betul') : L('Ada petunjuk palsu yang terpilih|You picked a false clue'))}</b><p>${esc(q.betulSet.map((x) => '• ' + L(x)).join('\n'))}</p><button class="btn utama" data-a="n">${esc(t('seterusnya'))}</button>`;
@@ -540,6 +565,7 @@
     prog.bintang[n.idx] = Math.max(prog.bintang[n.idx] || 0, bintang);
     if (pertama) {
       prog.depan = n.idx + 1;
+      if (n.jenis === 'bab') ctx.stat('siap');
       if (n.jenis === 'bab') kemasUlang(n.idx, true);
       tambahXP(st.penjaga ? 100 : 40 + bintang * 10);
       const h = hariIni();
@@ -659,22 +685,29 @@
 
   /* ---------- Tetapan ---------- */
   function paparTetapan() {
-    const q = S.kualiti || 'tinggi';
+    const q = G.kualiti || 'tinggi', pr = profilAktif();
     const p = bukaModal(`<div class="kepala-modal"><h2>⚙ ${esc(t('tetapan'))}</h2><button class="btn ikon" data-a="x">✕</button></div>
-      <label class="baris-tetapan"><span>${esc(t('bahasa'))}</span><span class="tog"><button data-lang="bm" class="${S.bahasa === 'bm' ? 'on' : ''}">BM</button><button data-lang="en" class="${S.bahasa === 'en' ? 'on' : ''}">EN</button></span></label>
+      <label class="baris-tetapan"><span>${esc(t('bahasa'))}</span><span class="tog"><button data-lang="bm" class="${G.bahasa === 'bm' ? 'on' : ''}">BM</button><button data-lang="en" class="${G.bahasa === 'en' ? 'on' : ''}">EN</button></span></label>
       <label class="baris-tetapan"><span>${esc(t('kualiti'))}</span><span class="tog">${['tinggi', 'sederhana', 'rendah'].map((k) => `<button data-q="${k}" class="${q === k ? 'on' : ''}">${esc(t(k))}</button>`).join('')}</span></label>
-      <label class="baris-tetapan"><span>${esc(t('bunyi'))}</span><span class="tog"><button data-b="1" class="${S.bunyi ? 'on' : ''}">On</button><button data-b="0" class="${!S.bunyi ? 'on' : ''}">Off</button></span></label>
+      <label class="baris-tetapan"><span>${esc(t('bunyi'))}</span><span class="tog"><button data-b="1" class="${G.bunyi ? 'on' : ''}">On</button><button data-b="0" class="${!G.bunyi ? 'on' : ''}">Off</button></span></label>
+      <div class="baris-tetapan"><span>👤 ${esc(pr ? pr.nama : '')}</span><span class="tog"><button data-a="nama">✎ ${esc(L('Tukar nama|Rename'))}</button><button data-a="profil">⇄ ${esc(L('Tukar pemain|Switch player'))}</button></span></div>
+      <div class="baris-tetapan"><span>💾 ${esc(L('Simpanan|Save data'))}</span><span class="tog"><button data-a="eksport">⤴ ${esc(L('Kod simpanan|Save code'))}</button><button data-a="import">⤵ ${esc(L('Sambung dari kod|Load a code'))}</button></span></div>
+      <p class="kecil">${esc(L('Kemajuan disimpan secara automatik dalam peranti ini. Guna Kod simpanan untuk sambung di peranti lain atau selepas membersihkan browser.|Progress saves automatically on this device. Use the Save code to continue on another device or after clearing the browser.'))}</p>
       <p class="kecil">${esc(t(sentuh ? 'kawalanSentuh' : 'kawalan'))}</p>
       <div class="butang"><button class="btn bahaya" data-a="padam">${esc(t('padam'))}</button><button class="btn" data-a="keluar">${esc(t('keluar'))}</button></div>`, 'kecil');
     p.querySelector('[data-a=x]').onclick = tutupModal;
-    p.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { S.bahasa = b.dataset.lang; simpan(); terjemah(); paparTetapan(); }));
-    p.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { S.kualiti = b.dataset.q; simpan(); dunia.kualiti(S.kualiti); paparTetapan(); }));
-    p.querySelectorAll('[data-b]').forEach((b) => (b.onclick = () => { S.bunyi = b.dataset.b === '1'; simpan(); paparTetapan(); }));
+    p.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { G.bahasa = b.dataset.lang; simpanG(); terjemah(); paparTetapan(); }));
+    p.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { G.kualiti = b.dataset.q; simpanG(); dunia.kualiti(G.kualiti); paparTetapan(); }));
+    p.querySelectorAll('[data-b]').forEach((b) => (b.onclick = () => { G.bunyi = b.dataset.b === '1'; simpanG(); paparTetapan(); }));
+    p.querySelector('[data-a=nama]').onclick = () => dialogProfil({ ubah: true });
+    p.querySelector('[data-a=profil]').onclick = () => dialogProfil({});
+    p.querySelector('[data-a=eksport]').onclick = dialogEksport;
+    p.querySelector('[data-a=import]').onclick = dialogImport;
     p.querySelector('[data-a=keluar]').onclick = () => { tutupModal(); paparLayarMula(); };
     p.querySelector('[data-a=padam]').onclick = () => { if (confirm(t('pastiPadam'))) { delete S.buku[buku.id]; Object.keys(S.ulang).forEach((k) => k.startsWith(buku.id + ':') && delete S.ulang[k]); simpan(); tutupModal(); mulaBuku(buku.id); } };
   }
   function terjemah() {
-    document.documentElement.lang = S.bahasa === 'en' ? 'en' : 'ms';
+    document.documentElement.lang = G.bahasa === 'en' ? 'en' : 'ms';
     document.querySelectorAll('[data-t]').forEach((e) => (e.textContent = t(e.dataset.t)));
     document.querySelectorAll('[data-tt]').forEach((e) => (e.title = t(e.dataset.tt)));
     if (buku) { kemasLabelNod(); kemasHUD(); }
@@ -690,15 +723,118 @@
       const k = el('button', 'kad-buku');
       k.style.setProperty('--warna', b.warna);
       k.innerHTML = `<div class="kulit"><span>${b.ikon || '📘'}</span></div><div class="isi"><h3>${esc(b.tajuk)}</h3><small>${esc(b.pengarang)} · ${nb} ${esc(t('bab'))}</small><p>${esc(L(b.ringkas))}</p><div class="bar"><i style="width:${(siap / jum) * 100}%"></i></div><b>${siap ? t('sambung') : t('mula')} →</b></div>`;
-      k.onclick = () => { bunyi('klik'); mulaBuku(b.id); };
+      k.onclick = () => { bunyi('klik'); if (!profilAktif()) return dialogProfil({ wajib: true, lepas: b.id }); mulaBuku(b.id); };
       k.onmouseenter = k.onfocus = () => { if (dunia.buku !== b) pratonton(b.id); };
       bekas.appendChild(k);
     }
   }
+  function binaKadPemain() {
+    const k = $('#kad-pemain'), pr = profilAktif();
+    if (!pr) { k.innerHTML = `<button class="btn utama" data-a="profil">👤 ${esc(L('Masukkan nama kau untuk mula|Enter your name to start'))}</button>`; k.querySelector('button').onclick = () => dialogProfil({ wajib: true }); return; }
+    const bk = S.terakhir && EB.BUKU.find((b) => b.id === S.terakhir), pg = bk && S.buku[bk.id];
+    k.innerHTML = `<div class="pemain-chip"><i style="background:${pr.warna}">${esc(pr.nama.slice(0, 1).toUpperCase())}</i><div><b>${esc(L('Hai|Hi'))}, ${esc(pr.nama)}!</b><small>${esc(t('tahap'))} ${tahap()} · ${S.xp} XP · 🔥 ${S.siri.n || 0}</small></div><button class="btn kecil" data-a="profil">⇄ ${esc(L('Tukar|Switch'))}</button></div>
+      ${bk && pg && pg.depan > 0 ? `<button class="btn utama sambung" data-a="sambung">▶ ${esc(t('sambung'))}: ${esc(bk.tajuk)} · ${esc(t('bab'))} ${Math.min(pg.depan + 1, bk.bahagian.reduce((a, bh) => a + bh.bab.length + 1, 0))}</button>` : ''}`;
+    k.querySelector('[data-a=profil]').onclick = () => dialogProfil({});
+    const sb = k.querySelector('[data-a=sambung]'); if (sb) sb.onclick = () => { bunyi('klik'); mulaBuku(bk.id); };
+  }
+  function warnakanPemain(w) {
+    const u = pemain.model.userData, m = EB.mat(w);
+    u.torso.material = m; u.tangan.forEach((g) => (g.children[0].material = m));
+  }
+  function tukarProfil(id) {
+    if (P.aktif) simpan();
+    P.aktif = id; tulisJSON(KUNCI_PROFIL, P);
+    S = Object.assign(lalaiS(), bacaJSON(kunciData(id)) || {});
+    const pr = profilAktif(); if (pr) warnakanPemain(pr.warna);
+    tutupModal(); paparLayarMula();
+  }
+  function dialogProfil(o) {
+    const pr = profilAktif();
+    const senarai = o.ubah ? [] : P.senarai.slice().sort((a, b) => (b.akhir || 0) - (a.akhir || 0));
+    let warna = (o.ubah && pr && pr.warna) || WARNA_PEMAIN[P.senarai.length % WARNA_PEMAIN.length];
+    const p = bukaModal(`<div class="kepala-modal"><h2>👤 ${esc(o.ubah ? L('Tukar nama|Rename') : L('Siapa yang bermain?|Who’s playing?'))}</h2>${o.wajib && !P.senarai.length ? '' : '<button class="btn ikon" data-a="x">✕</button>'}</div>
+      ${senarai.length ? `<div class="senarai-profil">${senarai.map((x) => `<div class="profil-baris ${x.id === P.aktif ? 'aktif' : ''}"><button class="profil" data-id="${x.id}"><i style="background:${x.warna}">${esc(x.nama.slice(0, 1).toUpperCase())}</i><span><b>${esc(x.nama)}</b><small>${x.xp || 0} XP${x.terakhir ? ' · ' + esc((EB.BUKU.find((b) => b.id === x.terakhir) || {}).tajuk || '') : ''}</small></span></button><button class="btn ikon kecil" data-padam="${x.id}" title="${esc(L('Padam|Delete'))}">🗑</button></div>`).join('')}</div><h4>${esc(L('Atau pemain baharu|Or a new player'))}</h4>` : ''}
+      <label class="input-nama"><span>${esc(L('Nama pengembara|Explorer name'))}</span><input maxlength="20" placeholder="${esc(L('cth. Aisyah|e.g. Aisha'))}" value="${o.ubah && pr ? esc(pr.nama) : ''}"></label>
+      <div class="pilih-warna">${WARNA_PEMAIN.map((w) => `<button data-w="${w}" style="background:${w}" class="${w === warna ? 'on' : ''}" aria-label="${w}"></button>`).join('')}</div>
+      <div class="butang"><button class="btn" data-a="import">⤵ ${esc(L('Sambung dari kod|Load a code'))}</button><button class="btn utama" data-a="ok">${esc(o.ubah ? L('Simpan|Save') : L('Mula ekspedisi|Start expedition'))}</button></div>`, 'kecil');
+    const inp = p.querySelector('input');
+    setTimeout(() => inp.focus(), 50);
+    const x = p.querySelector('[data-a=x]'); if (x) x.onclick = tutupModal;
+    p.querySelectorAll('[data-w]').forEach((b) => (b.onclick = () => { warna = b.dataset.w; p.querySelectorAll('[data-w]').forEach((q) => q.classList.toggle('on', q === b)); }));
+    p.querySelectorAll('[data-id]').forEach((b) => (b.onclick = () => tukarProfil(b.dataset.id)));
+    p.querySelectorAll('[data-padam]').forEach((b) => (b.onclick = () => {
+      const id = b.dataset.padam, sasar = P.senarai.find((q) => q.id === id);
+      if (!confirm(L('Padam pemain “|Delete player “') + sasar.nama + L('” dan semua kemajuannya?|” and all their progress?'))) return;
+      P.senarai = P.senarai.filter((q) => q.id !== id); try { localStorage.removeItem(kunciData(id)); } catch (e) { /* abaikan */ }
+      if (P.aktif === id) { P.aktif = null; S = lalaiS(); }
+      tulisJSON(KUNCI_PROFIL, P); dialogProfil(o); binaKadPemain();
+    }));
+    p.querySelector('[data-a=import]').onclick = dialogImport;
+    const sah = () => {
+      const nama = inp.value.trim().replace(/\s+/g, ' ').slice(0, 20);
+      if (!nama) { inp.classList.add('ralat'); inp.focus(); return; }
+      if (o.ubah && pr) { pr.nama = nama; pr.warna = warna; warnakanPemain(warna); simpan(); tutupModal(); binaKadPemain(); toast('✎ ' + nama); return; }
+      const id = idBaru(); P.senarai.push({ id, nama, warna, dibuat: Date.now(), akhir: Date.now() });
+      if (P.aktif) simpan();
+      P.aktif = id; S = lalaiS(); simpan(); warnakanPemain(warna);
+      tutupModal(); paparLayarMula(); toast('👋 ' + L('Selamat datang|Welcome') + ', ' + nama + '!');
+    };
+    p.querySelector('[data-a=ok]').onclick = sah;
+    inp.onkeydown = (e) => { if (e.key === 'Enter') sah(); };
+  }
+  const kodDari = (obj) => 'EB1.' + btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  function bacaKod(teks) {
+    teks = String(teks || '').trim();
+    try {
+      const o = teks.startsWith('EB1.') ? JSON.parse(decodeURIComponent(escape(atob(teks.slice(4).replace(/\s+/g, ''))))) : JSON.parse(teks);
+      if (!o || o.format !== 'ekspedisi-buku' || !o.data || typeof o.data !== 'object') return null;
+      return o;
+    } catch (e) { return null; }
+  }
+  function dialogEksport() {
+    const pr = profilAktif(); if (!pr) return;
+    simpan();
+    const obj = { format: 'ekspedisi-buku', v: 1, nama: pr.nama, warna: pr.warna, masa: Date.now(), data: S };
+    const kod = kodDari(obj);
+    const p = bukaModal(`<div class="kepala-modal"><h2>⤴ ${esc(L('Kod simpanan|Save code'))}</h2><button class="btn ikon" data-a="x">✕</button></div>
+      <p class="kecil">${esc(L('Salin kod ini atau muat turun failnya. Di peranti lain, buka Tetapan → Sambung dari kod untuk meneruskan ekspedisi.|Copy this code or download the file. On another device, open Settings → Load a code to continue the expedition.'))}</p>
+      <textarea class="kod" readonly>${esc(kod)}</textarea>
+      <div class="butang"><button class="btn" data-a="fail">⬇ ${esc(L('Muat turun fail|Download file'))}</button><button class="btn utama" data-a="salin">📋 ${esc(L('Salin kod|Copy code'))}</button></div>`, 'kecil');
+    p.querySelector('[data-a=x]').onclick = tutupModal;
+    const ta = p.querySelector('textarea'); ta.onclick = () => ta.select();
+    p.querySelector('[data-a=salin]').onclick = async () => {
+      try { await navigator.clipboard.writeText(kod); } catch (e) { ta.select(); document.execCommand && document.execCommand('copy'); }
+      toast('📋 ' + L('Kod disalin|Code copied'));
+    };
+    p.querySelector('[data-a=fail]').onclick = () => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(obj)], { type: 'application/json' }));
+      a.download = 'ekspedisi-buku-' + pr.nama.replace(/[^\w-]+/g, '_') + '.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    };
+  }
+  function dialogImport() {
+    const p = bukaModal(`<div class="kepala-modal"><h2>⤵ ${esc(L('Sambung dari kod|Load a code'))}</h2><button class="btn ikon" data-a="x">✕</button></div>
+      <p class="kecil">${esc(L('Tampal kod simpanan (bermula dengan EB1.) atau pilih fail simpanan .json.|Paste a save code (starting with EB1.) or choose a .json save file.'))}</p>
+      <textarea class="kod" placeholder="EB1.…"></textarea><input type="file" accept=".json,application/json">
+      <div class="butang"><button class="btn utama" data-a="ok">${esc(L('Muatkan|Load'))}</button></div>`, 'kecil');
+    p.querySelector('[data-a=x]').onclick = tutupModal;
+    const ta = p.querySelector('textarea');
+    p.querySelector('input[type=file]').onchange = (e) => { const f = e.target.files[0]; if (!f) return; f.text().then((x) => (ta.value = x)); };
+    p.querySelector('[data-a=ok]').onclick = () => {
+      const o = bacaKod(ta.value);
+      if (!o) { toast('⚠ ' + L('Kod tidak sah|Invalid code')); return; }
+      const ada = P.senarai.find((x) => x.nama === o.nama);
+      const id = ada ? ada.id : idBaru();
+      if (!ada) P.senarai.push({ id, nama: String(o.nama || 'Pengembara').slice(0, 20), warna: o.warna || WARNA_PEMAIN[0], dibuat: Date.now(), akhir: Date.now() });
+      tulisJSON(kunciData(id), Object.assign(lalaiS(), o.data));
+      tulisJSON(KUNCI_PROFIL, P);
+      tukarProfil(id);
+      toast('✓ ' + L('Ekspedisi dimuatkan. Selamat kembali|Expedition loaded. Welcome back') + ', ' + o.nama + '!');
+    };
+  }
   function paparLayarMula() {
     layarMula = true; buangMisi();
     $('#layar-mula').hidden = false; $('#hud').hidden = true; document.body.classList.add('di-mula');
-    binaKadBuku();
+    binaKadBuku(); binaKadPemain();
     pratonton(S.terakhir || EB.BUKU[0].id);
   }
   function pratonton(id) {
@@ -709,7 +845,8 @@
   }
   function muatDunia(b) {
     buangMisi();
-    label.slice().forEach(buangLabel);
+    if (EB.kebun && buku) EB.kebun.buang(ctx);
+    label.slice().forEach(buangLabel); labelNama = null;
     buku = b; prog = kemajuan(b.id);
     dunia.muat(b); peta = dunia.peta;
     dunia.selepasBina = selepasBina;
@@ -730,6 +867,9 @@
     else if (prog.depan === 0) pemain.letak(dunia.mula.x, dunia.mula.z);
     else teleport(n);
     dunia.fokus.set(pemain.pos.x, 0, pemain.pos.y);
+    const pr = profilAktif();
+    if (labelNama) buangLabel(labelNama);
+    labelNama = pr ? tambahLabel(new T.Vector3(pemain.pos.x, 1.55, pemain.pos.y), 'nama-pemain', `<span>${esc(pr.nama)}</span>`) : null;
     kemasHUD();
     if (prog.depan === 0 && !prog.dilihat) {
       prog.dilihat = true; simpan();
@@ -771,6 +911,7 @@
   function senaraiInteraksi() {
     const s = [];
     for (const [, b] of dunia.baris) for (const p of b.npc || []) if (p.nod !== undefined) s.push({ x: p.pos.x, z: p.pos.y, jenis: 'nod', nod: peta.nod[p.nod] });
+    if (EB.kebun && !layarMula) for (const it of EB.kebun.interaksi(ctx)) s.push({ x: it.x, z: it.z, jenis: 'misi', f: it.f, label: it.label });
     if (misi && misi.fasa === 'cari') { const h = EB.MISI[misi.jenis]; if (h.interaksi) for (const it of h.interaksi(ctx, misi)) s.push({ x: it.x, z: it.z, jenis: 'misi', f: it.f, label: it.label }); }
     return s;
   }
@@ -857,7 +998,7 @@
     $('#btn-tindakan').onclick = () => { const s = terdekat(); if (s) interaksi(s); };
     $('#btn-peta').onclick = paparPeta; $('#btn-album').onclick = () => paparAlbum(); $('#btn-tetapan').onclick = paparTetapan;
     $('#btn-kiri').onclick = () => dunia.pusingKamera(-Math.PI / 4); $('#btn-kanan').onclick = () => dunia.pusingKamera(Math.PI / 4);
-    $('#btn-bahasa').onclick = () => { S.bahasa = S.bahasa === 'bm' ? 'en' : 'bm'; simpan(); terjemah(); };
+    $('#btn-bahasa').onclick = () => { G.bahasa = G.bahasa === 'bm' ? 'en' : 'bm'; simpanG(); terjemah(); };
     $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal' && !e.target.classList.contains('kuiz') && !e.target.classList.contains('tahniah-modal')) tutupModal(); });
     addEventListener('resize', () => dunia.saizSemula());
   }
@@ -879,13 +1020,13 @@
       return;
     }
     pemain.kemaskini(dt, tm);
-    const rP = Math.floor(pemain.pos.y / EB.SUSUN.D), rMaks = isFinite(pemain.had) ? Math.floor(pemain.had / 1000) : peta.baris.length;
+    const nd = peta.nod[prog.depan], rP = Math.floor(pemain.pos.y / EB.SUSUN.D), rMaks = nd && isFinite(nd.potong) ? Math.floor(nd.potong / 1000) : peta.baris.length;
     dunia.pastikanBaris(rP, rMaks);
     for (const [, b] of dunia.baris) for (const p of b.npc || []) p.kemaskini(dt, tm, pemain);
     // misi
     if (misi) {
       const m = misi, h = EB.MISI[m.jenis];
-      for (const p of m.npc) if (!(m.pencuri === p)) p.kemaskini(dt, tm, pemain);
+      for (const p of m.npc) if (!p.urusSendiri && m.pencuri !== p) p.kemaskini(dt, tm, pemain);
       if (h.kemas) h.kemas(ctx, m, dt, tm);
     }
     // interaksi automatik selepas klik pada NPC
@@ -894,9 +1035,13 @@
     const bt = $('#btn-tindakan'); bt.hidden = !dekat;
     if (dekat) bt.querySelector('span').textContent = dekat.jenis === 'nod' ? (keadaanNod(dekat.nod) === 'kunci' ? '🔒' : t('bercakap')) : (dekat.label || t('bercakap'));
     dunia.kemaskini(dt, { x: pemain.pos.x, z: pemain.pos.y }, pemain.vel ? { x: pemain.vel.x, z: pemain.vel.y } : null);
+    if (labelNama) labelNama.pos.set(pemain.pos.x, 1.55, pemain.pos.y);
     kemasLabel();
     kemasArah();
-    tHUD += dt; if (tHUD > 1) { tHUD = 0; kemasTracker(); if (S.nyawa < 5) kemasHUD(); }
+    tHUD += dt; if (tHUD > 1) {
+      tHUD = 0; kemasTracker(); if (S.nyawa < 5) kemasHUD();
+      if (EB.kebun) { const k = EB.kebun.rekod(ctx); if (k && dunia.baris.has(Math.floor(k.z / EB.SUSUN.D))) EB.kebun.bina(ctx); else if (EB.kebun.g) EB.kebun.buang(ctx); }
+    }
     tSimpan += dt; if (tSimpan > 5) { tSimpan = 0; prog.pos = [+pemain.pos.x.toFixed(2), +pemain.pos.y.toFixed(2)]; simpan(); }
   }
   // anak panah penunjuk arah objektif di tepi skrin
@@ -904,6 +1049,7 @@
     const a = $('#arah');
     let sx, sz;
     if (misi && misi.fasa === 'cari') { const h = EB.MISI[misi.jenis], q = h.sasaran && h.sasaran(ctx, misi); if (q) { sx = q.x; sz = q.z; } }
+    else if (!misi && EB.kebun && EB.kebun.sasaran(ctx)) { const q = EB.kebun.sasaran(ctx); sx = q.x; sz = q.z; }
     else { const n = peta.nod[misi ? misi.nod : prog.depan]; if (n && n.npcPos) { sx = n.npcPos.x; sz = n.npcPos.z; } else if (n) { sx = n.x; sz = n.zNpc; } }
     if (sx === undefined) { a.hidden = true; return; }
     _p.set(sx, 1, sz).project(dunia.kamera);
@@ -924,18 +1070,23 @@
     if (!EB.BUKU.length) return;
     dunia = new EB.Dunia($('#kanvas'));
     const kecil = Math.min(innerWidth, innerHeight) < 700 && sentuh;
-    dunia.kualiti(S.kualiti || (kecil ? 'sederhana' : 'tinggi'));
+    dunia.kualiti(G.kualiti || (kecil ? 'sederhana' : 'tinggi'));
     const buangAsal = dunia.buang.bind(dunia);
     dunia.buang = (b) => { selepasBuang(b); buangAsal(b); };
     pemain = new EB.Pemain(dunia);
+    if (profilAktif()) warnakanPemain(profilAktif().warna);
     document.body.classList.toggle('sentuh', sentuh);
+    const simpanSekarang = () => { if (prog && !layarMula && pemain) prog.pos = [+pemain.pos.x.toFixed(2), +pemain.pos.y.toFixed(2)]; simpan(); };
+    addEventListener('pagehide', simpanSekarang);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) simpanSekarang(); });
     pasangInput();
     terjemah();
     paparLayarMula();
+    if (!profilAktif()) setTimeout(() => dialogProfil({ wajib: true }), 300);
     // panaskan baris pertama sebelum gelung
     for (let i = 0; i < 3; i++) dunia.pastikanBaris(Math.floor(pemain.pos.y / EB.SUSUN.D), 1e3);
     $('#memuat').remove();
     requestAnimationFrame(gelung);
-    EB._uji = { get S() { return S; }, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, ctx, mulaBuku, bercakapNod, mulaMisi, teleport, mulaCabaran, paparAlbum, paparPeta, tutupModal };
+    EB._uji = { get S() { return S; }, get P() { return P; }, dialogProfil, dialogEksport, dialogImport, bacaKod, tukarProfil, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, ctx, mulaBuku, bercakapNod, mulaMisi, teleport, mulaCabaran, paparAlbum, paparPeta, tutupModal };
   };
 })();

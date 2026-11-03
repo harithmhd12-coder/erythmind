@@ -31,6 +31,15 @@ Kandungan ditulis semula dengan kata-kata sendiri, bukan petikan panjang. Fail P
    - **📦 Hantar Barang:** hantar bungkusan kepada 3 penerima. Penggoda 😈 di tengah jalan menawarkan ganjaran segera. Terima = misi gagal (−1 nyawa). Tolak atau elak jalan = lulus.
    - **🧱 Susun Timbal:** Sokoban di jalan raya. Tolak blok konsep ke tapak bernombor mengikut urutan. Hanya untuk bab yang ada urutan (`data/urutan.js`).
    - **🗣 Tanya Penduduk** dan **⏱ Lawan Masa** (3 serpihan dalam 70 saat).
+   - **Misi signature** (16, satu bab khas setiap satu, ditetapkan dalam `EB.SIGNATURE` di `js/signature.js`):
+
+     | Buku | Misi |
+     |---|---|
+     | Atomic Habits | 🌱 Kebun 1% (pokok kekal yang perlu disiram setiap hari sebenar, berbuah selepas 7 hari, layu jika terlepas 2 hari) · 🏠 Rumah Persekitaran (susun barang, NPC “hidup sehari”) · 🪨 Rantaian Tabiat (batu loncatan berirama, jangan terlepas dua kali) |
+     | The Art of Thinking Clearly | 🪦 Kubur Kegagalan · 🎡 Roda Rolet · ⚓ Pasar Sauh · 🦍 Gorila Tersembunyi |
+     | Clear Thinking | ⏸ Detik Biasa (tahan butang BALAS) · 🍲 HALT (bar lapar & letih) · 💣 Peluru sebelum Meriam |
+     | Trust Me, I'm Lying | 🔗 Jejak Rantaian sumber · 📰 Bilik Berita (klik lawan kepercayaan) · 🔥 Pembetulan (padam khabar palsu) |
+     | Ẓāhirat al-Nifāq | 🪞 Cermin Muhasabah (rekod sebenar pemain) · 🗣 Lahn al-Qaul (kata lawan perbuatan) · 🕌 Masjid Dhirar |
 2. Setiap langkah misi membuka satu idea utama bab. Kesilapan semasa misi (jalan mati, susunan salah) mengurangkan bintang bab itu.
 3. **Cabaran:** satu soalan dilema hidup sebenar, satu soalan "idea mana dari bab ini", dan kadangkala satu soalan ulang kaji bab lama. Jawapan salah ditanya semula dan menolak 1 nyawa.
 4. Selesai bab: bintang 1 hingga 3, XP, streak harian, Kad Ilmu dalam album, dan pintu kabus ke bab seterusnya terbuka.
@@ -59,7 +68,8 @@ Pergerakan menggunakan momentum (pecutan dan geseran), pusingan licin, condong b
 index.html, gaya.css, manifest.webmanifest, ikon.svg
 js/dunia.js      grid, susun atur peta, model diorama (digabung sebaris), air, kabus, tilt-shift
 js/watak.js      model watak, animasi, A*, pengawal pemain, penduduk
-js/misi.js       pengendali setiap jenis misi
+js/misi.js       pengendali misi umum
+js/signature.js  16 misi signature dan Kebun 1%
 js/permainan.js  aliran misi, cabaran, pertarungan kad, nyawa/XP/streak, ulang kaji, album, peta, input, simpanan
 data/*.js        kandungan buku
 ```
@@ -85,4 +95,10 @@ EB.daftar({
 
 Jawapan betul sentiasa ditulis pertama; game mengocok susunan pilihan. Peta, kabus, misi dan soalan automatik dijana sendiri daripada data ini.
 
-Kemajuan disimpan dalam `localStorage` peranti (`ekspedisi-buku.v1`).
+## Pemain & simpanan
+
+- Pada lawatan pertama, pemain memasukkan **nama** dan memilih **warna watak**. Nama dipaparkan di atas kepala watak dan di layar mula.
+- Satu peranti boleh ada **beberapa pemain**. Setiap pemain ada kemajuan, XP, streak, kebun dan statistik sendiri. Tukar melalui butang ⇄ di layar mula atau Tetapan.
+- Kemajuan **disimpan automatik** dalam `localStorage`: setiap 5 saat, setiap kali bab selesai, dan apabila tab ditutup atau disembunyikan. Butang **▶ Sambung** di layar mula membawa pemain terus ke bab terakhir.
+- **Kod simpanan** (Tetapan → Kod simpanan) mengeksport seluruh ekspedisi sebagai kod `EB1.…` atau fail `.json`. Di peranti lain, **Sambung dari kod** memulihkannya. Kod ini juga berguna jika data browser dibersihkan.
+- Kunci storan: `ekspedisi-buku.profil` (senarai pemain), `ekspedisi-buku.data.<id>` (data setiap pemain), `ekspedisi-buku.tetapan` (bahasa, kualiti, bunyi). Simpanan versi lama (`ekspedisi-buku.v1`) dipindahkan secara automatik ke pemain pertama.
