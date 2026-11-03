@@ -114,7 +114,7 @@
         mesh(c, m, 'bola0', '#5a3b22', 0.18, 0.1, 0.18, m.tp.x, 0.12, m.tp.z);
         c.serpihan(c.nod(m).bab.titik[0], '🌰', c.L('Benih ditanam|Seed planted'));
       } else if (m.langkah === 1) {
-        m.langkah = 2; c.bunyi('ambil'); m.lSg.e.style.opacity = 0.35; m.lTp.e.style.opacity = 1;
+        m.langkah = 2; c.bunyi('percik'); m.lSg.e.style.opacity = 0.35; m.lTp.e.style.opacity = 1;
         m.baldi = new T.Mesh(EB.tpl().silinder, EB.mat('#7d8fa6')); m.baldi.scale.set(0.12, 0.18, 0.12); m.baldi.position.set(0.28, 0.3, 0.05); c.pemain.model.userData.badan.add(m.baldi);
         c.serpihan(c.nod(m).bab.titik[1], '🪣', c.L('Air diceduk|Water scooped'));
       } else if (m.langkah === 2) {
@@ -157,7 +157,7 @@
       if (c.misiAktif && c.misiAktif.jenis === 'kebun') return [];
       return this.bawa ? [{ x: k.x, z: k.z, label: c.L('Siram|Water'), f: () => this.siram(c) }] : [{ x: k.sx, z: k.sz, label: c.L('Ceduk air|Scoop water'), f: () => this.ceduk(c) }];
     },
-    ceduk(c) { this.bawa = true; c.bunyi('ambil'); this.baldi = new T.Mesh(EB.tpl().silinder, EB.mat('#7d8fa6')); this.baldi.scale.set(0.12, 0.18, 0.12); this.baldi.position.set(0.28, 0.3, 0.05); c.pemain.model.userData.badan.add(this.baldi); c.toast('🪣 ' + c.L('Bawa air ke pokok 1% kau.|Carry the water to your 1% tree.')); },
+    ceduk(c) { this.bawa = true; c.bunyi('percik'); this.baldi = new T.Mesh(EB.tpl().silinder, EB.mat('#7d8fa6')); this.baldi.scale.set(0.12, 0.18, 0.12); this.baldi.position.set(0.28, 0.3, 0.05); c.pemain.model.userData.badan.add(this.baldi); c.toast('🪣 ' + c.L('Bawa air ke pokok 1% kau.|Carry the water to your 1% tree.')); },
     siram(c) {
       const k = this.rekod(c), sebelum = rantaiKebun(k);
       if (sebelum === 0 && k.hari.length) k.hari = []; // layu → mula semula
@@ -270,7 +270,7 @@
       if (!b.siap) {
         m.miss++; b.o.material = EB.mat('#6d6d6d');
         if (m.miss >= 2) {
-          m.penalti++; c.bunyi('salah'); c.awan(c.pemain.pos.x, c.pemain.pos.y, m);
+          m.penalti++; c.bunyi('percik'); c.bunyi('salah'); c.awan(c.pemain.pos.x, c.pemain.pos.y, m);
           c.toast('💦 ' + c.L('Terlepas dua kali, kau jatuh! Kembali ke batu 1.|Missed twice, you fell! Back to stone 1.'));
           c.pemain.letak(m.batu[0].x, m.batu[0].z); m.k = -1; m.lMula.pos.y = 1.3; m.lMula.e.style.display = '';
           return;
@@ -309,7 +309,7 @@
       return true;
     },
     gali(c, m, b) {
-      b.gali = true; c.bunyi('ambil'); c.tambahXP(8); b.o.visible = false; b.l.e.innerHTML = '<i class="siap">🪦</i>';
+      b.gali = true; c.bunyi('gali'); c.tambahXP(8); b.o.visible = false; b.l.e.innerHTML = '<i class="siap">🪦</i>';
       mesh(c, m, 'kotak', '#9aa0a6', 0.5, 0.65, 0.12, b.x, 0, b.z); mesh(c, m, 'kotak', '#7a5232', 0.6, 0.05, 1.0, b.x, 0, b.z + 0.45);
       const k = m.busut.filter((x) => x.gali).length;
       c.serpihan(b.teks, '🪦', c.L('Kubur|Grave') + ` ${k} / 5`, () => { if (k >= 5) c.siap(); });

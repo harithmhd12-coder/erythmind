@@ -36,6 +36,9 @@
       <button id="btn-peta" class="btn bulat" data-tt="peta">🗺</button>
       <button id="btn-album" class="btn bulat" data-tt="album">🃏</button>
       <button id="btn-tetapan" class="btn bulat" data-tt="tetapan">⚙</button>
+      <button id="btn-pemain" class="btn bulat lencana-btn" title="Pemain">👥<em></em></button>
+      <button id="btn-chat" class="btn bulat lencana-btn" title="Chat" hidden>💬<em hidden></em></button>
+      <button id="btn-suara" class="btn bulat" title="Suara" hidden>🎙</button>
     </div>
     <div class="hud-kamera">
       <button id="btn-kiri" class="btn bulat kecil">⟲</button>
@@ -43,6 +46,11 @@
     </div>
     <button id="btn-tindakan" class="btn tindakan" hidden><i>💬</i><span></span></button>
     <div id="joy"><div id="joy-knob"></div></div>
+    <div id="chat" hidden>
+      <div class="chat-kepala"><b>💬 Chat</b><button id="chat-tutup" class="btn ikon kecil">✕</button></div>
+      <div id="chat-senarai"></div>
+      <form id="chat-borang"><input id="chat-input" maxlength="200" autocomplete="off" placeholder="Taip mesej… / Type a message…"><button class="btn utama kecil">➤</button></form>
+    </div>
   </div>
 
   <div id="layar-mula" hidden>
@@ -75,6 +83,8 @@
   <script src="js/misi.js"></script>
   <script src="js/signature.js"></script>
   <script src="js/awan.js"></script>
+  <script src="js/bunyi.js"></script>
+  <script src="js/bersama.js"></script>
   <script src="js/permainan.js"></script>
   <script src="data/atomic-habits.js"></script>
   <script src="data/art-of-thinking-clearly.js"></script>

@@ -91,21 +91,29 @@
   const t = (k) => L(TXT[k] || k);
 
   /* ---------- Bunyi sintesis ringkas ---------- */
-  let ac = null;
+  // jenis → [sampel rakaman, nada maklum balas]
+  const PETA_BUNYI = { ambil: ['permata', null], klik: ['klik', null], buka: ['kunci', 'buka'], betul: ['syiling', 'betul'], salah: ['hentak', 'salah'], tamat: ['loceng', 'tamat'],
+    batu: ['batu', null], percik: ['percik', null], pedang: ['pedang', 'betul'], gong: ['gong', null], buku: ['buku', null], gali: ['gali', null], kayu: ['kayu', null], pop: ['pop', null], pintu: ['pintu', null] };
   function bunyi(jenis) {
     if (!G.bunyi) return;
+    const A = EB.audio; if (!A) return;
+    A.buka(); if (!A.ac) return;
+    const [sampel, nadaJ] = PETA_BUNYI[jenis] || [null, jenis];
+    if (sampel) A.main(sampel, { vol: 0.85 });
+    const nada = { betul: [660, 990, 1320], salah: [220, 160], buka: [523, 659, 784, 1046], tamat: [523, 659, 784, 1046, 1318] }[nadaJ];
+    if (!nada) return;
     try {
-      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-      const nada = { ambil: [880, 1320], betul: [660, 990, 1320], salah: [220, 160], buka: [523, 659, 784, 1046], klik: [700], tamat: [523, 659, 784, 1046, 1318] }[jenis] || [600];
+      const ac = A.ac;
       nada.forEach((f, i) => {
         const o = ac.createOscillator(), g = ac.createGain();
-        o.type = jenis === 'salah' ? 'square' : 'triangle'; o.frequency.value = f;
+        o.type = nadaJ === 'salah' ? 'square' : 'triangle'; o.frequency.value = f;
         const t0 = ac.currentTime + i * 0.08;
-        g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
-        o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0 + 0.25);
+        g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(nadaJ === 'salah' ? 0.05 : 0.08, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+        o.connect(g).connect(A.gSfx); o.start(t0); o.stop(t0 + 0.25);
       });
     } catch (e) { /* audio tidak tersedia */ }
   }
+  const terapAudio = () => EB.audio && EB.audio.terap({ hidup: G.bunyi !== false, muzik: G.muzik ?? 0.55, sfx: G.sfx ?? 0.9 });
 
   /* ---------- Keadaan permainan ---------- */
   let dunia, pemain, buku, peta, prog;
@@ -320,6 +328,7 @@
         <small>${esc(label || '')}${n ? ' · ' + esc(L(n.bab.t)) : ''}</small>
         <p>${esc(L(teks))}</p></div>
         <button class="btn utama" data-a="ok">${esc(t('seterusnya'))}</button>`, 'kecil');
+      bunyi('buku');
       p.querySelector('[data-a=ok]').onclick = () => { tutupModal(); cb && cb(); kemasHUD(); };
     },
     siap() { if (!misi) return; misi.fasa = 'kembali'; toast(t('kembali')); kemasLabelNod(); kemasHUD(); },
@@ -385,7 +394,7 @@
     return `<div class="kepala"><div class="lencana">${no}</div><div><small>${esc(t('bab'))} ${no} · ${esc(L(buku.bahagian[n.bi].n))}</small><h2>${esc(L(n.bab.t))}</h2></div></div>`;
   }
   function dialogPenjaga(n) {
-    const k = keadaanNod(n);
+    const k = keadaanNod(n); bunyi('gong');
     const p = bukaModal(`<div class="kepala"><div class="lencana ungu">⚔</div><div><small>${esc(t('penjaga'))}</small><h2>${esc(L(buku.bahagian[n.bi].n))}</h2></div></div>
       <p class="cerita">${esc(t('penjagaTeks'))}</p>
       <div class="butang"><button class="btn" data-a="x">${esc(t('nanti'))}</button><button class="btn utama" data-a="ok">${esc(k === 'siap' ? t('cubaLagi') : t('mulaCabaran'))}</button></div>`);
@@ -472,7 +481,7 @@
       const ok = i >= 0 && tangan[i] === a.c;
       p.querySelectorAll('.kad-tempur').forEach((b, k) => { b.disabled = true; if (tangan[k] === a.c) b.classList.add('betul'); else if (k === i) b.classList.add('salah'); });
       if (a.jenis === 'senario') kemasUlang(a.c.idx, ok);
-      if (ok) { st.betulN++; st.hp--; bunyi('betul'); tambahXP(20); p.querySelector('.penjaga-ikon').classList.add('kena'); p.querySelector('.hp-bar i').style.width = (st.hp / st.soalan.length) * 100 + '%'; }
+      if (ok) { st.betulN++; st.hp--; bunyi('pedang'); tambahXP(20); p.querySelector('.penjaga-ikon').classList.add('kena'); p.querySelector('.hp-bar i').style.width = (st.hp / st.soalan.length) * 100 + '%'; }
       else { st.salah++; ctx.stat('salah'); bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa === 4) S.tNyawa = Date.now(); p.querySelector('.panel').classList.add('gegar'); kemasHUD(); }
       simpan();
       const mk = p.querySelector('.maklum'); mk.hidden = false;
@@ -586,7 +595,7 @@
     p.querySelector('[data-a=x]').onclick = () => {
       tutupModal();
       kemaskiniHad(); kemasLabelNod(); kemasHUD();
-      if (pertama) confetti();
+      if (pertama) { confetti(); bunyi('pintu'); }
       if (tamat) paparTamatBuku();
       else if (pertama) toast('🔓 ' + namaNod(peta.nod[prog.depan]));
     };
@@ -692,6 +701,9 @@
       <label class="baris-tetapan"><span>${esc(t('bahasa'))}</span><span class="tog"><button data-lang="bm" class="${G.bahasa === 'bm' ? 'on' : ''}">BM</button><button data-lang="en" class="${G.bahasa === 'en' ? 'on' : ''}">EN</button></span></label>
       <label class="baris-tetapan"><span>${esc(t('kualiti'))}</span><span class="tog">${['tinggi', 'sederhana', 'rendah'].map((k) => `<button data-q="${k}" class="${q === k ? 'on' : ''}">${esc(t(k))}</button>`).join('')}</span></label>
       <label class="baris-tetapan"><span>${esc(t('bunyi'))}</span><span class="tog"><button data-b="1" class="${G.bunyi ? 'on' : ''}">On</button><button data-b="0" class="${!G.bunyi ? 'on' : ''}">Off</button></span></label>
+      <label class="baris-tetapan"><span>🎵 ${esc(L('Muzik|Music'))}</span><input type="range" class="gelangsar" data-vol="muzik" min="0" max="1" step="0.05" value="${G.muzik ?? 0.55}"></label>
+      <label class="baris-tetapan"><span>👣 ${esc(L('Kesan bunyi|Sound effects'))}</span><input type="range" class="gelangsar" data-vol="sfx" min="0" max="1" step="0.05" value="${G.sfx ?? 0.9}"></label>
+      <label class="baris-tetapan"><span>🌐 ${esc(L('Dalam talian (jumpa pemain lain)|Online (meet other players)'))}</span><span class="tog"><button data-dt="1" class="${G.dalamTalian !== false ? 'on' : ''}">On</button><button data-dt="0" class="${G.dalamTalian === false ? 'on' : ''}">Off</button></span></label>
       <div class="baris-tetapan"><span>👤 ${esc(pr ? pr.nama : '')}</span><span class="tog"><button data-a="nama">✎ ${esc(L('Tukar nama|Rename'))}</button><button data-a="profil">⇄ ${esc(L('Tukar pemain|Switch player'))}</button></span></div>
       <div class="baris-tetapan"><span>☁ ${esc(L('Simpanan awan|Cloud save'))}</span><span class="tog"><button data-a="awan">${esc(statusAwan())}</button></span></div>
       <div class="baris-tetapan"><span>💾 ${esc(L('Simpanan|Save data'))}</span><span class="tog"><button data-a="eksport">⤴ ${esc(L('Kod simpanan|Save code'))}</button><button data-a="import">⤵ ${esc(L('Sambung dari kod|Load a code'))}</button></span></div>
@@ -701,7 +713,9 @@
     p.querySelector('[data-a=x]').onclick = tutupModal;
     p.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { G.bahasa = b.dataset.lang; simpanG(); terjemah(); paparTetapan(); }));
     p.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { G.kualiti = b.dataset.q; simpanG(); dunia.kualiti(G.kualiti); paparTetapan(); }));
-    p.querySelectorAll('[data-b]').forEach((b) => (b.onclick = () => { G.bunyi = b.dataset.b === '1'; simpanG(); paparTetapan(); }));
+    p.querySelectorAll('[data-b]').forEach((b) => (b.onclick = () => { G.bunyi = b.dataset.b === '1'; simpanG(); terapAudio(); paparTetapan(); }));
+    p.querySelectorAll('[data-vol]').forEach((r) => (r.oninput = () => { G[r.dataset.vol] = +r.value; simpanG(); terapAudio(); if (r.dataset.vol === 'sfx') bunyi('ambil'); }));
+    p.querySelectorAll('[data-dt]').forEach((b) => (b.onclick = () => { G.dalamTalian = b.dataset.dt === '1'; simpanG(); if (G.dalamTalian && buku && !layarMula) EB.bersama.masuk(buku); else if (!G.dalamTalian) EB.bersama.keluar(); paparTetapan(); }));
     p.querySelector('[data-a=nama]').onclick = () => dialogProfil({ ubah: true });
     p.querySelector('[data-a=profil]').onclick = () => dialogProfil({});
     p.querySelector('[data-a=eksport]').onclick = dialogEksport;
@@ -789,6 +803,61 @@
     p.querySelector('[data-a=ok]').onclick = sah;
     inp.onkeydown = (e) => { if (e.key === 'Enter') sah(); };
   }
+  /* ---------- Dunia bersama: UI ---------- */
+  let belumBaca = 0;
+  function kemasBersamaUI() {
+    const Bm = EB.bersama; if (!Bm) return;
+    const n = Bm.lain.size, bp = $('#btn-pemain');
+    bp.querySelector('em').textContent = Bm.keadaan === 'masuk' ? n + 1 : Bm.keadaan === 'menyambung' ? '…' : Bm.keadaan === 'ralat' ? '!' : '';
+    bp.classList.toggle('on', Bm.keadaan === 'masuk'); bp.classList.toggle('ralat', Bm.keadaan === 'ralat');
+    const hidup = Bm.keadaan === 'masuk';
+    $('#btn-chat').hidden = !hidup; $('#btn-suara').hidden = !hidup;
+    const bs = $('#btn-suara'); bs.classList.toggle('on', Bm.suaraAktif && Bm.micHidup); bs.classList.toggle('senyap', Bm.suaraAktif && !Bm.micHidup);
+    bs.textContent = Bm.suaraAktif ? (Bm.micHidup ? '🎙' : '🔇') : '🎙';
+    bs.title = Bm.suaraAktif ? (Bm.micHidup ? L('Mikrofon hidup · ketik untuk senyap (V)|Mic on · tap to mute (V)') : L('Mikrofon senyap · ketik untuk hidup (V)|Mic muted · tap to unmute (V)')) : L('Sertai chat suara (V)|Join voice chat (V)');
+    if (document.querySelector('.dialog-pemain') && modalTerbuka) dialogPemain();
+  }
+  function suaraTekan() { const Bm = EB.bersama; if (!Bm.suaraAktif) Bm.sertaiSuara(); else Bm.togolMic(); }
+  function chatBaru(m, sendiri) {
+    const senarai = $('#chat-senarai');
+    const d = el('div', 'chat-mesej' + (sendiri ? ' sendiri' : ''), `<b style="color:${esc(m.warna || '#2e86c1')}">${esc(m.nama)}</b> ${esc(m.teks)}`);
+    senarai.appendChild(d); while (senarai.children.length > 60) senarai.firstChild.remove();
+    senarai.scrollTop = senarai.scrollHeight;
+    if ($('#chat').hidden && !sendiri) { belumBaca++; const e = $('#btn-chat em'); e.textContent = belumBaca; e.hidden = false; }
+  }
+  function bukaChat() {
+    if (!EB.bersama.saluran) { toast('🌐 ' + L('Belum dalam talian|Not online yet')); return; }
+    $('#chat').hidden = false; belumBaca = 0; $('#btn-chat em').hidden = true;
+    pemain && (pemain.input.set(0, 0)); kekunci.clear();
+    setTimeout(() => $('#chat-input').focus(), 30);
+  }
+  function tutupChat() { const c = $('#chat'); if (c) c.hidden = true; const i = $('#chat-input'); if (i) i.blur(); }
+  function dialogPemain() {
+    const Bm = EB.bersama, pr = profilAktif();
+    const ket = { masuk: L('Dalam talian|Online'), menyambung: L('Menyambung…|Connecting…'), ralat: L('Gagal menyambung|Couldn’t connect'), luar: L('Luar talian|Offline') }[Bm.keadaan] || '';
+    const senarai = Bm.senaraiPemain().sort((a, b) => (a.jarak || 0) - (b.jarak || 0));
+    const p = bukaModal(`<div class="kepala-modal"><h2>👥 ${esc(L('Pemain di dunia ini|Players in this world'))}</h2><button class="btn ikon" data-a="x">✕</button></div>
+      <p class="kecil">🌐 ${esc(ket)}${Bm.ralat ? ' · ' + esc(Bm.ralat) : ''} · ${esc(buku ? buku.tajuk : '')}</p>
+      <div class="pemain-baris saya"><i style="background:${pr ? pr.warna : '#2e86c1'}">${esc(pr ? pr.nama.slice(0, 1).toUpperCase() : '?')}</i><span><b>${esc(pr ? pr.nama : '')}</b><small>${esc(L('Kau|You'))}</small></span>
+        <span class="tog">${Bm.suaraAktif ? `<button data-a="mic">${Bm.micHidup ? '🔇 ' + esc(L('Senyap mic|Mute mic')) : '🎙 ' + esc(L('Hidup mic|Unmute'))}</button><button data-a="keluarSuara">${esc(L('Keluar suara|Leave voice'))}</button>` : `<button data-a="sertaiSuara" ${Bm.keadaan !== 'masuk' ? 'disabled' : ''}>🎙 ${esc(L('Sertai chat suara|Join voice chat'))}</button>`}</span></div>
+      ${senarai.length ? senarai.map((o) => `<div class="pemain-baris"><i style="background:${esc(o.warna)}">${esc(String(o.nama).slice(0, 1).toUpperCase())}</i><span><b>${esc(o.nama)} ${o.suara ? '🎙' : ''}</b><small>${o.jarak !== undefined ? Math.round(o.jarak) + ' m' : '—'}${o.suara && Bm.suaraAktif ? ' · ' + esc(o.jarak > 24 ? L('terlalu jauh untuk didengar|too far to hear') : o.sambung || Bm.saya > o.kunci ? L('suara bersambung|voice connected') : L('menyambung suara…|connecting voice…')) : ''}</small></span>
+        <span class="tog"><button data-pergi="${esc(o.kunci)}">📍 ${esc(L('Pergi|Go'))}</button><button data-senyap="${esc(o.kunci)}">${o.senyap ? '🔈 ' + esc(L('Nyahsenyap|Unmute')) : '🔇 ' + esc(L('Senyapkan|Mute'))}</button></span></div>`).join('')
+        : `<p class="kecil">${esc(Bm.keadaan === 'masuk' ? L('Belum ada pemain lain di buku ini. Ajak kawan buka buku yang sama!|No other players in this book yet. Invite a friend to open the same book!') : L('Hidupkan “Dalam talian” dalam Tetapan untuk berjumpa pemain lain.|Turn on “Online” in Settings to meet other players.'))}</p>`}
+      <p class="kecil">${esc(L('Chat suara hanya kedengaran apabila kau berdekatan (kurang 24 m). Tekan T untuk chat teks, V untuk mikrofon. Jangan kongsi maklumat peribadi dengan orang yang tidak dikenali.|Voice chat is only heard nearby (under 24 m). Press T for text chat, V for the mic. Don’t share personal information with strangers.'))}</p>`, 'kecil dialog-pemain');
+    p.querySelector('[data-a=x]').onclick = tutupModal;
+    const q = (k) => p.querySelector(k);
+    if (q('[data-a=sertaiSuara]')) q('[data-a=sertaiSuara]').onclick = () => Bm.sertaiSuara();
+    if (q('[data-a=mic]')) q('[data-a=mic]').onclick = () => Bm.togolMic();
+    if (q('[data-a=keluarSuara]')) q('[data-a=keluarSuara]').onclick = () => Bm.keluarSuara();
+    p.querySelectorAll('[data-senyap]').forEach((b) => (b.onclick = () => { Bm.togolSenyap(b.dataset.senyap); dialogPemain(); }));
+    p.querySelectorAll('[data-pergi]').forEach((b) => (b.onclick = () => {
+      const o = Bm.lain.get(b.dataset.pergi); if (!o) return;
+      const x = o.pos.x + 1, z = o.pos.y;
+      if (!dunia.boleh(Math.floor(x), Math.floor(z), pemain.had)) { toast('🔒 ' + o.nama + ' ' + L('berada di kawasan yang belum kau buka.|is in an area you haven’t unlocked yet.')); return; }
+      tutupModal(); pemain.letak(x, z); dunia.fokus.set(x, 0, z);
+    }));
+  }
+
   /* ---------- Simpanan awan ---------- */
   function statusAwan() {
     const A = EB.awan;
@@ -927,6 +996,9 @@
     layarMula = true; buangMisi();
     $('#layar-mula').hidden = false; $('#hud').hidden = true; document.body.classList.add('di-mula');
     binaKadBuku(); binaKadPemain();
+    if (EB.audio) EB.audio.laguMula();
+    if (EB.bersama) EB.bersama.keluar();
+    tutupChat();
     pratonton(S.terakhir || EB.BUKU[0].id);
   }
   function pratonton(id) {
@@ -954,6 +1026,8 @@
     layarMula = false; S.terakhir = id; simpan();
     if (dunia.buku !== b) muatDunia(b); else { buangMisi(); kemaskiniHad(); }
     $('#layar-mula').hidden = true; $('#hud').hidden = false; document.body.classList.remove('di-mula');
+    if (EB.audio) EB.audio.laguBuku(id);
+    if (EB.bersama) EB.bersama.masuk(b);
     const n = peta.nod[Math.min(prog.depan, peta.nod.length - 1)];
     if (prog.pos && prog.depan > 0) { pemain.letak(prog.pos[0], prog.pos[1]); if (!dunia.boleh(Math.floor(prog.pos[0]), Math.floor(prog.pos[1]), pemain.had)) teleport(n); }
     else if (prog.depan === 0) pemain.letak(dunia.mula.x, dunia.mula.z);
@@ -1032,7 +1106,12 @@
   function pasangInput() {
     const kv = dunia.kanvas;
     addEventListener('keydown', (e) => {
+      if (EB.audio) EB.audio.buka();
+      const fokus = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+      if (fokus) { if (e.code === 'Escape') { document.activeElement.blur(); tutupChat(); } return; }
       if (layarMula) return;
+      if (!modalTerbuka && e.code === 'KeyT') { e.preventDefault(); bukaChat(); return; }
+      if (!modalTerbuka && e.code === 'KeyV' && EB.bersama.saluran) { suaraTekan(); return; }
       if (e.code === 'Escape' && modalTerbuka) { clearInterval(pemasa); tutupModal(); return; }
       if (modalTerbuka) return;
       kekunci.add(e.code); kemasInputPapan();
@@ -1087,6 +1166,11 @@
     };
     kv.addEventListener('touchend', tamat); kv.addEventListener('touchcancel', tamat);
     $('#tracker').addEventListener('click', (e) => { if (e.target.closest('[data-a=reset]') && misi && EB.MISI[misi.jenis].reset) EB.MISI[misi.jenis].reset(ctx, misi); });
+    addEventListener('pointerdown', () => EB.audio && EB.audio.buka(), true);
+    addEventListener('touchstart', () => EB.audio && EB.audio.buka(), { capture: true, passive: true });
+    $('#btn-pemain').onclick = dialogPemain; $('#btn-chat').onclick = () => ($('#chat').hidden ? bukaChat() : tutupChat()); $('#btn-suara').onclick = suaraTekan;
+    $('#chat-tutup').onclick = tutupChat;
+    $('#chat-borang').onsubmit = (e) => { e.preventDefault(); const i = $('#chat-input'); if (EB.bersama.hantarChat(i.value)) i.value = ''; };
     $('#btn-tindakan').onclick = () => { const s = terdekat(); if (s) interaksi(s); };
     $('#btn-peta').onclick = paparPeta; $('#btn-album').onclick = () => paparAlbum(); $('#btn-tetapan').onclick = paparTetapan;
     $('#btn-kiri').onclick = () => dunia.pusingKamera(-Math.PI / 4); $('#btn-kanan').onclick = () => dunia.pusingKamera(Math.PI / 4);
@@ -1112,6 +1196,8 @@
       return;
     }
     pemain.kemaskini(dt, tm);
+    if (EB.langkah) EB.langkah.kemas(pemain.model, pemain.laju, dunia, pemain.pos.x, pemain.pos.y);
+    if (EB.bersama) EB.bersama.kemas(dt, tm);
     const nd = peta.nod[prog.depan], rP = Math.floor(pemain.pos.y / EB.SUSUN.D), rMaks = nd && isFinite(nd.potong) ? Math.floor(nd.potong / 1000) : peta.baris.length;
     dunia.pastikanBaris(rP, rMaks);
     for (const [, b] of dunia.baris) for (const p of b.npc || []) p.kemaskini(dt, tm, pemain);
@@ -1168,10 +1254,12 @@
     pemain = new EB.Pemain(dunia);
     if (profilAktif()) warnakanPemain(profilAktif().warna);
     if (EB.awan) EB.awan.mula(apiAwan());
+    terapAudio();
+    EB.bersama.mula({ L, esc, toast, tambahLabel, buangLabel, dunia: () => dunia, pemain: () => pemain, profil: profilAktif, dalamTalian: () => G.dalamTalian !== false, berubah: kemasBersamaUI, chatBaru });
     document.body.classList.toggle('sentuh', sentuh);
     const simpanSekarang = () => { if (prog && !layarMula && pemain) prog.pos = [+pemain.pos.x.toFixed(2), +pemain.pos.y.toFixed(2)]; simpan(); };
     addEventListener('pagehide', simpanSekarang);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) simpanSekarang(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) simpanSekarang(); if (EB.audio) EB.audio.jeda(document.hidden); });
     pasangInput();
     terjemah();
     paparLayarMula();
@@ -1180,6 +1268,6 @@
     for (let i = 0; i < 3; i++) dunia.pastikanBaris(Math.floor(pemain.pos.y / EB.SUSUN.D), 1e3);
     $('#memuat').remove();
     requestAnimationFrame(gelung);
-    EB._uji = { get S() { return S; }, get P() { return P; }, terimaAwan, dialogAwan, dialogProfil, dialogEksport, dialogImport, bacaKod, tukarProfil, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, ctx, mulaBuku, bercakapNod, mulaMisi, teleport, mulaCabaran, paparAlbum, paparPeta, tutupModal };
+    EB._uji = { get G() { return G; }, dialogPemain, bukaChat, kemasBersamaUI, get S() { return S; }, get P() { return P; }, terimaAwan, dialogAwan, dialogProfil, dialogEksport, dialogImport, bacaKod, tukarProfil, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, ctx, mulaBuku, bercakapNod, mulaMisi, teleport, mulaCabaran, paparAlbum, paparPeta, tutupModal };
   };
 })();

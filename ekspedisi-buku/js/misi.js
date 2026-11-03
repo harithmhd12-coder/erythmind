@@ -363,7 +363,7 @@
     tolakBlok(c, m, b, dx, dz) {
       const nx = b.x + dx, nz = b.z + dz;
       if (!this.bolehBlok(c, m, nx, nz, b)) { c.bunyi('klik'); return false; }
-      b.x = nx; b.z = nz; m.berubah = true; this.halang(c, m); c.bunyi('klik');
+      b.x = nx; b.z = nz; m.berubah = true; this.halang(c, m); c.bunyi('batu');
       return true;
     },
     reset(c, m) {

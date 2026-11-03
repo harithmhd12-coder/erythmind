@@ -71,6 +71,9 @@ js/watak.js      model watak, animasi, A*, pengawal pemain, penduduk
 js/misi.js       pengendali misi umum
 js/signature.js  16 misi signature dan Kebun 1%
 js/awan.js       simpanan awan Supabase dan gabungan simpanan
+js/bunyi.js      muzik, bunyi alam, langkah kaki ikut permukaan, SFX
+js/bersama.js    dunia bersama: kehadiran, gerakan, chat teks, chat suara WebRTC
+bunyi/           fail audio CC0 + KREDIT.md
 js/permainan.js  aliran misi, cabaran, pertarungan kad, nyawa/XP/streak, ulang kaji, album, peta, input, simpanan
 data/*.js        kandungan buku
 ```
@@ -112,6 +115,29 @@ Pemain boleh log masuk dengan emel (pautan log masuk atau kod 6 digit, tanpa kat
 3. **Authentication → Emails → SMTP Settings**: sambungkan SMTP sendiri (contohnya Resend atau Brevo, ada pelan percuma). Perkhidmatan emel bawaan Supabase hanya menghantar kepada ahli pasukan projek dan dengan had yang sangat rendah, jadi pemain awam tidak akan menerima emel tanpa langkah ini.
 4. (Pilihan) **Authentication → Emails → Templates**: dalam templat *Magic Link* dan *Confirm signup*, tambah `{{ .Token }}` supaya emel juga mengandungi kod 6 digit. Ini berguna apabila pemain membuka emel di peranti lain.
 5. *Allow anonymous sign-ins* sudah hidup untuk Erythmind; ia hanya digunakan oleh pilihan **Guna tanpa emel**.
+
+## Bunyi
+
+- **Muzik latar** (CC0): *A New Town* di layar mula; setiap buku diberi satu lagu jelajah (*Down the River*, *Apple Cider*, *A New Town*) dengan crossfade, ditambah bunyi alam hutan pada kelantangan rendah.
+- **Langkah kaki rakaman sebenar** mengikut permukaan: atas pasir untuk rumput (lebih lembut) dan jalan tanah, atas batu untuk jalan bandar, lantai dan jambatan. Kaki kiri dan kanan bergilir, diselaraskan dengan rentak animasi watak, dan lebih kuat serta laju ketika berlari. Langkah pemain lain kedengaran mengikut jarak.
+- **SFX tindakan**: kutip serpihan, buka serpihan (halaman buku), tolak blok, gali, ceduk air, jatuh ke sungai, pintu kawasan baharu, pedang dan gong Penjaga Daerah, mesej chat.
+- Tetapan: suis bunyi, gelangsar **Muzik** dan **Kesan bunyi**. Audio berhenti apabila tab disembunyikan.
+- Kredit dan lesen: [`bunyi/KREDIT.md`](bunyi/KREDIT.md).
+
+## Dunia bersama (berbilang pemain)
+
+Pemain yang membuka buku yang sama pada masa yang sama berada dalam dunia yang sama.
+
+- **Jumpa:** watak pemain lain muncul dengan nama dan warna mereka. Gerakan dihantar 3–4 kali sesaat ketika bergerak, dengan ramalan halaju supaya licin. Tiada mesej dihantar ketika berdiri diam, bagi menjimatkan kuota.
+- **Chat teks:** butang 💬 atau kekunci **T**. Mesej juga muncul sebagai buih di atas kepala selama 6 saat. Maksimum 200 aksara, ada had kelajuan, dan tapisan perkataan kasar asas.
+- **Chat suara:** butang 🎙 atau kekunci **V**. Rakan-ke-rakan (WebRTC) dengan pembatal gema dan hingar, sehingga 8 pemain terdekat. Kelantangan berkurang mengikut jarak, jadi hanya kedengaran dalam lingkungan ~24 m.
+- **Senarai pemain 👥:** jarak setiap pemain, status suara, **📍 Pergi** (jika kawasan itu sudah dibuka), dan **🔇 Senyapkan** (disimpan pada peranti, juga menyembunyikan chat orang itu).
+- Dalam talian dihidupkan secara lalai dan boleh dimatikan dalam Tetapan. Jika pemain belum log masuk, game log masuk tanpa nama secara automatik semasa membuka buku.
+- **Persediaan:** jalankan [`supabase/ekspedisi-buku-dunia.sql`](../supabase/ekspedisi-buku-dunia.sql) dalam SQL Editor. Ia menambah dua peraturan Realtime untuk saluran `eb:<idBuku>` sahaja.
+- **Had diketahui:**
+  - Suara menggunakan pelayan STUN awam Google tanpa pelayan TURN, jadi sesetengah rangkaian (contohnya data mudah alih tertentu atau Wi-Fi korporat) mungkin tidak dapat bersambung suara. Teks dan gerakan tetap berfungsi.
+  - Pelan percuma Supabase: 200 sambungan Realtime serentak dan 2 juta mesej sebulan.
+  - Di iPhone, kelantangan suara tidak berubah mengikut jarak, kerana iOS tidak membenarkan halaman web mengubah kelantangan audio.
 
 ## Pemain & simpanan
 
