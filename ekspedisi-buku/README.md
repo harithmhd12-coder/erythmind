@@ -24,14 +24,17 @@ Kandungan ditulis semula dengan kata-kata sendiri, bukan petikan panjang. Fail P
 
 ## Gelung permainan
 
-1. **Pencerita** di setiap bab memberi cerita pembuka dan misi. Jenis misi bergilir:
-   - **Cari:** 3 Serpihan Ilmu bertaburan.
-   - **Tanya:** 3 penduduk bertanda "?".
-   - **Kejar:** 3 serpihan dalam 70 saat.
-2. Setiap serpihan membuka satu idea utama bab.
+1. **Pencerita** di setiap bab memberi cerita pembuka dan misi. Semua misi dijana daripada data bab yang sama (3 idea + soalan dilema), jadi tiada kandungan tambahan perlu ditulis:
+   - **🧭 Ikut Jejak:** ikut jejak kaki bercahaya ke 3 persimpangan. Setiap persimpangan ada dua bendera dengan dua kenyataan, dan hanya satu daripada bab ini. Salah pilih = jalan mati, dan bintang dipotong.
+   - **🔍 Siasat:** periksa 5 objek atau saksi. 2 daripadanya petunjuk palsu dari bab lain. Dalam cabaran, pemain mesti memilih 3 petunjuk yang benar.
+   - **💰 Kejar Pencuri:** pencuri lari dengan AI yang mencari jalan menjauhi pemain dalam kawasan terhad. Tangkap dia 3 kali dengan berlari dan memotong jalan.
+   - **📦 Hantar Barang:** hantar bungkusan kepada 3 penerima. Penggoda 😈 di tengah jalan menawarkan ganjaran segera. Terima = misi gagal (−1 nyawa). Tolak atau elak jalan = lulus.
+   - **🧱 Susun Timbal:** Sokoban di jalan raya. Tolak blok konsep ke tapak bernombor mengikut urutan. Hanya untuk bab yang ada urutan (`data/urutan.js`).
+   - **🗣 Tanya Penduduk** dan **⏱ Lawan Masa** (3 serpihan dalam 70 saat).
+2. Setiap langkah misi membuka satu idea utama bab. Kesilapan semasa misi (jalan mati, susunan salah) mengurangkan bintang bab itu.
 3. **Cabaran:** satu soalan dilema hidup sebenar, satu soalan "idea mana dari bab ini", dan kadangkala satu soalan ulang kaji bab lama. Jawapan salah ditanya semula dan menolak 1 nyawa.
 4. Selesai bab: bintang 1 hingga 3, XP, streak harian, Kad Ilmu dalam album, dan pintu kabus ke bab seterusnya terbuka.
-5. **Penjaga Daerah** di hujung setiap bahagian buku: 5 soalan bermasa, lulus jika salah tidak lebih daripada 1.
+5. **Penjaga Daerah: Pertarungan Kad.** Penjaga melancarkan 5 serangan (situasi atau idea). Pemain menangkis dengan memilih Kad Ilmu bab yang betul daripada album, dalam 25 saat setiap satu. Lulus jika tersilap tidak lebih daripada sekali. Di separuh akhir buku, tajuk kad disembunyikan, jadi pemain mesti ingat bab mengikut nombor dan kronologi.
 6. **Nyawa:** pulih 1 setiap 4 minit, atau lebih cepat melalui ulang kaji.
 7. **Ulang kaji berjarak:** soalan bab lama muncul semula selepas 1, 3, 7, 16 dan 35 hari.
 
@@ -56,7 +59,8 @@ Pergerakan menggunakan momentum (pecutan dan geseran), pusingan licin, condong b
 index.html, gaya.css, manifest.webmanifest, ikon.svg
 js/dunia.js      grid, susun atur peta, model diorama (digabung sebaris), air, kabus, tilt-shift
 js/watak.js      model watak, animasi, A*, pengawal pemain, penduduk
-js/permainan.js  misi, cabaran, nyawa/XP/streak, ulang kaji, album, peta, input, simpanan
+js/misi.js       pengendali setiap jenis misi
+js/permainan.js  aliran misi, cabaran, pertarungan kad, nyawa/XP/streak, ulang kaji, album, peta, input, simpanan
 data/*.js        kandungan buku
 ```
 

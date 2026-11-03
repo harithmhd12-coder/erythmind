@@ -51,7 +51,7 @@
     pastiPadam: 'Padam semua kemajuan buku ini?|Erase all progress for this book?',
     keluar: 'Tukar buku|Change book', pengajaran: 'Pengajaran|Lesson',
     penjaga: 'Penjaga Daerah|District Guardian',
-    penjagaTeks: 'Buktikan kau faham seluruh daerah ini. 5 soalan, 25 saat setiap satu. Lulus jika salah tidak lebih daripada 1.|Prove you understand this whole district. 5 questions, 25 seconds each. Pass with at most 1 mistake.',
+    penjagaTeks: 'Pertarungan Kad! Penjaga melancarkan 5 serangan berbentuk situasi dan idea. Tangkis setiap satu dengan Kad Ilmu yang betul dari album kau dalam 25 saat. Lulus jika tersilap tidak lebih daripada sekali.|Card Battle! The Guardian launches 5 attacks as situations and ideas. Block each with the right Knowledge Card from your album within 25 seconds. Pass with at most one mistake.',
     lulus: 'Daerah ditakluk!|District conquered!', gagal: 'Belum lulus. Ulang kaji kad daerah ini dan cuba lagi.|Not yet. Review this district’s cards and try again.',
     tamatBuku: 'Ekspedisi tamat!|Expedition complete!',
     tamatBukuTeks: 'Kau telah menamatkan seluruh buku ini. Album kau kini ialah ringkasan lengkap buku.|You have finished the whole book. Your album is now a complete summary of the book.',
@@ -132,13 +132,10 @@
       return;
     }
     tr.hidden = false;
-    const n = peta.nod[misi.nod];
-    const ambil = misi.item.filter((i) => i.diambil).length;
-    let isi = `<b>📖 ${esc(namaNod(n))}</b>`;
-    if (misi.fasa === 'cari') {
-      isi += `<span>${esc(t(misi.jenis === 'tanya' ? 'misiTanya' : misi.jenis === 'kejar' ? 'misiKejar' : 'misiCari'))}</span><span class="kiraan">${ambil} / ${misi.item.length}</span>`;
-      if (misi.jenis === 'kejar') isi += `<span class="masa">⏱ ${Math.max(0, Math.ceil(misi.masa))}s</span>`;
-    } else isi += `<span>${esc(t('kembali'))}</span>`;
+    const n = peta.nod[misi.nod], h = EB.MISI[misi.jenis];
+    let isi = `<b>${esc(L(NAMA_MISI[misi.jenis] || ''))} · ${esc(namaNod(n))}</b>`;
+    if (misi.fasa === 'cari') isi += `<span>${esc(objektifMisi(misi.jenis))}</span><span class="kiraan">${h.kemajuan ? h.kemajuan(ctx, misi) : ''}</span>`;
+    else isi += `<span>${esc(t('kembali'))}</span>`;
     tr.innerHTML = isi;
   }
   let toastT = 0;
@@ -234,67 +231,100 @@
     g.add(pg);
   }
 
-  /* ---------- Misi ---------- */
-  const JENIS = ['cari', 'tanya', 'kejar'];
-  function mulaMisi(n) {
-    const jenis = JENIS[n.idx % 3];
-    misi = { nod: n.idx, jenis, fasa: 'cari', item: [], masa: 70 };
-    const rnd = EB.rng(dunia.seed + n.idx * 31 + 5);
-    const had = n.potong, calon = [];
-    const boleh = (a, b) => dunia.boleh(a, b, had);
-    for (let i = 0; i < 400 && calon.length < 3; i++) {
-      const a = rnd() * Math.PI * 2, d = 4 + rnd() * (jenis === 'kejar' ? 9 : 7);
-      const x = n.npcPos.x + Math.cos(a) * d, z = n.npcPos.z + Math.sin(a) * d;
-      if (!boleh(Math.floor(x), Math.floor(z)) || x < 1 || x > EB.SUSUN.W - 1) continue;
-      if (calon.some((c) => Math.hypot(c.x - x, c.z - z) < 3)) continue;
-      if (!EB.cariLaluan(boleh, n.npcPos.x, n.npcPos.z, x, z, 3000)) continue;
-      calon.push({ x: Math.floor(x) + 0.5, z: Math.floor(z) + 0.5 });
-    }
-    const titik = n.bab.titik;
-    calon.forEach((c, i) => {
-      const it = { x: c.x, z: c.z, titik: titik[i % titik.length], diambil: false };
-      if (jenis === 'tanya') {
-        const p = new EB.Penduduk(dunia, c.x, c.z, rnd, { statik: true });
-        dunia.scene.add(p.model); it.npc = p;
-        it.label = tambahLabel(new T.Vector3(c.x, 1.6, c.z), 'tanya', '<i>?</i>');
-      } else {
-        const g = new T.Group();
-        const kristal = new T.Mesh(new T.OctahedronGeometry(0.28, 0), new T.MeshStandardMaterial({ color: jenis === 'kejar' ? 0xff9f43 : 0x5ee6ff, emissive: jenis === 'kejar' ? 0xff7a00 : 0x22c3ff, emissiveIntensity: 0.9, roughness: 0.3, flatShading: true }));
-        kristal.scale.y = 1.5; kristal.position.y = 0.8; kristal.castShadow = true; g.add(kristal);
-        const sinar = new T.Mesh(new T.CylinderGeometry(0.12, 0.3, 6, 10, 1, true), new T.MeshBasicMaterial({ color: jenis === 'kejar' ? 0xffc078 : 0x9bf0ff, transparent: true, opacity: 0.22, depthWrite: false, side: T.DoubleSide, blending: T.AdditiveBlending }));
-        sinar.position.y = 3; g.add(sinar);
-        const cin = new T.Mesh(new T.RingGeometry(0.35, 0.5, 24).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, depthWrite: false }));
-        cin.position.y = 0.04; g.add(cin);
-        g.position.set(c.x, 0, c.z); dunia.scene.add(g); it.obj = g; it.kristal = kristal;
+  /* ---------- Misi (pengendali dalam misi.js) ---------- */
+  function jenisMisi(n) {
+    if (urutanBab(n)) return 'susun';
+    const g = EB.GILIRAN_MISI;
+    return g[n.idx % g.length];
+  }
+  function urutanBab(n) { const u = EB.URUTAN && EB.URUTAN[buku.id]; return (u && n.jenis === 'bab' && u[n.bi + '-' + n.i]) || null; }
+  function objektifMisi(jenis) { return L((EB.MISI[jenis] || EB.MISI.tanya).objektif); }
+  const ctx = {
+    get dunia() { return dunia; }, get pemain() { return pemain; }, get peta() { return peta; }, get buku() { return buku; },
+    get modalTerbuka() { return modalTerbuka; },
+    L, t, esc, bunyi, toast, tambahXP, bukaModal, tutupModal, tambahLabel, buangLabel, kemasHUD,
+    kocak: (a, r) => kocak(a, r),
+    nod: (m) => peta.nod[m.nod],
+    had: (m) => peta.nod[m.nod].potong,
+    rnd: (m, k) => EB.rng(dunia.seed + m.nod * 31 + k + (m.ulangan || 0) * 997),
+    urutan: urutanBab,
+    // sel boleh dilalui & boleh dicapai di sekitar titik `dari`
+    calon(m, n, bil, dMin, dMax, jarakAntara, dari, elak) {
+      const rnd = ctx.rnd(m, 3 + bil * 7 + Math.round(dMin * 13)), had = n.potong, hasil = [];
+      const boleh = (a, b) => dunia.boleh(a, b, had);
+      dari = dari || n.npcPos; elak = elak || [];
+      for (let i = 0; i < 500 && hasil.length < bil; i++) {
+        const a = rnd() * Math.PI * 2, d = dMin + rnd() * (dMax - dMin);
+        const x = Math.floor(dari.x + Math.cos(a) * d) + 0.5, z = Math.floor(dari.z + Math.sin(a) * d) + 0.5;
+        if (!boleh(Math.floor(x), Math.floor(z)) || x < 1.5 || x > EB.SUSUN.W - 1.5) continue;
+        if (hasil.some((c) => Math.hypot(c.x - x, c.z - z) < jarakAntara)) continue;
+        if (elak.some((c) => Math.hypot(c.x - x, c.z - z) < 2.5)) continue;
+        if (Math.hypot(n.npcPos.x - x, n.npcPos.z - z) < 1.6) continue;
+        if (!EB.cariLaluan(boleh, n.npcPos.x, n.npcPos.z, x, z, 3000)) continue;
+        hasil.push({ x, z });
       }
-      misi.item.push(it);
-    });
+      return hasil;
+    },
+    titikLain(n, bil, rnd) {
+      const lain = kocak(peta.nod.filter((m) => m.jenis === 'bab' && m.idx !== n.idx), rnd);
+      return lain.slice(0, bil).map((m, i) => m.bab.titik[(i + n.idx) % m.bab.titik.length]);
+    },
+    kristal(x, z, warna, emis, m) {
+      const g = new T.Group();
+      const kristal = new T.Mesh(new T.OctahedronGeometry(0.28, 0), new T.MeshStandardMaterial({ color: warna, emissive: emis, emissiveIntensity: 0.9, roughness: 0.3, flatShading: true }));
+      kristal.scale.y = 1.5; kristal.position.y = 0.8; kristal.castShadow = true; g.add(kristal);
+      const sinar = new T.Mesh(new T.CylinderGeometry(0.12, 0.3, 6, 10, 1, true), new T.MeshBasicMaterial({ color: warna, transparent: true, opacity: 0.22, depthWrite: false, side: T.DoubleSide, blending: T.AdditiveBlending }));
+      sinar.position.y = 3; g.add(sinar);
+      g.position.set(x, 0, z); dunia.scene.add(g); if (m) m.obj.push(g);
+      return { obj: g, kristal };
+    },
+    awan(x, z, m) {
+      const g = new T.Group(); const mt = new T.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+      for (let i = 0; i < 6; i++) { const b = new T.Mesh(EB.tpl().bola, mt); b.scale.setScalar(0.3 + Math.random() * 0.25); b.position.set((Math.random() - 0.5) * 0.9, 0.3 + Math.random() * 0.6, (Math.random() - 0.5) * 0.9); g.add(b); }
+      g.position.set(x, 0, z); dunia.scene.add(g); if (m) m.obj.push(g);
+      const t0 = performance.now();
+      const f = () => { const k = (performance.now() - t0) / 900; if (k >= 1 || !g.parent) { dunia.scene.remove(g); return; } g.scale.setScalar(1 + k); mt.opacity = 0.9 * (1 - k); requestAnimationFrame(f); };
+      requestAnimationFrame(f);
+    },
+    serpihan(teks, ikon, label, cb) {
+      const n = misi ? peta.nod[misi.nod] : null;
+      const p = bukaModal(`
+        <div class="kad-serpihan"><div class="ikon">${ikon || '💎'}</div>
+        <small>${esc(label || '')}${n ? ' · ' + esc(L(n.bab.t)) : ''}</small>
+        <p>${esc(L(teks))}</p></div>
+        <button class="btn utama" data-a="ok">${esc(t('seterusnya'))}</button>`, 'kecil');
+      p.querySelector('[data-a=ok]').onclick = () => { tutupModal(); cb && cb(); kemasHUD(); };
+    },
+    siap() { if (!misi) return; misi.fasa = 'kembali'; toast(t('kembali')); kemasLabelNod(); kemasHUD(); },
+    gagal(mesej) {
+      if (!misi) return;
+      const n = peta.nod[misi.nod], ul = (misi.ulangan || 0) + 1;
+      buangMisi(); S.nyawa = Math.max(0, S.nyawa - 1); simpan(); bunyi('salah'); toast(mesej); kemasHUD();
+      if (S.nyawa <= 0) dialogPengsan(); else mulaMisi(n, ul);
+    },
+  };
+  function mulaMisi(n, ulangan) {
+    const cuba = [jenisMisi(n), 'jejak', 'siasat', 'tanya'];
+    for (const jenis of cuba) {
+      misi = { nod: n.idx, jenis, fasa: 'cari', obj: [], npc: [], label: [], penalti: 0, ulangan: ulangan || 0 };
+      const h = EB.MISI[jenis];
+      let ok = false;
+      try { ok = h.mula(ctx, misi, n) !== false; } catch (e) { console.error(e); ok = false; }
+      if (ok) break;
+      buangMisi();
+    }
     kemasLabelNod(); kemasHUD();
   }
   function buangMisi() {
     if (!misi) return;
-    for (const it of misi.item) { if (it.obj) dunia.scene.remove(it.obj); if (it.npc) it.npc.buang(); if (it.label) buangLabel(it.label); }
+    const h = EB.MISI[misi.jenis];
+    if (h && h.buang) h.buang(ctx, misi);
+    for (const o of misi.obj) dunia.scene.remove(o);
+    for (const p of misi.npc) p.buang();
+    for (const l of misi.label) buangLabel(l);
+    dunia.halangan = null;
     misi = null;
   }
-  function ambilItem(it) {
-    if (it.diambil) return;
-    it.diambil = true; bunyi('ambil'); tambahXP(10);
-    if (it.obj) dunia.scene.remove(it.obj);
-    if (it.label) { buangLabel(it.label); it.label = null; }
-    const i = misi.item.indexOf(it) + 1;
-    const n = peta.nod[misi.nod];
-    const p = bukaModal(`
-      <div class="kad-serpihan"><div class="ikon">${it.npc ? '🗣' : '💎'}</div>
-      <small>${esc(t(it.npc ? 'penduduk' : 'serpihan'))} ${i} / ${misi.item.length} · ${esc(L(n.bab.t))}</small>
-      <p>${esc(L(it.titik))}</p></div>
-      <button class="btn utama" data-a="ok">${esc(t('seterusnya'))}</button>`, 'kecil');
-    p.querySelector('[data-a=ok]').onclick = () => {
-      tutupModal();
-      if (misi.item.every((x) => x.diambil)) { misi.fasa = 'kembali'; toast(t('kembali')); kemasLabelNod(); }
-      kemasHUD();
-    };
-  }
-
   /* ---------- Dialog pencerita ---------- */
   function bercakapNod(n) {
     const k = keadaanNod(n);
@@ -312,17 +342,18 @@
     }
     if (misi && misi.nod === n.idx) {
       if (misi.fasa === 'kembali') { mulaCabaran(n); return; }
-      const p = bukaModal(`${kepalaBab(n, no)}<p>${esc(t(misi.jenis === 'tanya' ? 'misiTanya' : misi.jenis === 'kejar' ? 'misiKejar' : 'misiCari'))}</p><div class="butang"><button class="btn utama" data-a="x">${esc(t('tutup'))}</button></div>`, 'kecil');
+      const p = bukaModal(`${kepalaBab(n, no)}<p>${esc(objektifMisi(misi.jenis))}</p><div class="butang"><button class="btn utama" data-a="x">${esc(t('tutup'))}</button></div>`, 'kecil');
       p.querySelector('[data-a=x]').onclick = tutupModal; return;
     }
-    const jenis = JENIS[n.idx % 3];
+    const jenis = jenisMisi(n);
     const p = bukaModal(`${kepalaBab(n, no)}
       <p class="cerita">“${esc(L(n.bab.cerita))}”</p>
-      <div class="objektif"><b>${esc(L('Misi|Mission'))}</b> ${esc(t(jenis === 'tanya' ? 'misiTanya' : jenis === 'kejar' ? 'misiKejar' : 'misiCari'))}</div>
+      <div class="objektif"><b>${esc(L(NAMA_MISI[jenis] || 'Misi|Mission'))}</b> ${esc(objektifMisi(jenis))}</div>
       <div class="butang"><button class="btn" data-a="x">${esc(t('nanti'))}</button><button class="btn utama" data-a="ok">${esc(t('terima'))}</button></div>`);
     p.querySelector('[data-a=x]').onclick = tutupModal;
     p.querySelector('[data-a=ok]').onclick = () => { tutupModal(); mulaMisi(n); bunyi('buka'); };
   }
+  const NAMA_MISI = { jejak: '🧭 Ikut Jejak|🧭 Follow the Trail', siasat: '🔍 Siasat|🔍 Investigate', pencuri: '💰 Kejar Pencuri|💰 Chase the Thief', hantar: '📦 Hantar Barang|📦 Delivery', susun: '🧱 Susun Timbal|🧱 Stack in Order', tanya: '🗣 Tanya Penduduk|🗣 Ask the Villagers', kejar: '⏱ Lawan Masa|⏱ Beat the Clock' };
   function kepalaBab(n, no) {
     return `<div class="kepala"><div class="lencana">${no}</div><div><small>${esc(t('bab'))} ${no} · ${esc(L(buku.bahagian[n.bi].n))}</small><h2>${esc(L(n.bab.t))}</h2></div></div>`;
   }
@@ -369,20 +400,63 @@
   function mulaCabaran(n, mainSemula) {
     semakNyawa();
     if (S.nyawa <= 0) return dialogPengsan();
-    let soalan = [];
-    const penjaga = n.jenis === 'penjaga';
-    if (penjaga) {
-      const bab = peta.nod.filter((m) => m.jenis === 'bab' && m.bi === n.bi);
-      soalan = kocak(bab).slice(0, 4).map((m) => soalanSenario(m, t('penjaga')));
-      const s = soalanSerpihan(kocak(bab)[0]); s.label = t('penjaga'); s.soalan = L('Serpihan mana yang datang dari bab “|Which shard comes from the chapter “') + L(peta.nod[s.nod].bab.t) + '”?'; soalan.push(s);
-      soalan = kocak(soalan);
-    } else {
-      const u = !mainSemula && (itemUlangDue() || (Math.random() < 0.5 ? itemUlangRawak(n.idx) : null));
-      if (u) soalan.push(soalanSenario(u, '↻ ' + t('ulangKaji')));
-      soalan.push(soalanSenario(n), soalanSerpihan(n));
-    }
-    const st = { n, soalan, i: 0, salah: 0, penjaga, betulN: 0, ulangan: new Set() };
+    if (n.jenis === 'penjaga') return pertarunganKad(n);
+    const soalan = [];
+    const u = !mainSemula && (itemUlangDue() || (Math.random() < 0.5 ? itemUlangRawak(n.idx) : null));
+    if (u) soalan.push(soalanSenario(u, '↻ ' + t('ulangKaji')));
+    const m = misi && misi.nod === n.idx ? misi : null, h = m && EB.MISI[m.jenis];
+    if (h && h.soalanTambahan) soalan.push(...h.soalanTambahan(ctx, m, n));
+    soalan.push(soalanSenario(n), soalanSerpihan(n));
+    const st = { n, soalan, i: 0, salah: m ? m.penalti : 0, penalti: m ? m.penalti : 0, penjaga: false, betulN: 0, ulangan: new Set() };
+    if (st.penalti) toast(L('Kesilapan misi: |Mission mistakes: ') + st.penalti + ' (−' + Math.min(2, st.penalti) + ' ★)');
     tanya(st);
+  }
+
+  /* ---------- Pertarungan Kad (Penjaga Daerah) ---------- */
+  function pertarunganKad(n) {
+    const bab = peta.nod.filter((m) => m.jenis === 'bab' && m.bi === n.bi);
+    const urut = kocak(bab), serangan = [];
+    for (let i = 0; i < 5; i++) {
+      const c = urut[i % urut.length], jenisT = i >= 3 || (i >= urut.length && i % 2) ? 'titik' : 'senario';
+      serangan.push({ c, jenis: jenisT, teks: jenisT === 'senario' ? c.bab.soalan : c.bab.titik[i % 3], idxTitik: i % 3 });
+    }
+    const tanpa = n.bi >= Math.ceil(buku.bahagian.length / 2);
+    const st = { n, penjaga: true, soalan: serangan, i: 0, salah: 0, betulN: 0, hp: serangan.length, tanpa };
+    serangKad(st);
+  }
+  function serangKad(st) {
+    clearInterval(pemasa);
+    if (st.i >= st.soalan.length) return tamatCabaran(st);
+    const a = st.soalan[st.i];
+    const sedia = peta.nod.filter((m) => m.jenis === 'bab' && m.idx < prog.depan && m !== a.c);
+    const daerah = kocak(sedia.filter((m) => m.bi === st.n.bi)), luar = kocak(sedia.filter((m) => m.bi !== st.n.bi));
+    const tangan = kocak([a.c, ...daerah.concat(luar).slice(0, 3)]);
+    const tajukKad = (m) => st.tanpa ? `<em>${esc(t('bab'))} ${nomborBab(m)}</em><span class="tanpa">???</span>` : `<em>${esc(t('bab'))} ${nomborBab(m)}</em><span>${esc(L(m.bab.t))}</span>`;
+    const p = bukaModal(`
+      <div class="arena"><div class="penjaga-ikon">👑</div><div class="hp"><small>${esc(t('penjaga'))}</small><div class="hp-bar"><i style="width:${(st.hp / st.soalan.length) * 100}%"></i></div></div><span class="nyawa-kecil">${'❤'.repeat(S.nyawa)}</span></div>
+      <div class="pemasa"><i></i></div>
+      <div class="serangan"><small>⚔ ${esc(L('Serangan|Attack'))} ${st.i + 1} / ${st.soalan.length} · ${esc(a.jenis === 'senario' ? L('Situasi|Situation') : L('Idea siapa ini?|Whose idea is this?'))}</small><h3>${esc(a.jenis === 'titik' ? '“' + L(a.teks) + '”' : L(a.teks))}</h3></div>
+      <p class="kecil">${esc(L('Tangkis dengan Kad Ilmu yang betul dari album kau.|Block it with the right Knowledge Card from your album.'))}${st.tanpa ? ' ' + esc(L('Daerah lewat: tajuk kad disembunyikan, ingat ikut nombor bab.|Late district: card titles hidden, remember by chapter number.')) : ''}</p>
+      <div class="tangan">${tangan.map((m, i) => `<button class="kad-tempur" data-i="${i}">${tajukKad(m)}</button>`).join('')}</div>
+      <div class="maklum" hidden></div>`, 'kuiz tempur');
+    let dijawab = false;
+    const jawab = (i) => {
+      if (dijawab) return; dijawab = true; clearInterval(pemasa);
+      const ok = i >= 0 && tangan[i] === a.c;
+      p.querySelectorAll('.kad-tempur').forEach((b, k) => { b.disabled = true; if (tangan[k] === a.c) b.classList.add('betul'); else if (k === i) b.classList.add('salah'); });
+      if (a.jenis === 'senario') kemasUlang(a.c.idx, ok);
+      if (ok) { st.betulN++; st.hp--; bunyi('betul'); tambahXP(20); p.querySelector('.penjaga-ikon').classList.add('kena'); p.querySelector('.hp-bar i').style.width = (st.hp / st.soalan.length) * 100 + '%'; }
+      else { st.salah++; bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa === 4) S.tNyawa = Date.now(); p.querySelector('.panel').classList.add('gegar'); kemasHUD(); }
+      simpan();
+      const mk = p.querySelector('.maklum'); mk.hidden = false;
+      const terang = a.jenis === 'senario' ? L(a.c.bab.pilihan[0]) + '\n\n' + L(a.c.bab.terang) : L(a.c.bab.titik[a.idxTitik]);
+      mk.innerHTML = `<b class="${ok ? 'ok' : 'x'}">${esc(i === -1 ? t('masaTamat') : ok ? L('Kad menangkis!|Card blocks it!') : L('Kad salah, kau terkena!|Wrong card, you’re hit!'))}</b>
+        <p><b>${esc(t('bab'))} ${nomborBab(a.c)}: ${esc(L(a.c.bab.t))}</b>\n${esc(terang)}</p><button class="btn utama" data-a="n">${esc(t('seterusnya'))}</button>`;
+      mk.querySelector('[data-a=n]').onclick = () => { if (S.nyawa <= 0 && !ok) { tutupModal(); return dialogPengsan(); } st.i++; serangKad(st); };
+    };
+    p.querySelectorAll('.kad-tempur').forEach((b) => (b.onclick = () => jawab(+b.dataset.i)));
+    const mula = Date.now(), had = 25000, bar = p.querySelector('.pemasa i');
+    pemasa = setInterval(() => { const f = 1 - (Date.now() - mula) / had; bar.style.width = Math.max(0, f) * 100 + '%'; if (f <= 0) jawab(-1); }, 100);
   }
   let pemasa = 0;
   function tanya(st) {
@@ -390,6 +464,7 @@
     if (st.i >= st.soalan.length) return tamatCabaran(st);
     const q = st.soalan[st.i];
     const pilihan = kocak(q.pilihan);
+    if (q.pelbagai) return tanyaPelbagai(st, q, pilihan);
     const p = bukaModal(`
       <div class="kuiz-kepala"><span>${esc(q.label)}</span><span>${st.i + 1} / ${st.soalan.length}</span><span class="nyawa-kecil">${'❤'.repeat(S.nyawa)}</span></div>
       ${st.penjaga ? '<div class="pemasa"><i></i></div>' : ''}
@@ -424,6 +499,33 @@
       const mula = Date.now(), had = 25000, bar = p.querySelector('.pemasa i');
       pemasa = setInterval(() => { const f = 1 - (Date.now() - mula) / had; bar.style.width = Math.max(0, f) * 100 + '%'; if (f <= 0) jawab(-1); }, 100);
     }
+  }
+  function tanyaPelbagai(st, q, pilihan) {
+    const pilih = new Set();
+    const p = bukaModal(`
+      <div class="kuiz-kepala"><span>${esc(q.label)}</span><span>${st.i + 1} / ${st.soalan.length}</span><span class="nyawa-kecil">${'❤'.repeat(S.nyawa)}</span></div>
+      <h3>${esc(L(q.soalan))}</h3>
+      <div class="pilihan">${pilihan.map((o, i) => `<button class="opsyen pilih" data-i="${i}"><b>☐</b><span>${esc(L(o))}</span></button>`).join('')}</div>
+      <button class="btn utama lebar" data-a="hantar" disabled>${esc(L('Sahkan pilihan|Confirm choice'))} (0/${q.pelbagai})</button>
+      <div class="maklum" hidden></div>`, 'kuiz');
+    const sah = p.querySelector('[data-a=hantar]');
+    p.querySelectorAll('.opsyen').forEach((b) => (b.onclick = () => {
+      const i = +b.dataset.i;
+      if (pilih.has(i)) pilih.delete(i); else if (pilih.size < q.pelbagai) pilih.add(i);
+      p.querySelectorAll('.opsyen').forEach((x, k) => { x.classList.toggle('dipilih', pilih.has(k)); x.querySelector('b').textContent = pilih.has(k) ? '☑' : '☐'; });
+      sah.disabled = pilih.size !== q.pelbagai; sah.textContent = `${L('Sahkan pilihan|Confirm choice')} (${pilih.size}/${q.pelbagai})`;
+    }));
+    sah.onclick = () => {
+      sah.hidden = true;
+      const salahN = [...pilih].filter((i) => !q.betulSet.includes(pilihan[i])).length;
+      p.querySelectorAll('.opsyen').forEach((b, k) => { b.disabled = true; if (q.betulSet.includes(pilihan[k])) b.classList.add('betul'); else if (pilih.has(k)) b.classList.add('salah'); });
+      const ok = salahN === 0;
+      if (ok) { st.betulN++; bunyi('betul'); tambahXP(20); } else { st.salah++; bunyi('salah'); S.nyawa = Math.max(0, S.nyawa - 1); if (S.nyawa === 4) S.tNyawa = Date.now(); kemasHUD(); }
+      simpan();
+      const mk = p.querySelector('.maklum'); mk.hidden = false;
+      mk.innerHTML = `<b class="${ok ? 'ok' : 'x'}">${esc(ok ? t('betul') : L('Ada petunjuk palsu yang terpilih|You picked a false clue'))}</b><p>${esc(q.betulSet.map((x) => '• ' + L(x)).join('\n'))}</p><button class="btn utama" data-a="n">${esc(t('seterusnya'))}</button>`;
+      mk.querySelector('[data-a=n]').onclick = () => { if (S.nyawa <= 0 && !ok) { tutupModal(); return dialogPengsan(); } st.i++; tanya(st); };
+    };
   }
   function tamatCabaran(st) {
     const n = st.n;
@@ -669,7 +771,7 @@
   function senaraiInteraksi() {
     const s = [];
     for (const [, b] of dunia.baris) for (const p of b.npc || []) if (p.nod !== undefined) s.push({ x: p.pos.x, z: p.pos.y, jenis: 'nod', nod: peta.nod[p.nod] });
-    if (misi && misi.jenis === 'tanya' && misi.fasa === 'cari') for (const it of misi.item) if (!it.diambil) s.push({ x: it.x, z: it.z, jenis: 'tanya', it });
+    if (misi && misi.fasa === 'cari') { const h = EB.MISI[misi.jenis]; if (h.interaksi) for (const it of h.interaksi(ctx, misi)) s.push({ x: it.x, z: it.z, jenis: 'misi', f: it.f, label: it.label }); }
     return s;
   }
   function klikTanah(cx, cy) {
@@ -686,7 +788,7 @@
   }
   function interaksi(s) {
     if (s.jenis === 'nod') bercakapNod(s.nod);
-    else if (s.jenis === 'tanya') ambilItem(s.it);
+    else if (s.jenis === 'misi') s.f();
   }
   function terdekat() {
     let best = null, dm = 1.9;
@@ -705,6 +807,7 @@
       if (e.code === 'KeyQ') dunia.pusingKamera(-Math.PI / 4);
       if (e.code === 'KeyE') dunia.pusingKamera(Math.PI / 4);
       if (e.code === 'KeyM') paparPeta();
+      if (e.code === 'KeyR' && misi && EB.MISI[misi.jenis].reset) EB.MISI[misi.jenis].reset(ctx, misi);
       if (e.code === 'KeyK') paparAlbum();
       if (e.code === 'Equal' || e.code === 'NumpadAdd') dunia.zum(0.85);
       if (e.code === 'Minus' || e.code === 'NumpadSubtract') dunia.zum(1.18);
@@ -750,6 +853,7 @@
       if (touches.size < 2) pinch = null;
     };
     kv.addEventListener('touchend', tamat); kv.addEventListener('touchcancel', tamat);
+    $('#tracker').addEventListener('click', (e) => { if (e.target.closest('[data-a=reset]') && misi && EB.MISI[misi.jenis].reset) EB.MISI[misi.jenis].reset(ctx, misi); });
     $('#btn-tindakan').onclick = () => { const s = terdekat(); if (s) interaksi(s); };
     $('#btn-peta').onclick = paparPeta; $('#btn-album').onclick = () => paparAlbum(); $('#btn-tetapan').onclick = paparTetapan;
     $('#btn-kiri').onclick = () => dunia.pusingKamera(-Math.PI / 4); $('#btn-kanan').onclick = () => dunia.pusingKamera(Math.PI / 4);
@@ -780,20 +884,15 @@
     for (const [, b] of dunia.baris) for (const p of b.npc || []) p.kemaskini(dt, tm, pemain);
     // misi
     if (misi) {
-      for (const it of misi.item) {
-        if (it.kristal && !it.diambil) { it.kristal.rotation.y = tm * 2; it.kristal.position.y = 0.8 + Math.sin(tm * 3 + it.x) * 0.12; if (!modalTerbuka && Math.hypot(it.x - pemain.pos.x, it.z - pemain.pos.y) < 0.9) ambilItem(it); }
-        if (it.npc) it.npc.kemaskini(dt, tm, pemain);
-      }
-      if (misi.jenis === 'kejar' && misi.fasa === 'cari' && !modalTerbuka) {
-        misi.masa -= dt;
-        if (misi.masa <= 0) { const n = peta.nod[misi.nod]; buangMisi(); S.nyawa = Math.max(0, S.nyawa - 1); simpan(); bunyi('salah'); toast(t('gagalKejar')); kemasHUD(); if (S.nyawa <= 0) dialogPengsan(); else mulaMisi(n); }
-      }
+      const m = misi, h = EB.MISI[m.jenis];
+      for (const p of m.npc) if (!(m.pencuri === p)) p.kemaskini(dt, tm, pemain);
+      if (h.kemas) h.kemas(ctx, m, dt, tm);
     }
     // interaksi automatik selepas klik pada NPC
     if (sasaranInteraksi && !pemain.laluan && !modalTerbuka) { const s = sasaranInteraksi; sasaranInteraksi = null; if (Math.hypot(s.x - pemain.pos.x, s.z - pemain.pos.y) < 2.2) interaksi(s); }
     const dekat = !modalTerbuka && terdekat();
     const bt = $('#btn-tindakan'); bt.hidden = !dekat;
-    if (dekat) bt.querySelector('span').textContent = dekat.jenis === 'nod' ? (keadaanNod(dekat.nod) === 'kunci' ? '🔒' : t('bercakap')) : t('bercakap');
+    if (dekat) bt.querySelector('span').textContent = dekat.jenis === 'nod' ? (keadaanNod(dekat.nod) === 'kunci' ? '🔒' : t('bercakap')) : (dekat.label || t('bercakap'));
     dunia.kemaskini(dt, { x: pemain.pos.x, z: pemain.pos.y }, pemain.vel ? { x: pemain.vel.x, z: pemain.vel.y } : null);
     kemasLabel();
     kemasArah();
@@ -804,7 +903,7 @@
   function kemasArah() {
     const a = $('#arah');
     let sx, sz;
-    if (misi && misi.fasa === 'cari') { let dm = 1e9; for (const it of misi.item) if (!it.diambil) { const d = Math.hypot(it.x - pemain.pos.x, it.z - pemain.pos.y); if (d < dm) { dm = d; sx = it.x; sz = it.z; } } }
+    if (misi && misi.fasa === 'cari') { const h = EB.MISI[misi.jenis], q = h.sasaran && h.sasaran(ctx, misi); if (q) { sx = q.x; sz = q.z; } }
     else { const n = peta.nod[misi ? misi.nod : prog.depan]; if (n && n.npcPos) { sx = n.npcPos.x; sz = n.npcPos.z; } else if (n) { sx = n.x; sz = n.zNpc; } }
     if (sx === undefined) { a.hidden = true; return; }
     _p.set(sx, 1, sz).project(dunia.kamera);
@@ -837,6 +936,6 @@
     for (let i = 0; i < 3; i++) dunia.pastikanBaris(Math.floor(pemain.pos.y / EB.SUSUN.D), 1e3);
     $('#memuat').remove();
     requestAnimationFrame(gelung);
-    EB._uji = { get S() { return S; }, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, mulaBuku, bercakapNod, mulaMisi, ambilItem, teleport, paparAlbum, paparPeta, tutupModal };
+    EB._uji = { get S() { return S; }, get misi() { return misi; }, get peta() { return peta; }, get prog() { return prog; }, pemain, dunia, ctx, mulaBuku, bercakapNod, mulaMisi, teleport, mulaCabaran, paparAlbum, paparPeta, tutupModal };
   };
 })();
