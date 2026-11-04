@@ -372,7 +372,34 @@
     },
     reset(c, m) {
       m.blok.forEach((b, i) => { b.x = m.mula[i].x; b.z = m.mula[i].z; });
-      m.berubah = true; this.halang(c, m); c.toast(c.L('Blok disusun semula.|Blocks reset.'));
+      m.berubah = true; this.halang(c, m);
+      // jangan biar blok jatuh di atas watak, atau mengurung watak
+      const px = Math.floor(c.pemain.pos.x), pz = Math.floor(c.pemain.pos.y);
+      if (m.blok.some((b) => b.x === px && b.z === pz) || this.terperangkap(c, m)) this.selamatkan(c, m);
+      c.toast(c.L('Blok disusun semula.|Blocks reset.'));
+    },
+    // watak tidak boleh lagi sampai ke pencerita kerana dikelilingi blok?
+    terperangkap(c, m) {
+      const n = c.nod(m), d = c.dunia, had = c.had(m), px = c.pemain.pos.x, pz = c.pemain.pos.y;
+      const xs = m.tapakS.map((t) => t.x);
+      if (Math.abs(pz - (m.zc + 0.5)) > 3 || px < Math.min(...xs) - 4 || px > Math.max(...xs) + 5) return false; // hanya di sekitar lorong blok
+      return !EB.cariLaluan((a, b) => d.boleh(a, b, had), px, pz, n.npcPos.x, n.npcPos.z, 6000);
+    },
+    // pindahkan watak ke sel terdekat di luar lorong blok yang boleh sampai ke pencerita
+    selamatkan(c, m, mesej) {
+      const n = c.nod(m), d = c.dunia, had = c.had(m), boleh = (a, b) => d.boleh(a, b, had);
+      const px = Math.floor(c.pemain.pos.x), pz = Math.floor(c.pemain.pos.y);
+      let best = null;
+      for (let r = 1; r <= 8 && !best; r++) for (let dz = -r; dz <= r && !best; dz++) for (let dx = -r; dx <= r && !best; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
+        const x = px + dx, z = pz + dz;
+        if (Math.abs(z - m.zc) <= 1 || !boleh(x, z)) continue; // keluar dari tiga lorong blok
+        if (EB.cariLaluan(boleh, x + 0.5, z + 0.5, n.npcPos.x, n.npcPos.z, 3000)) best = { x: x + 0.5, z: z + 0.5 };
+      }
+      if (!best) best = { x: n.npcPos.x, z: n.npcPos.z + (n.utara ? -0.6 : 0.6) };
+      c.pemain.berhenti(); c.pemain.letak(best.x, best.z); c.dunia.fokus.set(best.x, 0, best.z);
+      c.awan(best.x, best.z, m);
+      if (mesej) c.toast(mesej);
     },
     kemas(c, m, dt) {
       for (const b of m.blok) {
@@ -381,6 +408,9 @@
       }
       for (const t of m.tapakS) t.mesh.material.opacity = m.blok.some((b) => b.x === t.x && b.z === t.z) ? 0.9 : 0.45 + Math.sin(performance.now() / 300 + t.k) * 0.1;
       if (m.fasa !== 'cari' || c.modalTerbuka) return;
+      // pengesan terperangkap: semak setiap 0.6 s
+      const kini = performance.now();
+      if (kini - (m.tSemak || 0) > 600) { m.tSemak = kini; if (this.terperangkap(c, m)) { this.selamatkan(c, m, '🧱 ' + c.L('Kau terkurung oleh blok. Dipindahkan keluar; teruskan menyusun.|You got boxed in by the blocks. Moved you out; keep arranging.')); return; } }
       // tolak dengan berjalan ke arah blok
       const ni = c.pemain.niat;
       if (ni && ni.lengthSq() > 1) {
