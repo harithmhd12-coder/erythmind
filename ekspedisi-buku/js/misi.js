@@ -166,7 +166,11 @@
       const n = m.petunjuk.filter((x) => x.diperiksa).length;
       c.serpihan(o.t, o.saksi ? '🗣' : '🔍', c.L('Petunjuk|Clue') + ` ${n} / 5`, () => { if (n >= 5) c.siap(); });
     },
-    interaksi(c, m) { return m.petunjuk.map((o) => ({ x: o.x, z: o.z, f: () => this.periksa(c, m, o) })); },
+    interaksi(c, m) { return m.petunjuk.map((o) => ({ x: o.x, z: o.z, label: c.L(o.diperiksa ? 'Baca semula|Reread' : 'Periksa|Inspect'), f: () => this.periksa(c, m, o) })); },
+    kemas(c, m) { // periksa automatik apabila watak memijak atau sampai di sebelah objek
+      if (m.fasa !== 'cari' || c.modalTerbuka) return;
+      for (const o of m.petunjuk) if (!o.diperiksa && jarak(o, { x: c.pemain.pos.x, z: c.pemain.pos.y }) < 1.1) { this.periksa(c, m, o); return; }
+    },
     sasaran(c, m) { let best = null, dm = 1e9; for (const o of m.petunjuk) if (!o.diperiksa) { const d = jarak(o, { x: c.pemain.pos.x, z: c.pemain.pos.y }); if (d < dm) { dm = d; best = o; } } return best; },
     kemajuan(c, m) { return `🔍 ${m.petunjuk.filter((x) => x.diperiksa).length} / 5`; },
     soalanTambahan(c, m, n) {
@@ -433,7 +437,8 @@
       const k = m.item.filter((x) => x.siap).length;
       c.serpihan(it.titik, '🗣', c.L('Penduduk|Villager') + ` ${k} / 3`, () => { if (k >= 3) c.siap(); });
     },
-    interaksi(c, m) { return m.item.filter((x) => !x.siap).map((it) => ({ x: it.x, z: it.z, f: () => this.tanya(c, m, it) })); },
+    interaksi(c, m) { return m.item.filter((x) => !x.siap).map((it) => ({ x: it.x, z: it.z, label: c.L('Tanya|Ask'), f: () => this.tanya(c, m, it) })); },
+    kemas(c, m) { if (m.fasa !== 'cari' || c.modalTerbuka) return; for (const it of m.item) if (!it.siap && jarak(it, { x: c.pemain.pos.x, z: c.pemain.pos.y }) < 1.1) { this.tanya(c, m, it); return; } },
     sasaran(c, m) { const p = { x: c.pemain.pos.x, z: c.pemain.pos.y }; return m.item.filter((x) => !x.siap).sort((a, b) => jarak(a, p) - jarak(b, p))[0] || null; },
     kemajuan(c, m) { return `🗣 ${m.item.filter((x) => x.siap).length} / 3`; },
   };
