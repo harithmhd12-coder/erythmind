@@ -842,6 +842,7 @@
       return true;
     },
     periksa(c, m, o) { return M.siasat.periksa(c, m, o); },
+    kemas(c, m) { return M.siasat.kemas(c, m); },
     interaksi(c, m) { return m.petunjuk.map((o) => ({ x: o.x, z: o.z, label: c.L('Periksa|Inspect'), f: () => M.siasat.periksa(c, m, o) })); },
     sasaran(c, m) { return M.siasat.sasaran(c, m); },
     kemajuan(c, m) { return M.siasat.kemajuan(c, m); },

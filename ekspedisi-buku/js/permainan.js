@@ -288,14 +288,19 @@
       const rnd = ctx.rnd(m, 3 + bil * 7 + Math.round(dMin * 13)), had = n.potong, hasil = [];
       const boleh = (a, b) => dunia.boleh(a, b, had);
       dari = dari || n.npcPos; elak = elak || [];
-      for (let i = 0; i < 500 && hasil.length < bil; i++) {
+      const terbuka = (cx, cz) => { let k = 0; for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) if ((dx || dz) && boleh(cx + dx, cz + dz)) k++; return k; };
+      const panjang = (j) => { let L = 0; for (let i = 1; i < j.length; i++) L += Math.hypot(j[i][0] - j[i - 1][0], j[i][1] - j[i - 1][1]); return L; };
+      for (let i = 0; i < 900 && hasil.length < bil; i++) {
+        const ketat = i < 600; // tempat terbuka dahulu; jika tidak cukup, longgarkan syarat
         const a = rnd() * Math.PI * 2, d = dMin + rnd() * (dMax - dMin);
         const x = Math.floor(dari.x + Math.cos(a) * d) + 0.5, z = Math.floor(dari.z + Math.sin(a) * d) + 0.5;
         if (!boleh(Math.floor(x), Math.floor(z)) || x < 1.5 || x > EB.SUSUN.W - 1.5) continue;
+        if (ketat && (terbuka(Math.floor(x), Math.floor(z)) < 6 || had - dunia.pKemajuan(x, z) < 1.5)) continue;
         if (hasil.some((c) => Math.hypot(c.x - x, c.z - z) < jarakAntara)) continue;
         if (elak.some((c) => Math.hypot(c.x - x, c.z - z) < 2.5)) continue;
         if (Math.hypot(n.npcPos.x - x, n.npcPos.z - z) < 1.6) continue;
-        if (!EB.cariLaluan(boleh, n.npcPos.x, n.npcPos.z, x, z, 3000)) continue;
+        const j = EB.cariLaluan(boleh, n.npcPos.x, n.npcPos.z, x, z, 3000); if (!j) continue;
+        if (ketat && panjang(j) > Math.hypot(n.npcPos.x - x, n.npcPos.z - z) * 1.6 + 3) continue; // elak ceruk yang perlu lencongan jauh
         hasil.push({ x, z });
       }
       return hasil;
@@ -1084,13 +1089,22 @@
   function klikTanah(cx, cy) {
     if (modalTerbuka || layarMula) return;
     const g = tanahDariSkrin(cx, cy); if (!g) return;
-    let sasar = null;
-    for (const s of senaraiInteraksi()) if (Math.hypot(s.x - g.x, s.z - g.z) < 1.3) sasar = s;
+    let sasar = null, dmS = 48;
+    // ketik ikon terapung (🔍, !, ?, 📦…) di skrin: pilih sasaran terdekat dalam 48 px dari ikonnya
+    const r = dunia.kanvas.getBoundingClientRect();
+    for (const s of senaraiInteraksi()) {
+      for (const y of [1.2, 1.7]) {
+        _p.set(s.x, y, s.z).project(dunia.kamera); if (_p.z > 1) continue;
+        const d = Math.hypot(r.left + ((_p.x + 1) / 2) * r.width - cx, r.top + ((1 - _p.y) / 2) * r.height - cy);
+        if (d < dmS) { dmS = d; sasar = s; }
+      }
+    }
+    if (!sasar) for (const s of senaraiInteraksi()) if (Math.hypot(s.x - g.x, s.z - g.z) < 1.3) sasar = s;
     sasaranInteraksi = sasar;
     if (sasar) {
-      const dx = pemain.pos.x - sasar.x, dz = pemain.pos.y - sasar.z, d = Math.hypot(dx, dz) || 1;
-      if (d < 1.8) { interaksi(sasar); sasaranInteraksi = null; return; }
-      pemain.pergiKe(sasar.x + (dx / d) * 1.0, sasar.z + (dz / d) * 1.0);
+      const d = Math.hypot(pemain.pos.x - sasar.x, pemain.pos.y - sasar.z);
+      if (d < 2.4) { interaksi(sasar); sasaranInteraksi = null; return; }
+      if (!pemain.pergiKe(sasar.x, sasar.z)) { const dx = pemain.pos.x - sasar.x, dz = pemain.pos.y - sasar.z, dd = Math.hypot(dx, dz) || 1; pemain.pergiKe(sasar.x + (dx / dd), sasar.z + (dz / dd)); }
     } else pemain.pergiKe(g.x, g.z);
   }
   function interaksi(s) {
@@ -1098,7 +1112,7 @@
     else if (s.jenis === 'misi') s.f();
   }
   function terdekat() {
-    let best = null, dm = 1.9;
+    let best = null, dm = 2.4;
     for (const s of senaraiInteraksi()) { const d = Math.hypot(s.x - pemain.pos.x, s.z - pemain.pos.y); if (d < dm) { dm = d; best = s; } }
     return best;
   }
@@ -1208,7 +1222,7 @@
       if (h.kemas) h.kemas(ctx, m, dt, tm);
     }
     // interaksi automatik selepas klik pada NPC
-    if (sasaranInteraksi && !pemain.laluan && !modalTerbuka) { const s = sasaranInteraksi; sasaranInteraksi = null; if (Math.hypot(s.x - pemain.pos.x, s.z - pemain.pos.y) < 2.2) interaksi(s); }
+    if (sasaranInteraksi && !pemain.laluan && !modalTerbuka) { const s = sasaranInteraksi; sasaranInteraksi = null; if (Math.hypot(s.x - pemain.pos.x, s.z - pemain.pos.y) < 2.6) interaksi(s); }
     const dekat = !modalTerbuka && terdekat();
     const bt = $('#btn-tindakan'); bt.hidden = !dekat;
     if (dekat) bt.querySelector('span').textContent = dekat.jenis === 'nod' ? (keadaanNod(dekat.nod) === 'kunci' ? '🔒' : t('bercakap')) : (dekat.label || t('bercakap'));
