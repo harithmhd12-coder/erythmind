@@ -105,6 +105,7 @@
       if (m.fasa2 === 'tuju') {
         m.fasa2 = 'pilih';
         s.bA = bendera(c, m, s.A.x, s.A.z, '#3a86ff'); s.bB = bendera(c, m, s.B.x, s.B.z, '#ff8c42');
+        s.lA = c.tambahLabel(new T.Vector3(s.A.x, 2.1, s.A.z), 'misi', '<i>🔵</i>'); s.lB = c.tambahLabel(new T.Vector3(s.B.x, 2.1, s.B.z), 'misi', '<i>🟠</i>'); m.label.push(s.lA, s.lB);
         jejakKaki(c, m, s.J, s.A, 0x9cc4ff); jejakKaki(c, m, s.J, s.B, 0xffc49a);
       }
     },
@@ -115,29 +116,42 @@
       if (m.fasa2 === 'tuju' && jarak(p, s.J) < 1.3) { this.bukaPapan(c, m); return; }
       if (m.fasa2 !== 'pilih') return;
       for (const sisi of ['A', 'B']) {
-        if (s.mati[sisi] || jarak(p, s[sisi]) > 0.9) continue;
-        if (sisi === s.betul) {
-          c.bunyi('ambil');
-          c.dunia.scene.remove(sisi === 'A' ? s.bB : s.bA);
-          c.serpihan(s.teksBetul, '🧭', c.L('Jalan betul|Right path') + ` ${m.k + 1} / 3`, () => {
-            m.k++;
-            if (m.k >= 3) return c.siap();
-            m.fasa2 = 'tuju';
-            jejakKaki(c, m, s[s.betul], m.simpang[m.k].J);
-            this.pasangSimpang(c, m);
-          });
-        } else {
-          s.mati[sisi] = true; m.penalti++;
-          c.bunyi('salah'); c.toast(c.L('Jalan mati! Masa terbuang. Kembali ke persimpangan.|Dead end! Time wasted. Go back to the crossroads.'));
-          const b = sisi === 'A' ? s.bA : s.bB; b.children[1].material = EB.mat('#7d7d7d'); b.children[2].visible = false;
-          c.awan(s[sisi].x, s[sisi].z, m);
-        }
-        return;
+        if (s.mati[sisi] || jarak(p, s[sisi]) > 1.3) continue;
+        c.pemain.berhenti(); this.pilihSisi(c, m, sisi); return;
       }
     },
-    interaksi(c, m) { const s = m.simpang[m.k]; return s ? [{ x: s.J.x, z: s.J.z, f: () => this.bukaPapan(c, m) }] : []; },
+    pilihSisi(c, m, sisi) {
+      const s = m.simpang[m.k];
+      if (m.fasa2 !== 'pilih' || s.mati[sisi]) return;
+      if (sisi === s.betul) {
+        m.fasa2 = 'betul';
+        c.bunyi('ambil');
+        c.dunia.scene.remove(sisi === 'A' ? s.bB : s.bA);
+        [s.lA, s.lB].forEach((l) => { if (l) { l.e.style.display = 'none'; l.pos.y = -99; } });
+        if (s.lbl) s.lbl.e.innerHTML = '<i class="siap">✓</i>';
+        c.serpihan(s.teksBetul, '🧭', c.L('Jalan betul|Right path') + ` ${m.k + 1} / 3`, () => {
+          m.k++;
+          if (m.k >= 3) return c.siap();
+          m.fasa2 = 'tuju';
+          jejakKaki(c, m, s[s.betul], m.simpang[m.k].J);
+          this.pasangSimpang(c, m);
+        });
+      } else {
+        s.mati[sisi] = true; m.penalti++;
+        c.bunyi('salah'); c.toast(c.L('Jalan mati! Masa terbuang. Kembali ke persimpangan.|Dead end! Time wasted. Go back to the crossroads.'));
+        const b = sisi === 'A' ? s.bA : s.bB; b.children[1].material = EB.mat('#7d7d7d'); b.children[2].visible = false;
+        const l = sisi === 'A' ? s.lA : s.lB; if (l) l.e.innerHTML = '<i>✖</i>';
+        c.awan(s[sisi].x, s[sisi].z, m);
+      }
+    },
+    interaksi(c, m) {
+      const s = m.simpang[m.k]; if (!s) return [];
+      const r = [{ x: s.J.x, z: s.J.z, label: c.L('Baca papan|Read the sign'), f: () => this.bukaPapan(c, m) }];
+      if (m.fasa2 === 'pilih') for (const [sisi, nama] of [['A', 'Pilih BIRU|Pick BLUE'], ['B', 'Pilih JINGGA|Pick ORANGE']]) if (!s.mati[sisi]) r.push({ x: s[sisi].x, z: s[sisi].z, label: (sisi === 'A' ? '🔵 ' : '🟠 ') + c.L(nama), f: () => this.pilihSisi(c, m, sisi) });
+      return r;
+    },
     sasaran(c, m) { const s = m.simpang[m.k]; return s && m.fasa2 === 'tuju' ? s.J : null; },
-    kemajuan(c, m) { return `${c.L('Persimpangan|Crossroads')} ${Math.min(m.k + (m.fasa2 === 'pilih' ? 1 : 0), 3)} / 3${m.fasa2 === 'pilih' ? ' · ' + c.L('pilih bendera|pick a flag') : ''}`; },
+    kemajuan(c, m) { return `${c.L('Persimpangan|Crossroads')} ${Math.min(m.k + (m.fasa2 === 'tuju' ? 0 : 1), 3)} / 3${m.fasa2 === 'pilih' ? ' · ' + c.L('jalan ke bendera 🔵/🟠 atau tekan butang|walk to a flag 🔵/🟠 or press the button') : ''}`; },
   };
 
   /* ---------- 2. Siasat ---------- */
