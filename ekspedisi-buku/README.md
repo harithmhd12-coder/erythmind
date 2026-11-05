@@ -120,7 +120,7 @@ Pemain boleh log masuk dengan emel (pautan log masuk atau kod 6 digit, tanpa kat
 
 ## Bunyi
 
-- **Muzik latar** (CC0): *A New Town* di layar mula; setiap buku diberi satu lagu jelajah (*Down the River*, *Apple Cider*, *A New Town*) dengan crossfade, ditambah bunyi alam hutan pada kelantangan rendah.
+- **Muzik latar** (CC0): *A New Town* di layar mula; setiap buku diberi satu lagu jelajah (*Down the River*, *Apple Cider*, *A New Town*) dengan crossfade, ditambah bunyi alam hutan pada kelantangan rendah. Buku boleh diberi lagu khas: letak `bunyi/muzik/<id-buku>.mp3` dan daftarkan dalam `MUZIK.buku` (`js/bunyi.js`); kini `qasas-sabiqin.mp3`.
 - **Langkah kaki rakaman sebenar** mengikut permukaan: atas pasir untuk rumput (lebih lembut) dan jalan tanah, atas batu untuk jalan bandar, lantai dan jambatan. Kaki kiri dan kanan bergilir, diselaraskan dengan rentak animasi watak, dan lebih kuat serta laju ketika berlari. Langkah pemain lain kedengaran mengikut jarak.
 - **SFX tindakan**: kutip serpihan, buka serpihan (halaman buku), tolak blok, gali, ceduk air, jatuh ke sungai, pintu kawasan baharu, pedang dan gong Penjaga Daerah, mesej chat.
 - Tetapan: suis bunyi, gelangsar **Muzik** dan **Kesan bunyi**. Audio berhenti apabila tab disembunyikan.

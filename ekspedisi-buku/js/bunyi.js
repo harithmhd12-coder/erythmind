@@ -1,5 +1,5 @@
 /* Ekspedisi Buku · Enjin audio: muzik latar, bunyi alam, langkah kaki ikut permukaan, dan SFX rakaman sebenar.
-   Semua fail dalam bunyi/ berlesen CC0 (lihat bunyi/KREDIT.md). */
+   Fail dalam bunyi/ berlesen CC0 kecuali lagu khas buku yang dimuat naik pemilik projek (lihat bunyi/KREDIT.md). */
 (function () {
   const EB = (window.EB = window.EB || {});
   const SFX = {
@@ -9,7 +9,9 @@
     pasir: ['pasir-L1', 'pasir-R1', 'pasir-L2', 'pasir-R2', 'pasir-L3', 'pasir-R3'],
     batuKaki: ['batu-L1', 'batu-R1', 'batu-L2', 'batu-R2', 'batu-L3', 'batu-R3'],
   };
-  const MUZIK = { mula: 'pekan-baharu', jelajah: ['hilir-sungai', 'sari-epal', 'pekan-baharu'] };
+  const MUZIK = { mula: 'pekan-baharu', jelajah: ['hilir-sungai', 'sari-epal', 'pekan-baharu'],
+    // lagu khas buku: bunyi/muzik/<nama>.mp3; jika fail tiada, lagu jelajah biasa dimainkan
+    buku: { 'qasas-sabiqin': 'qasas-sabiqin' } };
 
   const A = (EB.audio = {
     ac: null, induk: null, gSfx: null, gMuzik: null, gAlam: null, penimbal: {}, muat: {}, lagu: null, laguNama: '', alam: null,
@@ -25,7 +27,7 @@
       this.gAlam = this.ac.createGain(); this.gAlam.connect(this.induk);
       this.terap();
       Object.values(SFX).flat().forEach((n) => this.ambil(n));
-      if (this.laguTertunda) { const n = this.laguTertunda; this.laguTertunda = null; this.mainLagu(n); }
+      if (this.laguTertunda) { const n = this.laguTertunda, g = this.laguGanti; this.laguTertunda = this.laguGanti = null; this.mainLagu(n, g); }
       this.mulaAlam();
     },
     terap(t) {
@@ -60,12 +62,13 @@
       src.connect(g); nod.connect(this.gSfx); src.start();
     },
     // Muzik: elemen <audio> distrim, disambung ke WebAudio, crossfade 2 s
-    mainLagu(nama) {
+    mainLagu(nama, ganti) {
       if (this.laguNama === nama) return;
-      if (!this.ac) { this.laguTertunda = nama; return; }
+      if (!this.ac) { this.laguTertunda = nama; this.laguGanti = ganti; return; }
       this.laguNama = nama;
       const lama = this.lagu;
       const el = new Audio('bunyi/muzik/' + nama + '.mp3'); el.loop = true; el.crossOrigin = 'anonymous'; el.preload = 'auto';
+      if (ganti) el.addEventListener('error', () => { if (this.lagu && this.lagu.el === el) { this.lagu = null; this.laguNama = ''; this.mainLagu(ganti); } }, { once: true });
       const src = this.ac.createMediaElementSource(el), g = this.ac.createGain(); g.gain.value = 0;
       src.connect(g); g.connect(this.gMuzik);
       el.play().catch(() => {});
@@ -75,7 +78,7 @@
     },
     laguBuku(id) {
       const i = Math.abs([...String(id)].reduce((a, c) => a * 31 + c.charCodeAt(0), 7)) % MUZIK.jelajah.length;
-      this.mainLagu(MUZIK.jelajah[i]);
+      if (MUZIK.buku[id]) this.mainLagu(MUZIK.buku[id], MUZIK.jelajah[i]); else this.mainLagu(MUZIK.jelajah[i]);
     },
     laguMula() { this.mainLagu(MUZIK.mula); },
     mulaAlam() {
