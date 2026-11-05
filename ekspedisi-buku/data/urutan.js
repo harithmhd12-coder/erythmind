@@ -18,4 +18,8 @@ EB.URUTAN = {
   'analisis-kitab-nifaq': {
     '1-3': ['Ibn Ubay berpatah balik|Ibn Ubayy turns back', 'Pemanah langgar arahan|Archers break orders', 'Kekalahan|The setback', 'Munafik berkata “kalau”|Hypocrites say “if only”'],
   },
+  'qasas-sabiqin': {
+    '2-3': ['Ke tempat terbenam matahari|Toward the setting sun', 'Ke tempat terbit matahari|Toward the rising sun', 'Antara dua gunung|Between two mountains', 'Bina tembok besi dan tembaga|Build the wall of iron and copper'],
+    '3-2': ['Jangan syirik|Associate none with God', 'Berbakti kepada ibu bapa|Honour your parents', 'Allah tahu walau sebesar biji sawi|God knows even a mustard seed', 'Solat, suruh kebaikan, sabar|Pray, enjoin good, be patient', 'Jangan sombong|Don’t be arrogant', 'Sederhana berjalan, rendahkan suara|Walk modestly, lower your voice'],
+  },
 };

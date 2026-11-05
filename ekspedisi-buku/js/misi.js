@@ -281,14 +281,14 @@
     },
     goda(c, m, k) {
       k.aktif = false; c.pemain.berhenti();
-      const teks = GODAAN[m.k % GODAAN.length];
+      const senarai = this.godaanTeks || GODAAN, teks = senarai[m.k % senarai.length];
       const p = c.bukaModal(`<div class="kad-serpihan"><div class="ikon">😈</div><small>${c.esc(c.L('Penggoda|Tempter'))}</small><p>${c.esc(c.L(teks))}</p></div>
-        <div class="butang"><button class="btn" data-a="ya">${c.esc(c.L('Terima tawaran|Accept the offer'))}</button><button class="btn utama" data-a="tidak">${c.esc(c.L('Tolak dan teruskan|Refuse and carry on'))}</button></div>`, 'kecil');
+        <div class="butang"><button class="btn" data-a="ya">${c.esc(c.L(this.teksYa || 'Terima tawaran|Accept the offer'))}</button><button class="btn utama" data-a="tidak">${c.esc(c.L(this.teksTidak || 'Tolak dan teruskan|Refuse and carry on'))}</button></div>`, 'kecil');
       p.querySelector('[data-a=tidak]').onclick = () => {
         c.tutupModal(); c.bunyi('betul'); c.tambahXP(10); c.toast('💪 ' + c.L('Kawalan diri! +10 XP|Self-control! +10 XP'));
         c.awan(k.goda.x, k.goda.z, m); k.penggoda.model.visible = false; k.lblG.e.style.display = 'none'; k.lblG.pos.y = -99;
       };
-      p.querySelector('[data-a=ya]').onclick = () => { c.tutupModal(); buangKotak(m); c.stat('goda'); c.gagal(c.L('Kau tewas kepada godaan segera. Bungkusan hilang. −1 nyawa.|You gave in to instant temptation. The package is lost. −1 heart.')); };
+      p.querySelector('[data-a=ya]').onclick = () => { c.tutupModal(); buangKotak(m); c.stat('goda'); c.gagal(c.L(this.teksGagal || 'Kau tewas kepada godaan segera. Bungkusan hilang. −1 nyawa.|You gave in to instant temptation. The package is lost. −1 heart.')); };
     },
     serah(c, m) {
       const k = m.kaki[m.k];
