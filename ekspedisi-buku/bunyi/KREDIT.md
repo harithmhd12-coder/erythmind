@@ -15,7 +15,7 @@ Fail telah dinormalkan kelantangannya dan ditukar ke MP3 (muzik 96 kbps, SFX mon
 ### Lagu khas buku (bukan CC0)
 | Fail | Buku | Catatan |
 |---|---|---|
-| `qasas-sabiqin.mp3` | Maʿa Qaṣaṣ al-Sābiqīn | Dimuat naik oleh pemilik projek, yang bertanggungjawab memastikan kebenaran/lesen penggunaannya. Jika fail tiada, lagu jelajah biasa dimainkan. |
+| `qasas-sabiqin.mp3` | Maʿa Qaṣaṣ al-Sābiqīn | Asal: *RUMI – Deep Sufi Healing Music for the Soul* (≈26 min). Dimuat naik oleh pemilik projek, yang bertanggungjawab memastikan kebenaran/lesen penggunaannya. Jika fail tiada, lagu jelajah biasa dimainkan. |
 
 ## Kesan bunyi (`sfx/`)
 | Fail | Asal | Sumber |
