@@ -1,6 +1,6 @@
 # Kredit audio
 
-Semua fail audio dalam folder ini berlesen **CC0 (domain awam)**, dimuat turun dari OpenGameArt.org. Lesen setiap satu disemak pada halaman asal. CC0 tidak mewajibkan kredit, tetapi kami tetap menyenaraikan pencipta asal sebagai tanda penghargaan.
+Semua fail audio dalam folder ini berlesen **CC0 (domain awam)**, kecuali lagu khas buku di bawah,, dimuat turun dari OpenGameArt.org. Lesen setiap satu disemak pada halaman asal. CC0 tidak mewajibkan kredit, tetapi kami tetap menyenaraikan pencipta asal sebagai tanda penghargaan.
 
 Fail telah dinormalkan kelantangannya dan ditukar ke MP3 (muzik 96 kbps, SFX mono 64 kbps).
 
@@ -11,6 +11,11 @@ Fail telah dinormalkan kelantangannya dan ditukar ke MP3 (muzik 96 kbps, SFX mon
 | `hilir-sungai.mp3` | *Down the River* | Komiku | https://opengameart.org/content/down-the-river |
 | `sari-epal.mp3` | *Apple Cider* | SeventhSeeker | https://opengameart.org/content/apple-cider |
 | `hutan-ambien.mp3` | *Forest Ambience* | Slobad | https://opengameart.org/content/forest-ambience |
+
+### Lagu khas buku (bukan CC0)
+| Fail | Buku | Catatan |
+|---|---|---|
+| `qasas-sabiqin.mp3` | Maʿa Qaṣaṣ al-Sābiqīn | Asal: *RUMI – Deep Sufi Healing Music for the Soul* (≈26 min). Dimuat naik oleh pemilik projek, yang bertanggungjawab memastikan kebenaran/lesen penggunaannya. Jika fail tiada, lagu jelajah biasa dimainkan. |
 
 ## Kesan bunyi (`sfx/`)
 | Fail | Asal | Sumber |
