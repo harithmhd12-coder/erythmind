@@ -842,6 +842,7 @@
       return true;
     },
     periksa(c, m, o) { return M.siasat.periksa(c, m, o); },
+    kemas(c, m) { return M.siasat.kemas(c, m); },
     interaksi(c, m) { return m.petunjuk.map((o) => ({ x: o.x, z: o.z, label: c.L('Periksa|Inspect'), f: () => M.siasat.periksa(c, m, o) })); },
     sasaran(c, m) { return M.siasat.sasaran(c, m); },
     kemajuan(c, m) { return M.siasat.kemajuan(c, m); },
@@ -849,4 +850,129 @@
       return [{ pelbagai: 3, label: c.L('Masjid Dhirar|Masjid al-Dirar'), soalan: 'Pilih 3 pemerhatian yang benar-benar menunjukkan tujuan sebenar bangunan ini. 2 lagi hanya rupa luaran.|Pick the 3 observations that truly reveal this building’s real purpose. The other 2 are mere appearance.', pilihan: m.petunjuk.map((o) => o.t), betulSet: m.petunjuk.filter((o) => o.benar).map((o) => o.t), terang: 'Nilai institusi pada tujuan dan kesannya, bukan rupa luaran.|Judge institutions by purpose and effect, not outward appearance.', nod: n.idx, serpihan: true }];
     },
   };
+
+  /* ================= MA'A QASAS AL-SABIQIN FI AL-QUR'AN ================= */
+
+  // Lembu Bani Israil: setiap soalan tambahan menyempitkan syarat dan menyusahkan diri sendiri
+  const LEMBU = [
+    { w: '#8b5a2b', n: 'Lembu perang|Brown cow', tua: true, kuning: false, kerja: true },
+    { w: '#f2f2f2', n: 'Lembu putih|White cow', tua: false, kuning: false, kerja: true },
+    { w: '#e3b23c', n: 'Lembu kuning tua|Old yellow cow', tua: true, kuning: true, kerja: false },
+    { w: '#3b3540', n: 'Lembu hitam|Black cow', tua: false, kuning: false, kerja: false },
+    { w: '#e8c547', n: 'Lembu kuning pertengahan, tidak pernah membajak|Middle-aged yellow cow, never ploughed', tua: false, kuning: true, kerja: false, satu: true },
+    { w: '#d9a441', n: 'Lembu kuning muda, kuat membajak|Young yellow cow, a strong plougher', tua: false, kuning: true, kerja: true },
+  ];
+  const SOAL_LEMBU = [
+    { s: '“Lembu yang bagaimana?”|“What kind of cow?”', j: 'Tidak tua dan tidak terlalu muda; pertengahan antara keduanya.|Neither old nor too young; in between.', uji: (l) => !l.tua },
+    { s: '“Apa warnanya?”|“What colour?”', j: 'Kuning tua warnanya, menyenangkan orang yang memandang.|Bright yellow, pleasing to those who see it.', uji: (l) => !l.tua && l.kuning },
+    { s: '“Terangkan lagi, semua lembu nampak serupa!”|“Explain more, all cows look alike!”', j: 'Belum pernah dipakai membajak tanah atau mengairi tanaman, sempurna tanpa belang.|Never used to plough or water the fields, flawless without a mark.', uji: (l) => l.satu },
+  ];
+  function binaLembu(c, m, x, z, warna) {
+    const g = kumpulan(c, m, x, z);
+    tambahKe(g, 'kotak', warna, 0.5, 0.42, 0.9, 0, 0.32, 0); tambahKe(g, 'kotak', warna, 0.32, 0.32, 0.34, 0, 0.6, 0.55);
+    tambahKe(g, 'kotak', '#f2c9a0', 0.22, 0.14, 0.12, 0, 0.58, 0.74);
+    for (const [a, b] of [[-0.18, -0.32], [0.18, -0.32], [-0.18, 0.32], [0.18, 0.32]]) tambahKe(g, 'kotak', '#3b3540', 0.1, 0.32, 0.1, a, 0, b);
+    tambahKe(g, 'kon', '#f5efe0', 0.05, 0.16, 0.05, -0.14, 0.9, 0.55); tambahKe(g, 'kon', '#f5efe0', 0.05, 0.16, 0.05, 0.14, 0.9, 0.55);
+    g.rotation.y = Math.random() * 6; return g;
+  }
+  M.lembu = {
+    objektif: 'Nabi Musa menyampaikan perintah: “Sembelihlah seekor lembu.” Bawa mana-mana lembu 🐄 kepada pencerita, atau tanya lagi kepada Musa ❔. Setiap soalan menyempitkan syarat.|Prophet Musa conveys the command: “Slaughter a cow.” Bring any cow 🐄 to the storyteller, or ask Musa more ❔. Every question narrows the conditions.',
+    mula(c, m, n) {
+      const s = c.calon(m, n, 7, 3.5, 11, 2.2, n.npcPos); if (s.length < 7) return false;
+      m.musa = s[0]; npc(c, m, s[0].x, s[0].z, { baju: '#f3e6cc', jubah: '#2a9d8f', topi: 'serban' });
+      lbl(c, m, s[0].x, 1.8, s[0].z, `<i>❔</i><span>${c.esc(c.L('Tanya Musa|Ask Musa'))}</span>`);
+      m.lembu = LEMBU.map((l, i) => ({ ...l, ...s[i + 1], g: binaLembu(c, m, s[i + 1].x, s[i + 1].z, l.w), l: lbl(c, m, s[i + 1].x, 1.2, s[i + 1].z, '<i>🐄</i>') }));
+      m.tanya = 0;
+      return true;
+    },
+    layak(m, l) { return m.tanya === 0 ? true : SOAL_LEMBU[m.tanya - 1].uji(l); },
+    tanyaMusa(c, m) {
+      if (m.tanya >= SOAL_LEMBU.length) { c.serpihan('Syarat sudah lengkap. Cari lembu yang memenuhi semua sifat itu.|The conditions are complete. Find the cow that meets them all.', '❔', c.L('Musa|Musa')); return; }
+      const q = SOAL_LEMBU[m.tanya];
+      const p = c.bukaModal(`<div class="kad-serpihan"><div class="ikon">❔</div><p>${c.esc(c.L(q.s))}</p></div><p class="kecil">${c.esc(c.L('Bertanya lagi akan menambah syarat. Kau pasti?|Asking again adds conditions. Are you sure?'))}</p>
+        <div class="butang"><button class="btn" data-a="x">${c.esc(c.L('Tak jadi tanya|Never mind'))}</button><button class="btn utama" data-a="ya">${c.esc(c.L('Tanya juga|Ask anyway'))}</button></div>`, 'kecil');
+      p.querySelector('[data-a=x]').onclick = c.tutupModal;
+      p.querySelector('[data-a=ya]').onclick = () => {
+        c.tutupModal(); m.tanya++; m.penalti++; c.bunyi('hentak');
+        m.lembu.forEach((l) => { const ok = this.layak(m, l); l.l.e.style.opacity = ok ? 1 : 0.25; });
+        c.serpihan(q.j, '📜', c.L('Syarat baharu|New condition') + ` ${m.tanya}`, () => c.toast('🐄 ' + m.lembu.filter((l) => this.layak(m, l)).length + ' ' + c.L('lembu masih layak|cows still qualify')));
+      };
+    },
+    pilih(c, m, l) {
+      if (!this.layak(m, l)) { c.bunyi('salah'); c.toast(c.L('Lembu ini tidak lagi memenuhi syarat yang kau minta sendiri.|This cow no longer meets the conditions you asked for.')); return; }
+      c.bunyi('betul');
+      const teks = m.tanya === 0
+        ? 'Kau terus taat dengan perintah yang mudah. Menurut riwayat yang dinukil para mufassir, jika Bani Israil menyembelih mana-mana lembu sejak awal, ia sudah memadai; mereka sendiri yang menyusahkan diri dengan soalan.|You obeyed the simple command at once. As the exegetes relate, had Bani Israil slaughtered any cow at the start it would have sufficed; they made it hard for themselves with questions.'
+        : `Kau bertanya ${m.tanya} kali, dan setiap soalan menyempitkan pilihan, sama seperti Bani Israil yang akhirnya menyembelih “dan hampir-hampir mereka tidak melakukannya” (al-Baqarah 71).|You asked ${m.tanya} time(s), and each question narrowed the choice, like Bani Israil who finally slaughtered “though they almost did not” (al-Baqarah 71).`;
+      c.serpihan(c.L(teks) + '\n\n' + c.nod(m).bab.titik.map((x) => '• ' + c.L(x)).join('\n'), '🐄', c.L('Lembu dibawa|Cow brought'), () => c.siap());
+    },
+    interaksi(c, m) { return [{ x: m.musa.x, z: m.musa.z, label: c.L('Tanya Musa|Ask Musa'), f: () => this.tanyaMusa(c, m) }, ...m.lembu.map((l) => ({ x: l.x, z: l.z, label: c.L('Bawa lembu ini|Bring this cow'), f: () => this.pilih(c, m, l) }))]; },
+    sasaran(c, m) { const p = pem(c); return m.lembu.filter((l) => this.layak(m, l)).sort((a, b) => jarak(a, p) - jarak(b, p))[0] || null; },
+    kemajuan(c, m) { return `🐄 ${m.lembu.filter((l) => this.layak(m, l)).length} ${c.L('layak|qualify')} · ❔ ${m.tanya}`; },
+  };
+
+  // Helah Hari Sabtu: hantar peringatan, tolak helah memancing hari Sabtu (guna mekanik Hantar Barang)
+  M.sabtu = Object.assign(Object.create(M.hantar), {
+    objektif: 'Hari Sabtu, ikan melimpah di pantai. Hantar 3 surat peringatan 📜 kepada penduduk kampung. Di jalan, ada yang mengajak kau menggunakan helah 🎣 untuk menangkap ikan. Jangan terpedaya.|On the Sabbath, fish crowd the shore. Deliver 3 reminder letters 📜 to the villagers. On the way, some will invite you to a trick 🎣 to catch fish. Don’t be fooled.',
+    godaanTeks: [
+      'Pasang jaring petang Jumaat, angkat pagi Ahad. Kita tak tangkap pun pada hari Sabtu, kan? Hukum tetap terjaga!|Set the net on Friday evening, lift it on Sunday morning. We don’t actually fish on the Sabbath, right? The law stays intact!',
+      'Gali kolam kecil di tepi laut. Ikan masuk sendiri hari Sabtu, kita kutip hari Ahad. Helah yang bijak!|Dig a small pool by the sea. The fish swim in on the Sabbath, we collect on Sunday. A clever trick!',
+      'Semua orang di kampung dah buat begini. Kau seorang je yang degil? Jom, tak ada siapa yang rugi.|Everyone in the village does this. Are you the only stubborn one? Come on, nobody loses.',
+    ],
+    teksYa: 'Ikut helah itu|Go along with the trick', teksTidak: 'Tolak: helah tetap melanggar perintah|Refuse: a trick still breaks the command',
+    teksGagal: 'Kau terpedaya dengan helah. Pada zahirnya patuh, hakikatnya melanggar; inilah dosa Ashab al-Sabt. −1 nyawa.|You were fooled by the trick. Outwardly obedient, inwardly disobedient: the sin of the Sabbath-breakers. −1 heart.',
+  });
+
+  // Sabar bersama Khidir: tahan diri daripada membantah sehingga hikmah dibuka
+  const PERISTIWA = [
+    { i: '⛵', t: 'Khidir melubangkan perahu milik orang miskin yang menumpangkan kalian tanpa bayaran.|Khidr makes a hole in the boat of poor people who carried you for free.', b: '“Adakah engkau melubanginya untuk menenggelamkan penumpangnya?”|“Did you hole it to drown its passengers?”', h: 'Perahu itu milik orang miskin. Di hadapan ada raja zalim yang merampas setiap perahu yang elok. Perahu yang cacat terselamat daripada rampasan.|The boat belonged to poor people. Ahead was a tyrant king seizing every sound boat. A damaged boat escapes seizure.' },
+    { i: '👦', t: 'Khidir bertemu seorang budak lelaki, lalu membunuhnya.|Khidr meets a boy, and kills him.', b: '“Mengapa engkau membunuh jiwa yang bersih?”|“Why did you kill an innocent soul?”', h: 'Ibu bapanya mukmin. Allah mengetahui budak itu akan memaksa mereka kepada kesesatan, lalu menggantikannya dengan anak yang lebih baik dan lebih penyayang. Ini ketentuan khusus melalui wahyu, bukan teladan untuk manusia biasa.|His parents were believers. God knew the boy would drive them to transgression, and replaced him with a better, kinder child. This was a specific decree by revelation, not an example for ordinary people.' },
+    { i: '🧱', t: 'Penduduk kampung enggan menjamu kalian. Namun Khidir membaiki dinding mereka yang hampir runtuh, tanpa upah.|The villagers refuse you hospitality. Yet Khidr repairs their collapsing wall, without pay.', b: '“Kalau engkau mahu, ambillah upah untuknya!”|“If you wished, you could have taken a wage for it!”', h: 'Dinding itu milik dua anak yatim. Di bawahnya ada harta simpanan untuk mereka, dan bapa mereka seorang yang soleh. Allah mahu mereka dewasa dahulu, lalu mengeluarkan harta itu sendiri.|The wall belonged to two orphans. Beneath it was treasure for them, and their father was righteous. God willed them to come of age and take out their treasure themselves.' },
+  ];
+  M.sabar = {
+    objektif: 'Ikut Khidir ke 3 tempat. Setiap kali dia melakukan sesuatu yang aneh, butang BANTAH akan berkelip. Tahan diri sehingga bar sabar penuh, kemudian hikmahnya akan dibuka.|Follow Khidr to 3 places. Each time he does something strange, the PROTEST button flashes. Hold back until the patience bar fills, then the hidden wisdom is revealed.',
+    mula(c, m, n) {
+      const s = c.calon(m, n, 3, 4, 11, 3.5, n.npcPos); if (s.length < 3) return false;
+      m.t = s.map((p, i) => ({ ...p, e: PERISTIWA[i], l: lbl(c, m, p.x, 1.8, p.z, `<i>${PERISTIWA[i].i}</i>`), siap: false }));
+      m.t.forEach((o, i) => { if (i === 0) { mesh(c, m, 'kotak', '#a8693d', 0.6, 0.3, 1.5, o.x + 0.9, 0, o.z); } else if (i === 2) { mesh(c, m, 'kotak', '#b9b3a8', 1.6, 1.1, 0.25, o.x + 0.9, 0, o.z); } else npc(c, m, o.x + 0.9, o.z, { baju: '#e9c46a', skala: 0.75 }); });
+      m.khidir = npc(c, m, s[0].x - 0.8, s[0].z, { baju: '#2d6a4f', jubah: '#1b4332', topi: 'serban' });
+      return true;
+    },
+    peristiwa(c, m, o) {
+      const p = c.bukaModal(`<div class="kad-serpihan"><div class="ikon">${o.e.i}</div><p>${c.esc(c.L(o.e.t))}</p></div>
+        <button class="btn balas" data-a="bantah">✋ ${c.esc(c.L('BANTAH!|PROTEST!'))}</button>
+        <div class="jeda"><small>${c.esc(c.L('“Sesungguhnya engkau tidak akan sabar bersamaku…”|“Indeed, you will never be able to have patience with me…”'))}</small><div class="bar"><i></i></div></div>
+        <div class="respons" hidden></div>`, 'kecil');
+      const bar = p.querySelector('.jeda i'), t0 = performance.now();
+      const iv = setInterval(() => {
+        const f = Math.min(1, (performance.now() - t0) / 5000); bar.style.width = f * 100 + '%';
+        if (f < 1) return;
+        clearInterval(iv); p.querySelector('[data-a=bantah]').remove();
+        const box = p.querySelector('.respons'); box.hidden = false;
+        box.innerHTML = `<p><b>💡 ${c.esc(c.L('Hikmah yang tersembunyi|The hidden wisdom'))}</b></p><p>${c.esc(c.L(o.e.h))}</p><button class="btn utama lebar" data-a="n">${c.esc(c.t('seterusnya'))}</button>`;
+        c.bunyi('betul');
+        box.querySelector('[data-a=n]').onclick = () => {
+          c.tutupModal(); o.siap = true; o.l.e.innerHTML = '<i class="siap">✓</i>';
+          const k = m.t.filter((x) => x.siap).length;
+          const sel = m.t.find((x) => !x.siap); if (sel) { m.khidir.pos.set(sel.x - 0.8, sel.z); m.khidir.model.position.set(sel.x - 0.8, 0, sel.z); c.awan(sel.x - 0.8, sel.z, m); }
+          c.serpihan(c.nod(m).bab.titik[k - 1], o.e.i, c.L('Sabar|Patience') + ` ${k} / 3`, () => { if (k >= 3) c.siap(); });
+        };
+      }, 50);
+      p.querySelector('[data-a=bantah]').onclick = () => {
+        clearInterval(iv); m.penalti++; c.bunyi('salah'); c.tutupModal();
+        c.serpihan(o.e.b + '\n\n' + c.L('Khidir berkata: “Bukankah aku telah katakan, engkau tidak akan sabar bersamaku?” Cuba lagi, tahan diri sehingga hikmah terbuka.|Khidr said: “Did I not tell you that you would never have patience with me?” Try again, hold back until the wisdom is revealed.'), '✋', c.L('Kau membantah|You protested'));
+        o.tunda = 2.5;
+      };
+    },
+    kemas(c, m, dt) {
+      for (const o of m.t) if (o.tunda > 0) o.tunda -= dt;
+      if (m.fasa !== 'cari' || c.modalTerbuka) return;
+      const o = m.t.find((x) => !x.siap);
+      if (o && !(o.tunda > 0) && jarak(o, pem(c)) < 1.8) { c.pemain.berhenti(); o.tunda = 3; this.peristiwa(c, m, o); }
+    },
+    sasaran(c, m) { return m.t.find((x) => !x.siap) || null; },
+    kemajuan(c, m) { return `⛵ ${m.t.filter((x) => x.siap).length} / 3`; },
+  };
+  EB.SIGNATURE['qasas-sabiqin'] = { '0-1': 'lembu', '1-2': 'sabtu', '2-2': 'sabar' };
+  Object.assign(EB.NAMA_SIGNATURE, { lembu: '🐄 Lembu Bani Israil|🐄 The Cow of Bani Israil', sabtu: '🎣 Helah Hari Sabtu|🎣 The Sabbath Trick', sabar: '⛵ Sabar bersama Khidir|⛵ Patience with Khidr' });
 })();

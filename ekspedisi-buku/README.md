@@ -10,7 +10,7 @@ python3 -m http.server 8000
 # buka http://localhost:8000/ekspedisi-buku/
 ```
 
-## Buku (205 bab, dwibahasa BM/EN)
+## Buku (225 bab, dwibahasa BM/EN)
 
 | Buku | Bab | Daerah |
 |---|---|---|
@@ -19,6 +19,7 @@ python3 -m http.server 8000
 | Clear Thinking (Shane Parrish) | 28 | 5 |
 | Trust Me, I'm Lying (Ryan Holiday) | 26 | 4 |
 | Ẓāhirat al-Nifāq (analisis kitab, al-Maydānī) | 30 | 6 |
+| Maʿa Qaṣaṣ al-Sābiqīn fi al-Qurʾān (Dr. Ṣalāḥ al-Khālidī) | 20 | 5 |
 
 Kandungan ditulis semula dengan kata-kata sendiri, bukan petikan panjang. Fail PDF tidak dimuatkan ke dalam game.
 
@@ -40,6 +41,7 @@ Kandungan ditulis semula dengan kata-kata sendiri, bukan petikan panjang. Fail P
      | Clear Thinking | ⏸ Detik Biasa (tahan butang BALAS) · 🍲 HALT (bar lapar & letih) · 💣 Peluru sebelum Meriam |
      | Trust Me, I'm Lying | 🔗 Jejak Rantaian sumber · 📰 Bilik Berita (klik lawan kepercayaan) · 🔥 Pembetulan (padam khabar palsu) |
      | Ẓāhirat al-Nifāq | 🪞 Cermin Muhasabah (rekod sebenar pemain) · 🗣 Lahn al-Qaul (kata lawan perbuatan) · 🕌 Masjid Dhirar |
+     | Maʿa Qaṣaṣ al-Sābiqīn | 🐄 Lembu Bani Israil (setiap soalan kepada Musa menyempitkan syarat) · 🎣 Helah Hari Sabtu (tolak helah memancing) · ⛵ Sabar bersama Khidir (tahan butang BANTAH sehingga hikmah terbuka) |
 2. Setiap langkah misi membuka satu idea utama bab. Kesilapan semasa misi (jalan mati, susunan salah) mengurangkan bintang bab itu.
 3. **Cabaran:** satu soalan dilema hidup sebenar, satu soalan "idea mana dari bab ini", dan kadangkala satu soalan ulang kaji bab lama. Jawapan salah ditanya semula dan menolak 1 nyawa.
 4. Selesai bab: bintang 1 hingga 3, XP, streak harian, Kad Ilmu dalam album, dan pintu kabus ke bab seterusnya terbuka.

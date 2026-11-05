@@ -166,7 +166,11 @@
       const n = m.petunjuk.filter((x) => x.diperiksa).length;
       c.serpihan(o.t, o.saksi ? '🗣' : '🔍', c.L('Petunjuk|Clue') + ` ${n} / 5`, () => { if (n >= 5) c.siap(); });
     },
-    interaksi(c, m) { return m.petunjuk.map((o) => ({ x: o.x, z: o.z, f: () => this.periksa(c, m, o) })); },
+    interaksi(c, m) { return m.petunjuk.map((o) => ({ x: o.x, z: o.z, label: c.L(o.diperiksa ? 'Baca semula|Reread' : 'Periksa|Inspect'), f: () => this.periksa(c, m, o) })); },
+    kemas(c, m) { // periksa automatik apabila watak memijak atau sampai di sebelah objek
+      if (m.fasa !== 'cari' || c.modalTerbuka) return;
+      for (const o of m.petunjuk) if (!o.diperiksa && jarak(o, { x: c.pemain.pos.x, z: c.pemain.pos.y }) < 1.1) { this.periksa(c, m, o); return; }
+    },
     sasaran(c, m) { let best = null, dm = 1e9; for (const o of m.petunjuk) if (!o.diperiksa) { const d = jarak(o, { x: c.pemain.pos.x, z: c.pemain.pos.y }); if (d < dm) { dm = d; best = o; } } return best; },
     kemajuan(c, m) { return `🔍 ${m.petunjuk.filter((x) => x.diperiksa).length} / 5`; },
     soalanTambahan(c, m, n) {
@@ -277,14 +281,14 @@
     },
     goda(c, m, k) {
       k.aktif = false; c.pemain.berhenti();
-      const teks = GODAAN[m.k % GODAAN.length];
+      const senarai = this.godaanTeks || GODAAN, teks = senarai[m.k % senarai.length];
       const p = c.bukaModal(`<div class="kad-serpihan"><div class="ikon">😈</div><small>${c.esc(c.L('Penggoda|Tempter'))}</small><p>${c.esc(c.L(teks))}</p></div>
-        <div class="butang"><button class="btn" data-a="ya">${c.esc(c.L('Terima tawaran|Accept the offer'))}</button><button class="btn utama" data-a="tidak">${c.esc(c.L('Tolak dan teruskan|Refuse and carry on'))}</button></div>`, 'kecil');
+        <div class="butang"><button class="btn" data-a="ya">${c.esc(c.L(this.teksYa || 'Terima tawaran|Accept the offer'))}</button><button class="btn utama" data-a="tidak">${c.esc(c.L(this.teksTidak || 'Tolak dan teruskan|Refuse and carry on'))}</button></div>`, 'kecil');
       p.querySelector('[data-a=tidak]').onclick = () => {
         c.tutupModal(); c.bunyi('betul'); c.tambahXP(10); c.toast('💪 ' + c.L('Kawalan diri! +10 XP|Self-control! +10 XP'));
         c.awan(k.goda.x, k.goda.z, m); k.penggoda.model.visible = false; k.lblG.e.style.display = 'none'; k.lblG.pos.y = -99;
       };
-      p.querySelector('[data-a=ya]').onclick = () => { c.tutupModal(); buangKotak(m); c.stat('goda'); c.gagal(c.L('Kau tewas kepada godaan segera. Bungkusan hilang. −1 nyawa.|You gave in to instant temptation. The package is lost. −1 heart.')); };
+      p.querySelector('[data-a=ya]').onclick = () => { c.tutupModal(); buangKotak(m); c.stat('goda'); c.gagal(c.L(this.teksGagal || 'Kau tewas kepada godaan segera. Bungkusan hilang. −1 nyawa.|You gave in to instant temptation. The package is lost. −1 heart.')); };
     },
     serah(c, m) {
       const k = m.kaki[m.k];
@@ -368,7 +372,34 @@
     },
     reset(c, m) {
       m.blok.forEach((b, i) => { b.x = m.mula[i].x; b.z = m.mula[i].z; });
-      m.berubah = true; this.halang(c, m); c.toast(c.L('Blok disusun semula.|Blocks reset.'));
+      m.berubah = true; this.halang(c, m);
+      // jangan biar blok jatuh di atas watak, atau mengurung watak
+      const px = Math.floor(c.pemain.pos.x), pz = Math.floor(c.pemain.pos.y);
+      if (m.blok.some((b) => b.x === px && b.z === pz) || this.terperangkap(c, m)) this.selamatkan(c, m);
+      c.toast(c.L('Blok disusun semula.|Blocks reset.'));
+    },
+    // watak tidak boleh lagi sampai ke pencerita kerana dikelilingi blok?
+    terperangkap(c, m) {
+      const n = c.nod(m), d = c.dunia, had = c.had(m), px = c.pemain.pos.x, pz = c.pemain.pos.y;
+      const xs = m.tapakS.map((t) => t.x);
+      if (Math.abs(pz - (m.zc + 0.5)) > 3 || px < Math.min(...xs) - 4 || px > Math.max(...xs) + 5) return false; // hanya di sekitar lorong blok
+      return !EB.cariLaluan((a, b) => d.boleh(a, b, had), px, pz, n.npcPos.x, n.npcPos.z, 6000);
+    },
+    // pindahkan watak ke sel terdekat di luar lorong blok yang boleh sampai ke pencerita
+    selamatkan(c, m, mesej) {
+      const n = c.nod(m), d = c.dunia, had = c.had(m), boleh = (a, b) => d.boleh(a, b, had);
+      const px = Math.floor(c.pemain.pos.x), pz = Math.floor(c.pemain.pos.y);
+      let best = null;
+      for (let r = 1; r <= 8 && !best; r++) for (let dz = -r; dz <= r && !best; dz++) for (let dx = -r; dx <= r && !best; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
+        const x = px + dx, z = pz + dz;
+        if (Math.abs(z - m.zc) <= 1 || !boleh(x, z)) continue; // keluar dari tiga lorong blok
+        if (EB.cariLaluan(boleh, x + 0.5, z + 0.5, n.npcPos.x, n.npcPos.z, 3000)) best = { x: x + 0.5, z: z + 0.5 };
+      }
+      if (!best) best = { x: n.npcPos.x, z: n.npcPos.z + (n.utara ? -0.6 : 0.6) };
+      c.pemain.berhenti(); c.pemain.letak(best.x, best.z); c.dunia.fokus.set(best.x, 0, best.z);
+      c.awan(best.x, best.z, m);
+      if (mesej) c.toast(mesej);
     },
     kemas(c, m, dt) {
       for (const b of m.blok) {
@@ -377,6 +408,9 @@
       }
       for (const t of m.tapakS) t.mesh.material.opacity = m.blok.some((b) => b.x === t.x && b.z === t.z) ? 0.9 : 0.45 + Math.sin(performance.now() / 300 + t.k) * 0.1;
       if (m.fasa !== 'cari' || c.modalTerbuka) return;
+      // pengesan terperangkap: semak setiap 0.6 s
+      const kini = performance.now();
+      if (kini - (m.tSemak || 0) > 600) { m.tSemak = kini; if (this.terperangkap(c, m)) { this.selamatkan(c, m, '🧱 ' + c.L('Kau terkurung oleh blok. Dipindahkan keluar; teruskan menyusun.|You got boxed in by the blocks. Moved you out; keep arranging.')); return; } }
       // tolak dengan berjalan ke arah blok
       const ni = c.pemain.niat;
       if (ni && ni.lengthSq() > 1) {
@@ -433,7 +467,8 @@
       const k = m.item.filter((x) => x.siap).length;
       c.serpihan(it.titik, '🗣', c.L('Penduduk|Villager') + ` ${k} / 3`, () => { if (k >= 3) c.siap(); });
     },
-    interaksi(c, m) { return m.item.filter((x) => !x.siap).map((it) => ({ x: it.x, z: it.z, f: () => this.tanya(c, m, it) })); },
+    interaksi(c, m) { return m.item.filter((x) => !x.siap).map((it) => ({ x: it.x, z: it.z, label: c.L('Tanya|Ask'), f: () => this.tanya(c, m, it) })); },
+    kemas(c, m) { if (m.fasa !== 'cari' || c.modalTerbuka) return; for (const it of m.item) if (!it.siap && jarak(it, { x: c.pemain.pos.x, z: c.pemain.pos.y }) < 1.1) { this.tanya(c, m, it); return; } },
     sasaran(c, m) { const p = { x: c.pemain.pos.x, z: c.pemain.pos.y }; return m.item.filter((x) => !x.siap).sort((a, b) => jarak(a, p) - jarak(b, p))[0] || null; },
     kemajuan(c, m) { return `🗣 ${m.item.filter((x) => x.siap).length} / 3`; },
   };
