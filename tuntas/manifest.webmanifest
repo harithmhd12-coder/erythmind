@@ -1,0 +1,18 @@
+{
+  "name": "Tuntas · Fokus sampai siap",
+  "short_name": "Tuntas",
+  "description": "Tracker harian yang tegas: ikrar pagi, fokus sampai siap, hidup minimalis, muhasabah malam.",
+  "lang": "ms",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f2ec",
+  "theme_color": "#f4f2ec",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
