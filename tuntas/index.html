@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Tuntas</title>
 <meta name="description" content="Tuntas: fokus sampai siap, hidup minimalis. Tracker harian yang tegas dengan Murabbi, emosi dan muhasabah.">
-<meta name="theme-color" content="#f4f2ec" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f5df" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10140e" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tuntas">
@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Outfit:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -27,12 +27,12 @@
   <main id="paparan" tabindex="-1"></main>
 </div>
 
-<nav class="tab" id="tab" aria-label="Navigasi utama">
-  <button data-tab="hari" class="on"><span aria-hidden="true">◉</span>Hari Ini</button>
-  <button data-tab="minimalis"><span aria-hidden="true">□</span>Minimalis</button>
-  <button data-tab="rekod"><span aria-hidden="true">▤</span>Rekod</button>
-  <button data-tab="tetapan"><span aria-hidden="true">≡</span>Tetapan</button>
-</nav>
+<nav class="tab" id="tab" aria-label="Navigasi utama"><div class="tab-dalam">
+  <button data-tab="hari" class="on" aria-label="Hari Ini"></button>
+  <button data-tab="minimalis" aria-label="Minimalis"></button>
+  <button data-tab="rekod" aria-label="Rekod"></button>
+  <button data-tab="tetapan" aria-label="Tetapan"></button>
+</div></nav>
 
 <section id="fokus" class="fokus" hidden aria-live="polite"></section>
 <div id="dlg" class="dlg" hidden><div class="dlg-kotak" role="dialog" aria-modal="true"></div></div>

@@ -192,6 +192,122 @@ function htmlMurabbi() {
   return `<div class="kad murabbi ${st}">${svgMuka(st)}<div><div class="nama">Murabbi</div><div class="kata">${esc(kataMurabbi(st))}</div><div class="rasa">rasa: ${LABEL_RASA[st]}</div></div></div>`;
 }
 
+/* ---------- Grafik: ikon, cincin, gumpal emosi, carta fokus ---------- */
+const IKON = {
+  rumah: '<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>',
+  daun: '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14"/><path d="M5 19l8-8"/>',
+  carta: '<path d="M5 19v-6M10 19V6M15 19v-9M20 19V9"/>',
+  laras: '<path d="M4 7h10M18 7h2M4 17h3M11 17h9"/><circle cx="16" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  kilat: '<path d="M13 3 6 13h5l-1 8 7-10h-5z"/>',
+  jam: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+  sasaran: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 12h.01"/>',
+  emosi: '<circle cx="12" cy="12" r="8"/><path d="M9 14.5c1.6 1.4 4.4 1.4 6 0M9.5 10h.01M14.5 10h.01"/>',
+  maju: '<path d="M7 7l5 5-5 5M13 7l5 5-5 5"/>',
+  kotak: '<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>',
+  pasir: '<path d="M7 4h10M7 20h10M8 4c0 4 8 4 8 8s-8 4-8 8M16 4c0 4-8 4-8 8s8 4 8 8"/>',
+  fikiran: '<path d="M5 6h14v10H10l-5 4z"/>',
+  semak: '<path d="M5 12l4 4 10-10"/>',
+  kunci: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  bulan: '<path d="M18 15A7 7 0 0 1 9 6a7 7 0 1 0 9 9z"/>'
+};
+const ikon = n => `<svg class="ik" viewBox="0 0 24 24" aria-hidden="true">${IKON[n]}</svg>`;
+const NAV = { hari: ['rumah', 'Hari Ini'], minimalis: ['daun', 'Minimalis'], rekod: ['carta', 'Rekod'], tetapan: ['laras', 'Tetapan'] };
+function renderNav() { document.querySelectorAll('#tab button').forEach(b => { const [i, l] = NAV[b.dataset.tab]; b.innerHTML = `${ikon(i)}<span class="nav-l">${l}</span>`; b.title = l; }); }
+
+/* Cincin dua warna: hijau = nilai, lime = baki. */
+function cincin(f) {
+  const r = 42, C = 2 * Math.PI * r; f = Math.max(0, Math.min(1, f || 0));
+  const g = f > 0 && f < 1 ? 20 : 0;
+  const a1 = Math.max(0.01, f * C - g), a2 = Math.max(0.01, (1 - f) * C - g);
+  return `<svg viewBox="0 0 100 100"><g transform="rotate(-90 50 50)">${f < 1 ? `<circle class="c-lime" cx="50" cy="50" r="${r}" stroke-dasharray="${a2} ${C}" stroke-dashoffset="${-(f * C + g / 2)}"/>` : ''}${f > 0 ? `<circle class="c-hutan" cx="50" cy="50" r="${r}" stroke-dasharray="${a1} ${C}" stroke-dashoffset="${-g / 2}"/>` : ''}</g></svg>`;
+}
+/* Gumpal emosi: makin bergelora bila emosi negatif dan tenaga rendah. */
+function gumpal(amp, k, fasa, R = 36) {
+  let d = '';
+  for (let i = 0; i <= 120; i++) { const t = i / 120 * Math.PI * 2, r = R * (1 + amp * Math.sin(k * t + fasa)); d += (i ? 'L' : 'M') + (50 + r * Math.cos(t)).toFixed(2) + ' ' + (50 + r * Math.sin(t)).toFixed(2); }
+  return d + 'Z';
+}
+function emosiKini(d) {
+  if (!d) return null;
+  const c = (d.checkin || []).slice(-1)[0], s = d.sesi.slice(-1)[0];
+  const calon = [c && { e: c.emosi, pada: c.pada }, s && s.emosiSelepas && { e: s.emosiSelepas, pada: s.tamat }, d.ikrar && { e: d.ikrar.emosi, pada: d.ikrar.pada }].filter(Boolean).sort((a, b) => b.pada - a.pada);
+  return calon[0] || null;
+}
+function htmlEmosiKad(d) {
+  const e = emosiKini(d), E = e && EMOSI[e.e], ten = d && d.ikrar ? d.ikrar.tenaga : 3;
+  const neg = E && E.nada === 'negatif';
+  const amp = (neg ? 0.09 : 0.03) + (5 - ten) * 0.008;
+  return `<button class="kad-mini${neg ? ' negatif' : ''}" data-act="checkin" aria-label="Check-in emosi sekarang"><span class="kad-tajuk">${ikon('emosi')}Emosi</span>
+    <div class="viz"><svg viewBox="0 0 100 100"><path class="b-lime" d="${gumpal(amp, 6, 1.2)}"/><path class="b-hutan" d="${gumpal(amp, 5, 0)}"/></svg><div class="tengah"><b class="label">${E ? esc(E.label) : '—'}</b><small>tenaga ${ten}/5</small></div></div>
+    <div class="bawah">${E ? `${jam(e.pada)} · tekan untuk check-in` : 'Tekan untuk check-in'}</div></button>`;
+}
+function htmlDisiplinKad() {
+  const ix = indeks(), st = streak();
+  return `<button class="kad-mini" data-act="keTab" data-tab="rekod" aria-label="Indeks disiplin ${ix ?? 'tiada'}; buka rekod"><span class="kad-tajuk">${ikon('sasaran')}Disiplin</span>
+    <div class="viz">${cincin((ix ?? 0) / 100)}<div class="tengah"><b>${ix ?? '—'}</b><small>indeks 14 hari</small></div></div>
+    <div class="bawah">streak ${st} hari · terbaik ${streakTerbaik()}</div></button>`;
+}
+let titikPilih = 6;
+const HARI_PENDEK = ['Ahd', 'Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab'];
+function minitSah(k) { const d = S.hari[k]; return d ? d.sesi.filter(s => s.sah).reduce((a, s) => a + s.minit, 0) : 0; }
+function htmlCartaFokus() {
+  const kini = hariIni(), data = [...Array(7)].map((_, i) => { const k = tambahHari(kini, i - 6); return { k, v: minitSah(k) }; });
+  const W = 320, top = 40, H = 128, bawah = 104, kiri = 16, kanan = W - 16;
+  const maks = Math.max(60, ...data.map(x => x.v));
+  const X = i => kiri + i * (kanan - kiri) / 6, Y = v => top + (bawah - top) * (1 - v / maks);
+  const P = data.map((x, i) => [X(i), Y(x.v)]);
+  let path = `M${P[0][0]} ${P[0][1]}`;
+  for (let i = 0; i < 6; i++) {
+    const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2;
+    path += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0]} ${p2[1]}`;
+  }
+  const sel = Math.max(0, Math.min(6, titikPilih)), ps = P[sel], jumlah = data.reduce((a, x) => a + x.v, 0);
+  const px = Math.max(30, Math.min(W - 30, ps[0])), py = Math.max(2, ps[1] - 40);
+  return `<div class="carta"><div class="kad-tajuk">${ikon('kilat')}Fokus sah<small>${fmtMinit(jumlah)} · 7 hari</small></div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Minit fokus sah 7 hari: ${data.map(x => `${HARI_PENDEK[tarikhDari(x.k).getDay()]} ${x.v} minit`).join(', ')}">
+    <defs><linearGradient id="gradKawasan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe95a" stop-opacity=".28"/><stop offset="1" stop-color="#dfe95a" stop-opacity="0"/></linearGradient></defs>
+    ${P.map(p => `<line class="grid" x1="${p[0]}" x2="${p[0]}" y1="${top - 6}" y2="${bawah}"/>`).join('')}
+    <path class="kawasan" d="${path} L${P[6][0]} ${bawah} L${P[0][0]} ${bawah}Z"/><path class="garis-c" d="${path}"/>
+    ${P.map((p, i) => `<circle class="titik${i === sel ? ' pilih' : ''}" cx="${p[0]}" cy="${p[1]}" r="${i === sel ? 5 : 3.5}"/>`).join('')}
+    <rect class="pil-c" x="${px - 30}" y="${py}" width="60" height="32" rx="12"/><text class="pil-t" x="${px}" y="${py + 15}">${fmtMinit(data[sel].v)}</text><text class="pil-s" x="${px}" y="${py + 27}">${sel === 6 ? 'hari ini' : 'sah'}</text>
+    ${data.map((x, i) => `<text class="lbl${i === 6 ? ' kini' : ''}" x="${X(i)}" y="${H - 6}">${HARI_PENDEK[tarikhDari(x.k).getDay()]}</text>`).join('')}
+    ${data.map((x, i) => `<rect class="kena" data-act="titik" data-i="${i}" x="${X(i) - 22}" y="0" width="44" height="${H}"/>`).join('')}
+    </svg></div>`;
+}
+function htmlPintasan(k) {
+  const d = S.hari[k] || { kebiasaan: {} }, n = Object.values(d.kebiasaan || {}).filter(Boolean).length;
+  const tunggu = S.tunggu.filter(x => !x.status).length, fik = S.fikiran.filter(f => !f.selesai).length;
+  const bulan = k.slice(0, 7), keluar = S.keluar.filter(x => kunciHari(x.pada).startsWith(bulan)).length;
+  return `<div class="pintasan">
+    <button class="jubin lime" data-act="keTab" data-tab="minimalis">${ikon('semak')}<b>${n}/${S.tetapan.kebiasaan.length}</b><span>Kebiasaan minimalis</span></button>
+    <button class="jubin krim" data-act="keTab" data-tab="minimalis">${ikon('kotak')}<b>${keluar}</b><span>Barang keluar bulan ini</span></button>
+    <button class="jubin daun" data-act="keTab" data-tab="minimalis">${ikon('pasir')}<b>${tunggu}</b><span>Senarai tunggu 30 hari</span></button>
+    <button class="jubin hutan" data-act="lihatFikiran">${ikon('fikiran')}<b>${fik}</b><span>Peti fikiran</span></button></div>`;
+}
+function htmlHero(k, d) {
+  if (!d || !d.ikrar) {
+    const had = minitDari(S.tetapan.ikrarSebelum), kini = minitHari(), beza = had - kini;
+    return `<div class="hero"><div class="hero-atas"><span class="pil">Ikrar pagi</span><span class="pil ${beza < 0 ? 'merah' : 'krim'}">${beza < 0 ? `lewat ${fmtMinit(-beza)}` : `baki ${fmtMinit(beza)}`}</span></div>
+      <h1>Pilih paling banyak 3.<br>Siapkan semuanya.</h1><p>Had ikrar ${esc(S.tetapan.ikrarSebelum)}. Selepas ikrar, pelan dikunci sampai hari ditutup.</p>
+      <button class="btn-hero" data-act="keIkrar">Mula ikrar ${ikon('maju')}</button></div>`;
+  }
+  const n = d.tugas.length, siap = d.tugas.filter(t => t.status === 'siap').length, semasa = tugasSemasa(d);
+  const bar = `<div class="hero-bar"><i style="width:${n ? siap / n * 100 : 0}%"></i></div>`;
+  if (d.muhasabah) {
+    const r = keputusan(k);
+    return `<div class="hero"><div class="hero-atas"><span class="pil ${r === 'gagal' ? 'merah' : ''}">Hari ditutup</span><div class="nisbah">${siap}/${n}<small>siap</small></div></div>
+      <h1>${{ lulus: 'LULUS. Alhamdulillah.', separa: 'SEPARA. Siap, belum sempurna.', gagal: 'GAGAL. Esok bayar hutang dahulu.' }[r] || r}</h1><p>${esc(d.muhasabah.ajar)}</p>
+      <div class="hero-meta"><span>${ikon('bulan')}Langkah pertama esok: ${esc(d.muhasabah.esok)}</span></div></div>`;
+  }
+  if (!semasa) return `<div class="hero"><div class="hero-atas"><span class="pil">Semua siap</span><div class="nisbah">${siap}/${n}<small>siap</small></div></div>
+      <h1>Ikrar ditunaikan.</h1><p>Tutup hari dengan muhasabah. Tanpa muhasabah, hari ini tetap gagal.</p><div class="hero-bawah">${bar}<button class="hero-btn isi" data-act="keMuhasabah" aria-label="Pergi ke muhasabah">${ikon('maju')}</button></div></div>`;
+  return `<div class="hero"><div class="hero-atas"><span class="pil">${semasa.hutangDari ? 'Hutang · ' : 'Semasa · '}${KELAS[semasa.kelas].nama}</span><div class="nisbah">${siap}/${n}<small>siap hari ini</small></div></div>
+    <h1>${esc(semasa.tajuk)}</h1><p><b style="color:#fffbe0;font-weight:600">Siap bermaksud:</b> ${esc(semasa.takrif)}</p>
+    <div class="hero-meta"><span>${ikon('kilat')}${semasa.blok} blok</span><span>${ikon('jam')}${fmtMinit(semasa.minit)} sah</span><span>${ikon('sasaran')}${KELAS[semasa.kelas].model} · ${blokMin(semasa.kelas)} min</span></div>
+    <div class="hero-bawah">${bar}<button class="hero-btn isi" data-act="mulaFokus" data-id="${semasa.id}" aria-label="${semasa.status === 'jalan' ? 'Sambung fokus' : 'Mula fokus'}">${ikon('maju')}</button></div>
+    <button class="lepas" data-act="lepas" data-id="${semasa.id}">Lepaskan tugasan ini</button></div>`;
+}
+
 /* ---------- UI asas ---------- */
 let tab = 'hari';
 let toastT;
@@ -222,7 +338,10 @@ function renderKepala() {
   const k = hariIni();
   $('#tarikh').textContent = labelTarikh(k).toUpperCase();
   const st = streak(), ix = indeks(), hutang = hutangTertunggak().length;
-  $('#cip').innerHTML = `<span class="cip" title="Hari lulus berturut-turut">streak <b>${st}</b></span><span class="cip${ix !== null && ix < 60 ? ' merah' : ''}" title="Indeks disiplin 14 hari">indeks <b>${ix ?? '—'}</b></span>${hutang ? `<span class="cip merah">hutang <b>${hutang}</b></span>` : ''}`;
+  const rasa = keadaanMurabbi();
+  $('#tarikh').textContent = labelTarikh(k);
+  $('#cip').innerHTML = `${hutang ? `<span class="cip merah">hutang <b>${hutang}</b></span>` : ''}<span class="cip" title="Hari lulus berturut-turut">streak <b>${st}</b></span><button class="avatar ${rasa}" data-act="keTab" data-tab="hari" title="Murabbi: ${LABEL_RASA[rasa]}" aria-label="Murabbi, rasa ${LABEL_RASA[rasa]}">${svgMuka(rasa)}</button>`;
+  void ix;
 }
 function render() {
   gulung();
@@ -248,9 +367,13 @@ function vHari() {
     h += vKebiasaanRingkas(k);
     return h + htmlAyatHari();
   }
-  if (!d || !d.ikrar) return h + vIkrar() + htmlAyatHari();
+  if (!d || !d.ikrar) return htmlHero(k, d) + h + `<div class="dua">${htmlDisiplinKad()}${htmlEmosiKad(d)}</div>` + `<div id="ikrarBorang"></div>` + vIkrar() + htmlAyatHari();
+  h = htmlHero(k, d) + h;
+  h += `<div class="dua">${htmlDisiplinKad()}${htmlEmosiKad(d)}</div>`;
+  h += htmlCartaFokus();
   h += vPelan(k, d);
-  h += vMuhasabah(k, d);
+  h += `<div class="bah"><h2>Pintasan</h2></div>` + htmlPintasan(k);
+  h += `<div id="muhasabahSeksyen"></div>` + vMuhasabah(k, d);
   return h + htmlAyatHari();
 }
 
@@ -348,8 +471,7 @@ function tugasSemasa(d) { return d.tugas.find(t => t.status === 'baru' || t.stat
 function vPelan(k, d) {
   const siap = d.tugas.filter(t => t.status === 'siap').length, n = d.tugas.length, semasa = tugasSemasa(d);
   const minit = d.sesi.filter(s => s.sah).reduce((a, s) => a + s.minit, 0);
-  let h = `<div class="bah"><h2>Ikrar hari ini</h2><small>${siap}/${n} siap · ${fmtMinit(minit)} fokus sah</small></div>`;
-  h += `<div class="progres" style="margin:-4px 0 14px"><i style="width:${n ? siap / n * 100 : 0}%"></i></div>`;
+  let h = `<div class="bah"><h2>Ikrar hari ini</h2><small>${siap}/${n} siap · ${fmtMinit(minit)} sah</small></div>`;
   d.tugas.forEach((t, i) => {
     const kini = semasa && t.id === semasa.id && !d.muhasabah;
     const kunci = (t.status === 'baru' || t.status === 'jalan') && !kini;
@@ -690,13 +812,23 @@ function vRekod() {
   const kini = hariIni();
   const minit7 = [...Array(7)].reduce((a, _, i) => { const d = S.hari[tambahHari(kini, -i)]; return a + (d ? d.sesi.filter(s => s.sah).reduce((x, s) => x + s.minit, 0) : 0); }, 0);
   const dorSemua = Object.values(S.hari).flatMap(d => d.dorongan || []), dorMenang = dorSemua.filter(x => x.menang).length;
-  let h = `<div class="stat-grid" style="margin-top:4px">
+  // Ringkasan: tiang fokus 7 hari dan cincin kadar lulus 30 hari
+  const hari7 = [...Array(7)].map((_, i) => { const k = tambahHari(kini, i - 6); return { k, v: minitSah(k) }; });
+  const maks7 = Math.max(30, ...hari7.map(x => x.v));
+  let dinilai = 0, lulus = 0;
+  for (let i = 0; i < 30; i++) { const r = keputusan(tambahHari(kini, -i)); if (['lulus', 'separa', 'gagal'].includes(r)) { dinilai++; if (r === 'lulus') lulus++; } }
+  const kadar = dinilai ? Math.round(lulus / dinilai * 100) : null;
+  let h = `<div class="ringkas">
+    <div class="kad"><span class="kad-tajuk">${ikon('kilat')}Fokus sah</span><div class="tiang" role="img" aria-label="Minit fokus sah 7 hari">${hari7.map((x, i) => `<div class="${i === 6 ? 'kini' : ''}" title="${labelTarikh(x.k)}: ${fmtMinit(x.v)}" style="--h:${Math.max(4, x.v / maks7 * 70)}px"><i style="height:${Math.max(4, x.v / maks7 * 70)}px"></i>${i === 6 ? `<span class="tag">${fmtMinit(x.v)}</span>` : ''}</div>`).join('')}</div>
+      <div class="angka"><b>${fmtMinit(minit7)}</b><span>dalam<br>7 hari</span></div></div>
+    <div class="kad"><span class="kad-tajuk">${ikon('sasaran')}Kadar lulus</span><div class="viz" style="width:min(118px,100%)">${cincin((kadar ?? 0) / 100)}<div class="tengah"><b>${kadar ?? '—'}${kadar !== null ? '%' : ''}</b><small>${lulus}/${dinilai} hari</small></div></div><div class="bawah redup kecil" style="text-align:center;margin-top:6px">30 hari terakhir</div></div></div>
+  <div class="stat-grid">
     <div class="stat"><b>${streak()}</b><small>Streak semasa</small></div>
     <div class="stat"><b>${streakTerbaik()}</b><small>Streak terbaik</small></div>
     <div class="stat"><b>${indeks() ?? '—'}</b><small>Indeks disiplin (14 hari)</small></div>
-    <div class="stat"><b>${fmtMinit(minit7)}</b><small>Fokus sah, 7 hari</small></div>
     <div class="stat"><b>${dorMenang}/${dorSemua.length}</b><small>Dorongan ditewaskan</small></div>
-    <div class="stat"><b>${S.keluar.length}</b><small>Barang keluar</small></div></div>`;
+    <div class="stat"><b>${S.keluar.length}</b><small>Barang keluar</small></div>
+    <div class="stat"><b>${Object.values(S.hari).reduce((a, d) => a + d.tugas.filter(t => t.status === 'siap').length, 0)}</b><small>Tugasan siap</small></div></div>`;
   // Kalendar 5 minggu
   const mula = tarikhDari(kini);
   while (mula.getDay() !== 1) mula.setDate(mula.getDate() - 1);
@@ -718,6 +850,7 @@ function vRekod() {
     if (d.ikrar) kira[d.ikrar.emosi] = (kira[d.ikrar.emosi] || 0) + 1;
     for (const s of d.sesi) { if (s.emosi) { kira[s.emosi] = (kira[s.emosi] || 0) + 1; const tgt = EMOSI[s.emosi].nada === 'negatif' ? neg : pos; tgt[0] += s.sah ? 1 : 0; tgt[1] += 1; } }
     if (d.muhasabah) for (const e of d.muhasabah.emosi) kira[e] = (kira[e] || 0) + 1;
+    for (const c of d.checkin || []) kira[c.emosi] = (kira[c.emosi] || 0) + 1;
   }
   const ent = Object.entries(kira).sort((a, b) => b[1] - a[1]), maks = ent.length ? ent[0][1] : 1;
   h += `<div class="bah"><h2>Peta emosi</h2><small>30 hari</small></div><div class="kad">`;
@@ -769,6 +902,24 @@ function vTetapan() {
 
 /* ---------- Tindakan ---------- */
 const ACT = {
+  keTab(el) { tab = el.dataset.tab; render(); window.scrollTo(0, 0); },
+  keIkrar() { const b = $('#ikrarBorang'); b && b.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+  keMuhasabah() { const b = $('#muhasabahSeksyen'); b && b.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+  titik(el) { titikPilih = Number(el.dataset.i); const c = document.querySelector('.carta'); if (c) c.outerHTML = htmlCartaFokus(); },
+  checkin() {
+    bukaDialog(`<h2>Apa rasa kau sekarang?</h2><p class="kecil redup">Emosi dicatat dan dikira dalam peta emosi. Emosi negatif membawa satu arahan ringkas.</p><div class="emosi-grid" style="margin-top:14px">${htmlEmosiGrid('', 'rekodCheckin')}</div><button class="btn garis penuh" style="margin-top:14px" data-act="tutupDialog">Tutup</button>`);
+  },
+  rekodCheckin(el) {
+    const e = el.dataset.e, d = dapatHari(hariIni(), true);
+    (d.checkin = d.checkin || []).push({ pada: Date.now(), emosi: e }); simpan(); tutupDialog();
+    const iv = EMOSI[e].iv;
+    toast(iv ? `${INTERVENSI[iv].tajuk}: ${INTERVENSI[iv].arahan.split('. ').slice(0, 2).join('. ')}.` : 'Dicatat. Guna rasa ini untuk tugasan semasa.', !!iv);
+    render();
+  },
+  lihatFikiran() {
+    const f = S.fikiran.filter(x => !x.selesai);
+    bukaDialog(`<h2>Peti fikiran</h2><p class="kecil redup">Fikiran yang disimpan semasa fokus. Urus ketika muhasabah, bukan semasa blok.</p>${f.length ? `<ul class="senarai" style="margin-top:10px">${f.map(x => `<li>${esc(x.teks)}<div class="redup">${esc(labelTarikh(kunciHari(x.pada)))} ${jam(x.pada)}</div></li>`).join('')}</ul>` : '<p class="redup" style="margin-top:12px">Kosong. Fikiran tenang.</p>'}<button class="btn garis penuh" style="margin-top:14px" data-act="tutupDialog">Tutup</button>`);
+  },
   kerjaRehat() { draf().paksa = true; simpan(); render(); },
   drafEmosi(el) { draf().emosi = el.dataset.e; simpan(); render(); },
   drafTenaga(el) { draf().tenaga = Number(el.dataset.n); simpan(); render(); },
@@ -946,6 +1097,7 @@ setInterval(() => {
     else if (!a.jeda && Date.now() - (a.denyut || Date.now()) > 20000) { a.ganggu += 1; a.keluarMs += Date.now() - a.denyut; }
     simpan();
   }
+  renderNav();
   render.hari = kunciHari();
   render();
   if (a && a.fasa === 'fokus' && a.ganggu) toast(`App ditutup semasa fokus. Gangguan ${a.ganggu}/${HAD_GANGGU}.`, true);
