@@ -242,3 +242,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--ink)}
 .fokus h2{text-transform:none;letter-spacing:-.01em;color:var(--ink);font-size:18px}
 .toast{pointer-events:none}
 html{scroll-padding-bottom:120px;scroll-padding-top:20px}
+
+/* Menaip di telefon: saiz 16px mengelak zum automatik iPhone; bar tab dan toast disembunyikan supaya ruangan tidak terlindung. */
+input[type=text],input[type=number],input[type=time],input[type=search],select,textarea{font-size:16px}
+body.menaip .tab,body.menaip .toast{display:none!important}
+body.menaip #app{padding-bottom:40vh}

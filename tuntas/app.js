@@ -276,7 +276,7 @@ function vIkrar() {
     for (const { dari, t } of hutang) {
       const v = D.hutang[t.id] ?? t.takrif;
       h += `<div class="pilih-tugas"><input type="checkbox" checked disabled aria-label="Wajib"><div class="isi">${htmlKelas(t.kelas)} <span class="lencana merah">dari ${esc(labelTarikh(dari))}</span><div class="tj" style="margin-top:4px">${esc(t.tajuk)}</div>
-        <label class="l">Takrif siap hari ini</label><input type="text" data-f="hutangTakrif" data-id="${t.id}" value="${esc(v)}" maxlength="140"></div></div>`;
+        <label class="l">Takrif siap hari ini</label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" data-f="hutangTakrif" data-id="${t.id}" value="${esc(v)}" maxlength="140"></div></div>`;
     }
     h += `</div>`;
   }
@@ -296,7 +296,7 @@ function vIkrar() {
     h += `<div class="pilih-tugas"><input type="checkbox" checked data-act="drafBuangLuar" data-i="${i}" aria-label="Buang"><div class="isi">${htmlKelas(p.kelas)}<div class="tj" style="margin-top:4px">${esc(p.tajuk)}</div>${htmlInputTakrif('luar', i, p)}</div></div>`;
   });
   if (bakiSlot > 0) h += `<details style="margin-top:14px"><summary class="kecil" style="cursor:pointer">+ Tugasan luar senarai (sekali sahaja)</summary>
-    <div class="baris" style="margin-top:10px"><input type="text" id="luarTajuk" placeholder="Tajuk tugasan" maxlength="90"><select id="luarKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}" ${c === 'berat' && beratAda ? 'disabled' : ''}>${KELAS[c].nama}</option>`).join('')}</select></div>
+    <div class="baris" style="margin-top:10px"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="luarTajuk" placeholder="Tajuk tugasan" maxlength="90"><select id="luarKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}" ${c === 'berat' && beratAda ? 'disabled' : ''}>${KELAS[c].nama}</option>`).join('')}</select></div>
     <button class="btn garis" style="margin-top:8px" data-act="drafTambahLuar">Tambah</button></details>`;
   h += `</div>`;
   const sah = semakIkrar();
@@ -307,8 +307,8 @@ function vIkrar() {
 }
 function htmlInputTakrif(jenis, id, p) {
   const n = (p.takrif || '').trim().length;
-  return `<label class="l">Siap bermaksud <small>(min 10 aksara)</small></label><input type="text" data-f="takrif" data-j="${jenis}" data-id="${id}" value="${esc(p.takrif || '')}" placeholder="cth. Draf bahagian 2 lengkap dengan 5 rujukan" maxlength="140"><div class="kira${n >= 10 ? ' ok' : ''}" data-kira="${jenis}${id}">${n}/10</div>
-    <label class="l">Niat <small>(pilihan)</small></label><input type="text" data-f="niat" data-j="${jenis}" data-id="${id}" value="${esc(p.niat || '')}" placeholder="Untuk siapa kerja ini?" maxlength="120">`;
+  return `<label class="l">Siap bermaksud <small>(min 10 aksara)</small></label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" data-f="takrif" data-j="${jenis}" data-id="${id}" value="${esc(p.takrif || '')}" placeholder="cth. Draf bahagian 2 lengkap dengan 5 rujukan" maxlength="140"><div class="kira${n >= 10 ? ' ok' : ''}" data-kira="${jenis}${id}">${n}/10</div>
+    <label class="l">Niat <small>(pilihan)</small></label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" data-f="niat" data-j="${jenis}" data-id="${id}" value="${esc(p.niat || '')}" placeholder="Untuk siapa kerja ini?" maxlength="120">`;
 }
 function htmlEmosiGrid(pilih, act) {
   return Object.entries(EMOSI).map(([k, e]) => `<button class="emo ${e.nada}${pilih === k ? ' on' : ''}" data-act="${act}" data-e="${k}"><span aria-hidden="true">${e.ikon}</span>${e.label}</button>`).join('');
@@ -387,7 +387,7 @@ function vMuhasabah(k, d) {
   const M = S.draf && S.draf.m ? S.draf.m : {};
   const fik = S.fikiran.filter(f => !f.selesai);
   const belum = d.tugas.filter(t => t.status === 'baru' || t.status === 'jalan').length;
-  const medan = (id, label, min, ph) => `<label class="l" for="m_${id}">${label} <small>(min ${min})</small></label><textarea id="m_${id}" data-f="m" data-id="${id}" data-min="${min}" placeholder="${ph}" rows="2">${esc(M[id] || '')}</textarea><div class="kira${(M[id] || '').trim().length >= min ? ' ok' : ''}" data-kira="m${id}">${(M[id] || '').trim().length}/${min}</div>`;
+  const medan = (id, label, min, ph) => `<label class="l" for="m_${id}">${label} <small>(min ${min})</small></label><textarea autocapitalize="sentences" id="m_${id}" data-f="m" data-id="${id}" data-min="${min}" placeholder="${ph}" rows="2">${esc(M[id] || '')}</textarea><div class="kira${(M[id] || '').trim().length >= min ? ' ok' : ''}" data-kira="m${id}">${(M[id] || '').trim().length}/${min}</div>`;
   h += `<div class="kad">${belum ? `<div class="kad tipis amaran" style="margin-bottom:12px"><p class="kecil"><b>${belum} tugasan belum siap.</b> Menutup hari sekarang menjadikannya hutang esok dan hari ini GAGAL.</p></div>` : ''}
     <label class="l">Emosi sepanjang hari <small>(pilih semua yang benar)</small></label><div class="emosi-grid">${Object.entries(EMOSI).map(([e, x]) => `<button class="emo ${x.nada}${(M.emosi || []).includes(e) ? ' on' : ''}" data-act="mEmosi" data-e="${e}"><span aria-hidden="true">${x.ikon}</span>${x.label}</button>`).join('')}</div>
     <label class="l" for="m_skor">Skor diri hari ini: <b class="m" id="skorTeks">${M.skor || 5}</b>/10</label><input id="m_skor" type="range" min="1" max="10" value="${M.skor || 5}" data-f="m" data-id="skor" style="width:100%;accent-color:var(--ink)">
@@ -550,7 +550,7 @@ function renderFokus() {
     const I = INTERVENSI[a.iv];
     h = `<h2 style="margin-top:28px">${esc(EMOSI[a.emosi].label)} · ${esc(I.tajuk)}</h2><p style="margin-top:8px">${esc(I.arahan)}</p>`;
     if (I.jenis === 'masa') h += `<div class="nafas" aria-hidden="true">${a.iv === 'nafas' ? 'nafas' : ''}</div><p class="m" style="text-align:center;font-size:30px" id="ivBaki">${a.ivBaki}s</p><p class="redup kecil" style="text-align:center">Kiraan berhenti jika kau keluar dari app.</p>`;
-    else h += `<label class="l" for="ivTeks">${esc(I.soalan)}</label><textarea id="ivTeks" data-f="ivTeks" placeholder="${esc(I.contoh)}">${esc(a.ivTeks || '')}</textarea>${t.niat && a.iv === 'makna' ? `<p class="kecil redup" style="margin-top:6px">Niat pagi tadi: ${esc(t.niat)}</p>` : ''}`;
+    else h += `<label class="l" for="ivTeks">${esc(I.soalan)}</label><textarea autocapitalize="sentences" id="ivTeks" data-f="ivTeks" placeholder="${esc(I.contoh)}">${esc(a.ivTeks || '')}</textarea>${t.niat && a.iv === 'makna' ? `<p class="kecil redup" style="margin-top:6px">Niat pagi tadi: ${esc(t.niat)}</p>` : ''}`;
     const boleh = I.jenis === 'masa' ? a.ivBaki <= 0 : (a.ivTeks || '').trim().length >= 8;
     h += `<button class="btn besar penuh" id="ivMula" style="margin-top:18px" data-act="ivMula" ${boleh ? '' : 'disabled'}>Mula blok ${blokMin(t.kelas)} minit</button>`;
   } else if (a.fasa === 'fokus') {
@@ -559,7 +559,7 @@ function renderFokus() {
       <div class="ganggu"><span class="${g ? 'merah' : ''}">gangguan <b>${g}/${HAD_GANGGU}</b></span><span>${lebih ? '<b style="color:var(--tegas)">blok tidak sah</b>' : 'blok sah'}</span><span>emosi <b>${esc(EMOSI[a.emosi] ? EMOSI[a.emosi].label : '—')}</b></span></div>`;
     if (a.jeda) h += `<button class="btn besar penuh" data-act="sambungJeda">Sambung fokus</button>`;
     else h += `<div class="butang-baris" style="justify-content:center"><button class="btn garis" data-act="dorongan">Tergoda?</button><button class="btn garis" data-act="jedaPendek" ${a.jedaPendek ? 'disabled' : ''}>Jeda 3 min</button><button class="btn garis" data-act="jedaSolat">Jeda solat</button></div>
-      <div class="fikiran"><input type="text" id="fikiranTeks" placeholder="Fikiran mengganggu? Tulis, simpan, sambung." maxlength="140"><button class="btn garis" data-act="simpanFikiran">Simpan</button></div>
+      <div class="fikiran"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="fikiranTeks" placeholder="Fikiran mengganggu? Tulis, simpan, sambung." maxlength="140"><button class="btn garis" data-act="simpanFikiran">Simpan</button></div>
       <div style="margin-top:auto;padding-top:24px"><button class="btn penuh" data-act="siapAwal">Sudah siap ikut takrif</button>${htmlKeluarFokus(t, true)}</div>`;
   } else if (a.fasa === 'tamat') {
     h = `<h2 style="margin-top:28px">Blok tamat</h2><p style="margin-top:6px">Rasa selepas blok ini?</p><div class="emosi-grid" style="margin-top:12px">${htmlEmosiGrid(a.emosiSelepas, 'emosiSelepas')}</div>
@@ -570,7 +570,7 @@ function renderFokus() {
       <button class="btn besar penuh" style="margin-top:18px" data-act="sambungRehat" id="btnSambungRehat">Sambung blok seterusnya</button><div style="margin-top:12px">${htmlKeluarFokus(t, false)}</div>`;
   } else if (a.fasa === 'siap') {
     h = `<h2 style="margin-top:28px">Bukti siap</h2><p class="kecil redup" style="margin-top:4px">Siap tanpa bukti hanyalah perasaan. Tulis apa yang benar-benar siap: fail, bilangan, pautan.</p>
-      <textarea id="bukti" style="margin-top:12px" rows="3" placeholder="cth. Draf bab 2 (2,400 patah perkataan) disimpan di Drive, 6 rujukan Shamela"></textarea>
+      <textarea autocapitalize="sentences" id="bukti" style="margin-top:12px" rows="3" placeholder="cth. Draf bab 2 (2,400 patah perkataan) disimpan di Drive, 6 rujukan Shamela"></textarea>
       <label class="semak" style="border:0"><input type="checkbox" id="sahTakrif"><div><div class="tj">Aku sahkan ia siap ikut takrif</div><div class="ds">${esc(t.takrif)}</div></div></label>
       <button class="btn besar penuh tahan" data-tahan="1500" data-act="sahkanSiap">Tahan untuk sahkan siap</button>
       <button class="btn teks" style="margin-top:10px" data-act="belumSiap">Sebenarnya belum siap</button>`;
@@ -619,7 +619,7 @@ function dialogLepas(id) {
   const { t } = cariTugas(id); if (!t) return;
   bukaDialog(`<h2>Lepaskan tugasan?</h2><p class="kecil">${esc(t.tajuk)}</p>
     <div class="kad tipis amaran" style="margin-top:12px"><ul class="peraturan" style="margin:0"><li>Hari ini menjadi GAGAL.</li><li>Streak kembali kepada 0.</li><li>Tugasan masuk Kubur Tugasan bersama sebab kau, untuk dibaca semula.</li></ul></div>
-    <label class="l" for="sebabLepas">Sebab sebenar <small>(min 30 aksara, jujur)</small></label><textarea id="sebabLepas" data-f="sebabLepas" rows="3" placeholder="Bukan 'tiada masa'. Apa sebenarnya?"></textarea><div class="kira" data-kira="sebabLepas">0/30</div>
+    <label class="l" for="sebabLepas">Sebab sebenar <small>(min 30 aksara, jujur)</small></label><textarea autocapitalize="sentences" id="sebabLepas" data-f="sebabLepas" rows="3" placeholder="Bukan 'tiada masa'. Apa sebenarnya?"></textarea><div class="kira" data-kira="sebabLepas">0/30</div>
     <div class="butang-baris" style="margin-top:14px"><button class="btn garis" data-act="tutupDialog">Kembali kerja</button><button class="btn merah tahan" data-tahan="5000" data-act="sahLepas" data-id="${id}" id="btnLepas" disabled>Tahan 5 saat untuk lepaskan</button></div>`);
 }
 function sahLepas(id) {
@@ -647,7 +647,7 @@ function sahTangguh() {
 function dialogBonus() {
   bukaDialog(`<h2>Tugasan bonus</h2><p class="kecil redup">Selepas ditambah, ia terikat sama seperti ikrar: mesti siap, atau hari gagal.</p>
     <label class="l" for="bonusPilih">Tugasan</label><select id="bonusPilih">${SUSUNAN_KELAS.map(c => `<optgroup label="${KELAS[c].nama} · ${KELAS[c].model}">${S.pustaka.filter(p => p.kelas === c).map(p => `<option value="${p.id}">${esc(p.tajuk)}</option>`).join('')}</optgroup>`).join('')}</select>
-    <label class="l" for="bonusTakrif">Siap bermaksud <small>(min 10)</small></label><input type="text" id="bonusTakrif" maxlength="140">
+    <label class="l" for="bonusTakrif">Siap bermaksud <small>(min 10)</small></label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="bonusTakrif" maxlength="140">
     <div class="butang-baris" style="margin-top:14px"><button class="btn garis" data-act="tutupDialog">Batal</button><button class="btn tahan" data-tahan="1500" data-act="sahBonus">Tahan untuk ikrar bonus</button></div>`);
 }
 function sahBonus() {
@@ -671,12 +671,12 @@ function vMinimalis() {
   h += `<p class="kecil redup" style="margin-top:-4px">Kurang 60% menjadikan hari SEPARA walaupun semua tugasan siap.</p>`;
   const bulan = k.slice(0, 7), keluarBulan = S.keluar.filter(x => kunciHari(x.pada).startsWith(bulan)).length;
   h += `<div class="bah"><h2>Barang keluar</h2><small>${keluarBulan} bulan ini · ${S.keluar.length} jumlah</small></div>
-    <div class="kad"><div class="baris"><input type="text" id="keluarNama" placeholder="Apa yang keluar hari ini?" maxlength="80"><select id="keluarCara" style="width:auto"><option>Sedekah</option><option>Buang</option><option>Jual</option><option>Kitar semula</option></select></div><button class="btn" style="margin-top:8px" data-act="tambahKeluar">Catat</button>
+    <div class="kad"><div class="baris"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="keluarNama" placeholder="Apa yang keluar hari ini?" maxlength="80"><select id="keluarCara" style="width:auto"><option>Sedekah</option><option>Buang</option><option>Jual</option><option>Kitar semula</option></select></div><button class="btn" style="margin-top:8px" data-act="tambahKeluar">Catat</button>
     ${S.keluar.length ? `<ul class="senarai" style="margin-top:12px">${S.keluar.slice(-6).reverse().map(x => `<li class="baris jarak"><span>${esc(x.nama)}</span><span class="redup m kecil">${esc(x.cara)} · ${esc(labelTarikh(kunciHari(x.pada)))}</span></li>`).join('')}</ul>` : ''}</div>`;
   const jimat = S.tunggu.filter(x => x.status === 'batal').reduce((a, x) => a + (Number(x.harga) || 0), 0);
   h += `<div class="bah"><h2>Senarai tunggu 30 hari</h2><small>jimat RM${jimat.toFixed(2)}</small></div>
     <div class="kad"><p class="kecil redup">Mahu beli sesuatu? Tulis di sini. Butang beli hanya terbuka selepas 30 hari. Kebanyakan keinginan mati sebelum itu.</p>
-    <div class="baris" style="margin-top:10px"><input type="text" id="tungguNama" placeholder="Barang" maxlength="80"><input type="number" id="tungguHarga" placeholder="RM" min="0" step="0.01" style="width:110px"></div><button class="btn" style="margin-top:8px" data-act="tambahTunggu">Masuk senarai</button>
+    <div class="baris" style="margin-top:10px"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="tungguNama" placeholder="Barang" maxlength="80"><input type="number" id="tungguHarga" placeholder="RM" min="0" step="0.01" style="width:110px"></div><button class="btn" style="margin-top:8px" data-act="tambahTunggu">Masuk senarai</button>
     <ul class="senarai" style="margin-top:12px">${S.tunggu.filter(x => !x.status).map(x => {
       const hari = Math.floor((Date.now() - x.pada) / 864e5), boleh = hari >= 30;
       return `<li><div class="baris jarak"><b>${esc(x.nama)}</b><span class="m kecil">RM${(Number(x.harga) || 0).toFixed(2)}</span></div><div class="progres"><i style="width:${Math.min(100, hari / 30 * 100)}%"></i></div><div class="baris jarak" style="margin-top:6px"><span class="redup kecil m">hari ${Math.min(hari, 30)}/30</span><span class="butang-baris"><button class="btn teks" data-act="tungguBatal" data-id="${x.id}">Tak jadi</button><button class="btn teks" data-act="tungguBeli" data-id="${x.id}" ${boleh ? '' : 'disabled'}>Beli</button></span></div></li>`;
@@ -759,11 +759,11 @@ function vTetapan() {
     <p class="kecil redup" style="margin-top:10px">Hari bermula jam 4:00 pagi. Kerja selepas tengah malam kekal dalam hari yang sama.</p></div>`;
   h += `<div class="bah"><h2>Blok fokus</h2><small>minit</small></div><div class="kad">${SUSUNAN_KELAS.map(c => `<div class="baris" style="margin-top:8px"><div style="flex:1">${htmlKelas(c)}<div class="kecil redup">${KELAS[c].ringkas}</div></div><input type="number" min="10" max="120" style="width:80px" data-f="blok" data-id="${c}" value="${blokMin(c)}" aria-label="Blok ${KELAS[c].nama}"><input type="number" min="3" max="30" style="width:70px" data-f="rehat" data-id="${c}" value="${rehatMin(c)}" aria-label="Rehat ${KELAS[c].nama}"></div>`).join('')}<p class="kecil redup" style="margin-top:8px">Kiri: blok fokus. Kanan: rehat. Blok 10–120, rehat 3–30.</p></div>`;
   h += `<div class="bah"><h2>Pustaka tugasan</h2><small>${S.pustaka.length}/30</small></div><div class="kad">${SUSUNAN_KELAS.map(c => `<div class="kumpulan">${htmlKelas(c)}${S.pustaka.filter(p => p.kelas === c).map(p => `<div class="baris jarak" style="padding:8px 0;border-top:1px solid var(--garis)"><span class="kecil">${esc(p.tajuk)}</span><button class="btn teks merah" data-act="buangPustaka" data-id="${p.id}" aria-label="Buang ${esc(p.tajuk)}">Buang</button></div>`).join('')}</div>`).join('')}
-    <div class="baris" style="margin-top:14px"><input type="text" id="pustakaTajuk" placeholder="Tugasan baharu" maxlength="90"><select id="pustakaKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}">${KELAS[c].nama}</option>`).join('')}</select></div><button class="btn garis" style="margin-top:8px" data-act="tambahPustaka" ${S.pustaka.length >= 30 ? 'disabled' : ''}>Tambah</button></div>`;
-  h += `<div class="bah"><h2>Kebiasaan minimalis</h2><small>had 5</small></div><div class="kad">${T.kebiasaan.map((x, i) => `<input type="text" style="margin-top:${i ? 8 : 0}px" data-f="kebiasaan" data-i="${i}" value="${esc(x)}" maxlength="80" aria-label="Kebiasaan ${i + 1}">`).join('')}<p class="kecil redup" style="margin-top:8px">Kosongkan untuk buang. Perubahan berkuat kuasa serta-merta.</p></div>`;
+    <div class="baris" style="margin-top:14px"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="pustakaTajuk" placeholder="Tugasan baharu" maxlength="90"><select id="pustakaKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}">${KELAS[c].nama}</option>`).join('')}</select></div><button class="btn garis" style="margin-top:8px" data-act="tambahPustaka" ${S.pustaka.length >= 30 ? 'disabled' : ''}>Tambah</button></div>`;
+  h += `<div class="bah"><h2>Kebiasaan minimalis</h2><small>had 5</small></div><div class="kad">${T.kebiasaan.map((x, i) => `<input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" style="margin-top:${i ? 8 : 0}px" data-f="kebiasaan" data-i="${i}" value="${esc(x)}" maxlength="80" aria-label="Kebiasaan ${i + 1}">`).join('')}<p class="kecil redup" style="margin-top:8px">Kosongkan untuk buang. Perubahan berkuat kuasa serta-merta.</p></div>`;
   h += `<div class="bah"><h2>Peringatan & paparan</h2></div><div class="kad"><div class="butang-baris"><button class="btn garis" data-act="notifikasi">Benarkan notifikasi tamat blok</button><button class="btn garis" data-act="tema">Tema: ${document.documentElement.dataset.theme || 'ikut peranti'}</button></div></div>`;
   h += `<div class="bah"><h2>Sandaran</h2></div><div class="kad"><p class="kecil redup">Data disimpan dalam peranti ini sahaja. Muat turun sandaran setiap minggu.</p><div class="butang-baris" style="margin-top:10px"><button class="btn garis" data-act="eksport">Muat turun sandaran</button><label class="btn garis" for="importFail">Pulihkan<input type="file" id="importFail" accept="application/json" hidden></label></div></div>`;
-  h += `<div class="bah"><h2>Padam semua</h2></div><div class="kad amaran"><label class="l" for="padamTeks">Taip PADAM untuk memadam semua data</label><input type="text" id="padamTeks" autocomplete="off"><button class="btn merah tahan" style="margin-top:10px" data-tahan="3000" data-act="padam">Tahan untuk padam</button></div>`;
+  h += `<div class="bah"><h2>Padam semua</h2></div><div class="kad amaran"><label class="l" for="padamTeks">Taip PADAM untuk memadam semua data</label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="padamTeks" autocomplete="off"><button class="btn merah tahan" style="margin-top:10px" data-tahan="3000" data-act="padam">Tahan untuk padam</button></div>`;
   return h;
 }
 
@@ -867,6 +867,15 @@ document.addEventListener('click', e => {
 $('#dlg').addEventListener('click', e => { if (e.target.id === 'dlg') tutupDialog(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#dlg').hidden) tutupDialog(); });
 
+/* Menaip: sembunyikan bar tab, bawa ruangan ke tengah skrin selepas papan kekunci terbuka, dan jangan lukis semula paparan semasa menaip. */
+const bolehTaip = el => el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|number|search|time)$/.test(el.type)));
+document.addEventListener('focusin', e => {
+  if (!bolehTaip(e.target)) return;
+  document.body.classList.add('menaip');
+  const el = e.target; setTimeout(() => { if (document.activeElement === el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
+});
+document.addEventListener('focusout', () => setTimeout(() => { if (!bolehTaip(document.activeElement)) document.body.classList.remove('menaip'); }, 50));
+function sedangMenaip() { return bolehTaip(document.activeElement); }
 document.addEventListener('input', e => {
   const el = e.target, f = el.dataset && el.dataset.f; if (!f) return;
   const kemasKira = (key, n, min) => { const k = document.querySelector(`[data-kira="${key}"]`); if (k) { k.textContent = `${n}/${min}`; k.classList.toggle('ok', n >= min); } };
@@ -915,7 +924,7 @@ document.addEventListener('visibilitychange', () => {
   else {
     if (a && a.fasa === 'fokus' && a.keluarPada) { const ms = Date.now() - a.keluarPada; a.keluarPada = null; if (ms > 2000) catatGanggu(ms, 'Kau keluar dari app'); else simpan(); }
     if (a) mintaKunciSkrin();
-    if (kunciHari() !== render.hari) render();
+    if (kunciHari() !== render.hari && !sedangMenaip()) render();
   }
 });
 
@@ -924,7 +933,7 @@ setInterval(() => {
   const a = S.aktif;
   if (a && a.fasa === 'fokus' && !document.hidden) { a.denyut = Date.now(); if (Date.now() % 5000 < 1000) simpan(); }
   detikFokus();
-  if (kunciHari() !== render.hari) { render.hari = kunciHari(); render(); }
+  if (kunciHari() !== render.hari && !sedangMenaip()) { render.hari = kunciHari(); render(); }
 }, 1000);
 
 /* Mula */
