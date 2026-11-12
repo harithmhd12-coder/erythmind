@@ -192,6 +192,122 @@ function htmlMurabbi() {
   return `<div class="kad murabbi ${st}">${svgMuka(st)}<div><div class="nama">Murabbi</div><div class="kata">${esc(kataMurabbi(st))}</div><div class="rasa">rasa: ${LABEL_RASA[st]}</div></div></div>`;
 }
 
+/* ---------- Grafik: ikon, cincin, gumpal emosi, carta fokus ---------- */
+const IKON = {
+  rumah: '<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>',
+  daun: '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14"/><path d="M5 19l8-8"/>',
+  carta: '<path d="M5 19v-6M10 19V6M15 19v-9M20 19V9"/>',
+  laras: '<path d="M4 7h10M18 7h2M4 17h3M11 17h9"/><circle cx="16" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  kilat: '<path d="M13 3 6 13h5l-1 8 7-10h-5z"/>',
+  jam: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+  sasaran: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 12h.01"/>',
+  emosi: '<circle cx="12" cy="12" r="8"/><path d="M9 14.5c1.6 1.4 4.4 1.4 6 0M9.5 10h.01M14.5 10h.01"/>',
+  maju: '<path d="M7 7l5 5-5 5M13 7l5 5-5 5"/>',
+  kotak: '<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>',
+  pasir: '<path d="M7 4h10M7 20h10M8 4c0 4 8 4 8 8s-8 4-8 8M16 4c0 4-8 4-8 8s8 4 8 8"/>',
+  fikiran: '<path d="M5 6h14v10H10l-5 4z"/>',
+  semak: '<path d="M5 12l4 4 10-10"/>',
+  kunci: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  bulan: '<path d="M18 15A7 7 0 0 1 9 6a7 7 0 1 0 9 9z"/>'
+};
+const ikon = n => `<svg class="ik" viewBox="0 0 24 24" aria-hidden="true">${IKON[n]}</svg>`;
+const NAV = { hari: ['rumah', 'Hari Ini'], minimalis: ['daun', 'Minimalis'], rekod: ['carta', 'Rekod'], tetapan: ['laras', 'Tetapan'] };
+function renderNav() { document.querySelectorAll('#tab button').forEach(b => { const [i, l] = NAV[b.dataset.tab]; b.innerHTML = `${ikon(i)}<span class="nav-l">${l}</span>`; b.title = l; }); }
+
+/* Cincin dua warna: hijau = nilai, lime = baki. */
+function cincin(f) {
+  const r = 42, C = 2 * Math.PI * r; f = Math.max(0, Math.min(1, f || 0));
+  const g = f > 0 && f < 1 ? 20 : 0;
+  const a1 = Math.max(0.01, f * C - g), a2 = Math.max(0.01, (1 - f) * C - g);
+  return `<svg viewBox="0 0 100 100"><g transform="rotate(-90 50 50)">${f < 1 ? `<circle class="c-lime" cx="50" cy="50" r="${r}" stroke-dasharray="${a2} ${C}" stroke-dashoffset="${-(f * C + g / 2)}"/>` : ''}${f > 0 ? `<circle class="c-hutan" cx="50" cy="50" r="${r}" stroke-dasharray="${a1} ${C}" stroke-dashoffset="${-g / 2}"/>` : ''}</g></svg>`;
+}
+/* Gumpal emosi: makin bergelora bila emosi negatif dan tenaga rendah. */
+function gumpal(amp, k, fasa, R = 36) {
+  let d = '';
+  for (let i = 0; i <= 120; i++) { const t = i / 120 * Math.PI * 2, r = R * (1 + amp * Math.sin(k * t + fasa)); d += (i ? 'L' : 'M') + (50 + r * Math.cos(t)).toFixed(2) + ' ' + (50 + r * Math.sin(t)).toFixed(2); }
+  return d + 'Z';
+}
+function emosiKini(d) {
+  if (!d) return null;
+  const c = (d.checkin || []).slice(-1)[0], s = d.sesi.slice(-1)[0];
+  const calon = [c && { e: c.emosi, pada: c.pada }, s && s.emosiSelepas && { e: s.emosiSelepas, pada: s.tamat }, d.ikrar && { e: d.ikrar.emosi, pada: d.ikrar.pada }].filter(Boolean).sort((a, b) => b.pada - a.pada);
+  return calon[0] || null;
+}
+function htmlEmosiKad(d) {
+  const e = emosiKini(d), E = e && EMOSI[e.e], ten = d && d.ikrar ? d.ikrar.tenaga : 3;
+  const neg = E && E.nada === 'negatif';
+  const amp = (neg ? 0.09 : 0.03) + (5 - ten) * 0.008;
+  return `<button class="kad-mini${neg ? ' negatif' : ''}" data-act="checkin" aria-label="Check-in emosi sekarang"><span class="kad-tajuk">${ikon('emosi')}Emosi</span>
+    <div class="viz"><svg viewBox="0 0 100 100"><path class="b-lime" d="${gumpal(amp, 6, 1.2)}"/><path class="b-hutan" d="${gumpal(amp, 5, 0)}"/></svg><div class="tengah"><b class="label">${E ? esc(E.label) : '—'}</b><small>tenaga ${ten}/5</small></div></div>
+    <div class="bawah">${E ? `${jam(e.pada)} · tekan untuk check-in` : 'Tekan untuk check-in'}</div></button>`;
+}
+function htmlDisiplinKad() {
+  const ix = indeks(), st = streak();
+  return `<button class="kad-mini" data-act="keTab" data-tab="rekod" aria-label="Indeks disiplin ${ix ?? 'tiada'}; buka rekod"><span class="kad-tajuk">${ikon('sasaran')}Disiplin</span>
+    <div class="viz">${cincin((ix ?? 0) / 100)}<div class="tengah"><b>${ix ?? '—'}</b><small>indeks 14 hari</small></div></div>
+    <div class="bawah">streak ${st} hari · terbaik ${streakTerbaik()}</div></button>`;
+}
+let titikPilih = 6;
+const HARI_PENDEK = ['Ahd', 'Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab'];
+function minitSah(k) { const d = S.hari[k]; return d ? d.sesi.filter(s => s.sah).reduce((a, s) => a + s.minit, 0) : 0; }
+function htmlCartaFokus() {
+  const kini = hariIni(), data = [...Array(7)].map((_, i) => { const k = tambahHari(kini, i - 6); return { k, v: minitSah(k) }; });
+  const W = 320, top = 40, H = 128, bawah = 104, kiri = 16, kanan = W - 16;
+  const maks = Math.max(60, ...data.map(x => x.v));
+  const X = i => kiri + i * (kanan - kiri) / 6, Y = v => top + (bawah - top) * (1 - v / maks);
+  const P = data.map((x, i) => [X(i), Y(x.v)]);
+  let path = `M${P[0][0]} ${P[0][1]}`;
+  for (let i = 0; i < 6; i++) {
+    const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2;
+    path += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0]} ${p2[1]}`;
+  }
+  const sel = Math.max(0, Math.min(6, titikPilih)), ps = P[sel], jumlah = data.reduce((a, x) => a + x.v, 0);
+  const px = Math.max(30, Math.min(W - 30, ps[0])), py = Math.max(2, ps[1] - 40);
+  return `<div class="carta"><div class="kad-tajuk">${ikon('kilat')}Fokus sah<small>${fmtMinit(jumlah)} · 7 hari</small></div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Minit fokus sah 7 hari: ${data.map(x => `${HARI_PENDEK[tarikhDari(x.k).getDay()]} ${x.v} minit`).join(', ')}">
+    <defs><linearGradient id="gradKawasan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe95a" stop-opacity=".28"/><stop offset="1" stop-color="#dfe95a" stop-opacity="0"/></linearGradient></defs>
+    ${P.map(p => `<line class="grid" x1="${p[0]}" x2="${p[0]}" y1="${top - 6}" y2="${bawah}"/>`).join('')}
+    <path class="kawasan" d="${path} L${P[6][0]} ${bawah} L${P[0][0]} ${bawah}Z"/><path class="garis-c" d="${path}"/>
+    ${P.map((p, i) => `<circle class="titik${i === sel ? ' pilih' : ''}" cx="${p[0]}" cy="${p[1]}" r="${i === sel ? 5 : 3.5}"/>`).join('')}
+    <rect class="pil-c" x="${px - 30}" y="${py}" width="60" height="32" rx="12"/><text class="pil-t" x="${px}" y="${py + 15}">${fmtMinit(data[sel].v)}</text><text class="pil-s" x="${px}" y="${py + 27}">${sel === 6 ? 'hari ini' : 'sah'}</text>
+    ${data.map((x, i) => `<text class="lbl${i === 6 ? ' kini' : ''}" x="${X(i)}" y="${H - 6}">${HARI_PENDEK[tarikhDari(x.k).getDay()]}</text>`).join('')}
+    ${data.map((x, i) => `<rect class="kena" data-act="titik" data-i="${i}" x="${X(i) - 22}" y="0" width="44" height="${H}"/>`).join('')}
+    </svg></div>`;
+}
+function htmlPintasan(k) {
+  const d = S.hari[k] || { kebiasaan: {} }, n = Object.values(d.kebiasaan || {}).filter(Boolean).length;
+  const tunggu = S.tunggu.filter(x => !x.status).length, fik = S.fikiran.filter(f => !f.selesai).length;
+  const bulan = k.slice(0, 7), keluar = S.keluar.filter(x => kunciHari(x.pada).startsWith(bulan)).length;
+  return `<div class="pintasan">
+    <button class="jubin lime" data-act="keTab" data-tab="minimalis">${ikon('semak')}<b>${n}/${S.tetapan.kebiasaan.length}</b><span>Kebiasaan minimalis</span></button>
+    <button class="jubin krim" data-act="keTab" data-tab="minimalis">${ikon('kotak')}<b>${keluar}</b><span>Barang keluar bulan ini</span></button>
+    <button class="jubin daun" data-act="keTab" data-tab="minimalis">${ikon('pasir')}<b>${tunggu}</b><span>Senarai tunggu 30 hari</span></button>
+    <button class="jubin hutan" data-act="lihatFikiran">${ikon('fikiran')}<b>${fik}</b><span>Peti fikiran</span></button></div>`;
+}
+function htmlHero(k, d) {
+  if (!d || !d.ikrar) {
+    const had = minitDari(S.tetapan.ikrarSebelum), kini = minitHari(), beza = had - kini;
+    return `<div class="hero"><div class="hero-atas"><span class="pil">Ikrar pagi</span><span class="pil ${beza < 0 ? 'merah' : 'krim'}">${beza < 0 ? `lewat ${fmtMinit(-beza)}` : `baki ${fmtMinit(beza)}`}</span></div>
+      <h1>Pilih paling banyak 3.<br>Siapkan semuanya.</h1><p>Had ikrar ${esc(S.tetapan.ikrarSebelum)}. Selepas ikrar, pelan dikunci sampai hari ditutup.</p>
+      <button class="btn-hero" data-act="keIkrar">Mula ikrar ${ikon('maju')}</button></div>`;
+  }
+  const n = d.tugas.length, siap = d.tugas.filter(t => t.status === 'siap').length, semasa = tugasSemasa(d);
+  const bar = `<div class="hero-bar"><i style="width:${n ? siap / n * 100 : 0}%"></i></div>`;
+  if (d.muhasabah) {
+    const r = keputusan(k);
+    return `<div class="hero"><div class="hero-atas"><span class="pil ${r === 'gagal' ? 'merah' : ''}">Hari ditutup</span><div class="nisbah">${siap}/${n}<small>siap</small></div></div>
+      <h1>${{ lulus: 'LULUS. Alhamdulillah.', separa: 'SEPARA. Siap, belum sempurna.', gagal: 'GAGAL. Esok bayar hutang dahulu.' }[r] || r}</h1><p>${esc(d.muhasabah.ajar)}</p>
+      <div class="hero-meta"><span>${ikon('bulan')}Langkah pertama esok: ${esc(d.muhasabah.esok)}</span></div></div>`;
+  }
+  if (!semasa) return `<div class="hero"><div class="hero-atas"><span class="pil">Semua siap</span><div class="nisbah">${siap}/${n}<small>siap</small></div></div>
+      <h1>Ikrar ditunaikan.</h1><p>Tutup hari dengan muhasabah. Tanpa muhasabah, hari ini tetap gagal.</p><div class="hero-bawah">${bar}<button class="hero-btn isi" data-act="keMuhasabah" aria-label="Pergi ke muhasabah">${ikon('maju')}</button></div></div>`;
+  return `<div class="hero"><div class="hero-atas"><span class="pil">${semasa.hutangDari ? 'Hutang · ' : 'Semasa · '}${KELAS[semasa.kelas].nama}</span><div class="nisbah">${siap}/${n}<small>siap hari ini</small></div></div>
+    <h1>${esc(semasa.tajuk)}</h1><p><b style="color:#fffbe0;font-weight:600">Siap bermaksud:</b> ${esc(semasa.takrif)}</p>
+    <div class="hero-meta"><span>${ikon('kilat')}${semasa.blok} blok</span><span>${ikon('jam')}${fmtMinit(semasa.minit)} sah</span><span>${ikon('sasaran')}${KELAS[semasa.kelas].model} · ${blokMin(semasa.kelas)} min</span></div>
+    <div class="hero-bawah">${bar}<button class="hero-btn isi" data-act="mulaFokus" data-id="${semasa.id}" aria-label="${semasa.status === 'jalan' ? 'Sambung fokus' : 'Mula fokus'}">${ikon('maju')}</button></div>
+    <button class="lepas" data-act="lepas" data-id="${semasa.id}">Lepaskan tugasan ini</button></div>`;
+}
+
 /* ---------- UI asas ---------- */
 let tab = 'hari';
 let toastT;
@@ -222,7 +338,10 @@ function renderKepala() {
   const k = hariIni();
   $('#tarikh').textContent = labelTarikh(k).toUpperCase();
   const st = streak(), ix = indeks(), hutang = hutangTertunggak().length;
-  $('#cip').innerHTML = `<span class="cip" title="Hari lulus berturut-turut">streak <b>${st}</b></span><span class="cip${ix !== null && ix < 60 ? ' merah' : ''}" title="Indeks disiplin 14 hari">indeks <b>${ix ?? '—'}</b></span>${hutang ? `<span class="cip merah">hutang <b>${hutang}</b></span>` : ''}`;
+  const rasa = keadaanMurabbi();
+  $('#tarikh').textContent = labelTarikh(k);
+  $('#cip').innerHTML = `${hutang ? `<span class="cip merah">hutang <b>${hutang}</b></span>` : ''}<span class="cip" title="Hari lulus berturut-turut">streak <b>${st}</b></span><button class="avatar ${rasa}" data-act="keTab" data-tab="hari" title="Murabbi: ${LABEL_RASA[rasa]}" aria-label="Murabbi, rasa ${LABEL_RASA[rasa]}">${svgMuka(rasa)}</button>`;
+  void ix;
 }
 function render() {
   gulung();
@@ -248,9 +367,13 @@ function vHari() {
     h += vKebiasaanRingkas(k);
     return h + htmlAyatHari();
   }
-  if (!d || !d.ikrar) return h + vIkrar() + htmlAyatHari();
+  if (!d || !d.ikrar) return htmlHero(k, d) + h + `<div class="dua">${htmlDisiplinKad()}${htmlEmosiKad(d)}</div>` + `<div id="ikrarBorang"></div>` + vIkrar() + htmlAyatHari();
+  h = htmlHero(k, d) + h;
+  h += `<div class="dua">${htmlDisiplinKad()}${htmlEmosiKad(d)}</div>`;
+  h += htmlCartaFokus();
   h += vPelan(k, d);
-  h += vMuhasabah(k, d);
+  h += `<div class="bah"><h2>Pintasan</h2></div>` + htmlPintasan(k);
+  h += `<div id="muhasabahSeksyen"></div>` + vMuhasabah(k, d);
   return h + htmlAyatHari();
 }
 
@@ -276,7 +399,7 @@ function vIkrar() {
     for (const { dari, t } of hutang) {
       const v = D.hutang[t.id] ?? t.takrif;
       h += `<div class="pilih-tugas"><input type="checkbox" checked disabled aria-label="Wajib"><div class="isi">${htmlKelas(t.kelas)} <span class="lencana merah">dari ${esc(labelTarikh(dari))}</span><div class="tj" style="margin-top:4px">${esc(t.tajuk)}</div>
-        <label class="l">Takrif siap hari ini</label><input type="text" data-f="hutangTakrif" data-id="${t.id}" value="${esc(v)}" maxlength="140"></div></div>`;
+        <label class="l">Takrif siap hari ini</label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" data-f="hutangTakrif" data-id="${t.id}" value="${esc(v)}" maxlength="140"></div></div>`;
     }
     h += `</div>`;
   }
@@ -296,7 +419,7 @@ function vIkrar() {
     h += `<div class="pilih-tugas"><input type="checkbox" checked data-act="drafBuangLuar" data-i="${i}" aria-label="Buang"><div class="isi">${htmlKelas(p.kelas)}<div class="tj" style="margin-top:4px">${esc(p.tajuk)}</div>${htmlInputTakrif('luar', i, p)}</div></div>`;
   });
   if (bakiSlot > 0) h += `<details style="margin-top:14px"><summary class="kecil" style="cursor:pointer">+ Tugasan luar senarai (sekali sahaja)</summary>
-    <div class="baris" style="margin-top:10px"><input type="text" id="luarTajuk" placeholder="Tajuk tugasan" maxlength="90"><select id="luarKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}" ${c === 'berat' && beratAda ? 'disabled' : ''}>${KELAS[c].nama}</option>`).join('')}</select></div>
+    <div class="baris" style="margin-top:10px"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="luarTajuk" placeholder="Tajuk tugasan" maxlength="90"><select id="luarKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}" ${c === 'berat' && beratAda ? 'disabled' : ''}>${KELAS[c].nama}</option>`).join('')}</select></div>
     <button class="btn garis" style="margin-top:8px" data-act="drafTambahLuar">Tambah</button></details>`;
   h += `</div>`;
   const sah = semakIkrar();
@@ -307,8 +430,8 @@ function vIkrar() {
 }
 function htmlInputTakrif(jenis, id, p) {
   const n = (p.takrif || '').trim().length;
-  return `<label class="l">Siap bermaksud <small>(min 10 aksara)</small></label><input type="text" data-f="takrif" data-j="${jenis}" data-id="${id}" value="${esc(p.takrif || '')}" placeholder="cth. Draf bahagian 2 lengkap dengan 5 rujukan" maxlength="140"><div class="kira${n >= 10 ? ' ok' : ''}" data-kira="${jenis}${id}">${n}/10</div>
-    <label class="l">Niat <small>(pilihan)</small></label><input type="text" data-f="niat" data-j="${jenis}" data-id="${id}" value="${esc(p.niat || '')}" placeholder="Untuk siapa kerja ini?" maxlength="120">`;
+  return `<label class="l">Siap bermaksud <small>(min 10 aksara)</small></label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" data-f="takrif" data-j="${jenis}" data-id="${id}" value="${esc(p.takrif || '')}" placeholder="cth. Draf bahagian 2 lengkap dengan 5 rujukan" maxlength="140"><div class="kira${n >= 10 ? ' ok' : ''}" data-kira="${jenis}${id}">${n}/10</div>
+    <label class="l">Niat <small>(pilihan)</small></label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" data-f="niat" data-j="${jenis}" data-id="${id}" value="${esc(p.niat || '')}" placeholder="Untuk siapa kerja ini?" maxlength="120">`;
 }
 function htmlEmosiGrid(pilih, act) {
   return Object.entries(EMOSI).map(([k, e]) => `<button class="emo ${e.nada}${pilih === k ? ' on' : ''}" data-act="${act}" data-e="${k}"><span aria-hidden="true">${e.ikon}</span>${e.label}</button>`).join('');
@@ -348,8 +471,7 @@ function tugasSemasa(d) { return d.tugas.find(t => t.status === 'baru' || t.stat
 function vPelan(k, d) {
   const siap = d.tugas.filter(t => t.status === 'siap').length, n = d.tugas.length, semasa = tugasSemasa(d);
   const minit = d.sesi.filter(s => s.sah).reduce((a, s) => a + s.minit, 0);
-  let h = `<div class="bah"><h2>Ikrar hari ini</h2><small>${siap}/${n} siap · ${fmtMinit(minit)} fokus sah</small></div>`;
-  h += `<div class="progres" style="margin:-4px 0 14px"><i style="width:${n ? siap / n * 100 : 0}%"></i></div>`;
+  let h = `<div class="bah"><h2>Ikrar hari ini</h2><small>${siap}/${n} siap · ${fmtMinit(minit)} sah</small></div>`;
   d.tugas.forEach((t, i) => {
     const kini = semasa && t.id === semasa.id && !d.muhasabah;
     const kunci = (t.status === 'baru' || t.status === 'jalan') && !kini;
@@ -387,7 +509,7 @@ function vMuhasabah(k, d) {
   const M = S.draf && S.draf.m ? S.draf.m : {};
   const fik = S.fikiran.filter(f => !f.selesai);
   const belum = d.tugas.filter(t => t.status === 'baru' || t.status === 'jalan').length;
-  const medan = (id, label, min, ph) => `<label class="l" for="m_${id}">${label} <small>(min ${min})</small></label><textarea id="m_${id}" data-f="m" data-id="${id}" data-min="${min}" placeholder="${ph}" rows="2">${esc(M[id] || '')}</textarea><div class="kira${(M[id] || '').trim().length >= min ? ' ok' : ''}" data-kira="m${id}">${(M[id] || '').trim().length}/${min}</div>`;
+  const medan = (id, label, min, ph) => `<label class="l" for="m_${id}">${label} <small>(min ${min})</small></label><textarea autocapitalize="sentences" id="m_${id}" data-f="m" data-id="${id}" data-min="${min}" placeholder="${ph}" rows="2">${esc(M[id] || '')}</textarea><div class="kira${(M[id] || '').trim().length >= min ? ' ok' : ''}" data-kira="m${id}">${(M[id] || '').trim().length}/${min}</div>`;
   h += `<div class="kad">${belum ? `<div class="kad tipis amaran" style="margin-bottom:12px"><p class="kecil"><b>${belum} tugasan belum siap.</b> Menutup hari sekarang menjadikannya hutang esok dan hari ini GAGAL.</p></div>` : ''}
     <label class="l">Emosi sepanjang hari <small>(pilih semua yang benar)</small></label><div class="emosi-grid">${Object.entries(EMOSI).map(([e, x]) => `<button class="emo ${x.nada}${(M.emosi || []).includes(e) ? ' on' : ''}" data-act="mEmosi" data-e="${e}"><span aria-hidden="true">${x.ikon}</span>${x.label}</button>`).join('')}</div>
     <label class="l" for="m_skor">Skor diri hari ini: <b class="m" id="skorTeks">${M.skor || 5}</b>/10</label><input id="m_skor" type="range" min="1" max="10" value="${M.skor || 5}" data-f="m" data-id="skor" style="width:100%;accent-color:var(--ink)">
@@ -550,7 +672,7 @@ function renderFokus() {
     const I = INTERVENSI[a.iv];
     h = `<h2 style="margin-top:28px">${esc(EMOSI[a.emosi].label)} · ${esc(I.tajuk)}</h2><p style="margin-top:8px">${esc(I.arahan)}</p>`;
     if (I.jenis === 'masa') h += `<div class="nafas" aria-hidden="true">${a.iv === 'nafas' ? 'nafas' : ''}</div><p class="m" style="text-align:center;font-size:30px" id="ivBaki">${a.ivBaki}s</p><p class="redup kecil" style="text-align:center">Kiraan berhenti jika kau keluar dari app.</p>`;
-    else h += `<label class="l" for="ivTeks">${esc(I.soalan)}</label><textarea id="ivTeks" data-f="ivTeks" placeholder="${esc(I.contoh)}">${esc(a.ivTeks || '')}</textarea>${t.niat && a.iv === 'makna' ? `<p class="kecil redup" style="margin-top:6px">Niat pagi tadi: ${esc(t.niat)}</p>` : ''}`;
+    else h += `<label class="l" for="ivTeks">${esc(I.soalan)}</label><textarea autocapitalize="sentences" id="ivTeks" data-f="ivTeks" placeholder="${esc(I.contoh)}">${esc(a.ivTeks || '')}</textarea>${t.niat && a.iv === 'makna' ? `<p class="kecil redup" style="margin-top:6px">Niat pagi tadi: ${esc(t.niat)}</p>` : ''}`;
     const boleh = I.jenis === 'masa' ? a.ivBaki <= 0 : (a.ivTeks || '').trim().length >= 8;
     h += `<button class="btn besar penuh" id="ivMula" style="margin-top:18px" data-act="ivMula" ${boleh ? '' : 'disabled'}>Mula blok ${blokMin(t.kelas)} minit</button>`;
   } else if (a.fasa === 'fokus') {
@@ -559,7 +681,7 @@ function renderFokus() {
       <div class="ganggu"><span class="${g ? 'merah' : ''}">gangguan <b>${g}/${HAD_GANGGU}</b></span><span>${lebih ? '<b style="color:var(--tegas)">blok tidak sah</b>' : 'blok sah'}</span><span>emosi <b>${esc(EMOSI[a.emosi] ? EMOSI[a.emosi].label : '—')}</b></span></div>`;
     if (a.jeda) h += `<button class="btn besar penuh" data-act="sambungJeda">Sambung fokus</button>`;
     else h += `<div class="butang-baris" style="justify-content:center"><button class="btn garis" data-act="dorongan">Tergoda?</button><button class="btn garis" data-act="jedaPendek" ${a.jedaPendek ? 'disabled' : ''}>Jeda 3 min</button><button class="btn garis" data-act="jedaSolat">Jeda solat</button></div>
-      <div class="fikiran"><input type="text" id="fikiranTeks" placeholder="Fikiran mengganggu? Tulis, simpan, sambung." maxlength="140"><button class="btn garis" data-act="simpanFikiran">Simpan</button></div>
+      <div class="fikiran"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="fikiranTeks" placeholder="Fikiran mengganggu? Tulis, simpan, sambung." maxlength="140"><button class="btn garis" data-act="simpanFikiran">Simpan</button></div>
       <div style="margin-top:auto;padding-top:24px"><button class="btn penuh" data-act="siapAwal">Sudah siap ikut takrif</button>${htmlKeluarFokus(t, true)}</div>`;
   } else if (a.fasa === 'tamat') {
     h = `<h2 style="margin-top:28px">Blok tamat</h2><p style="margin-top:6px">Rasa selepas blok ini?</p><div class="emosi-grid" style="margin-top:12px">${htmlEmosiGrid(a.emosiSelepas, 'emosiSelepas')}</div>
@@ -570,7 +692,7 @@ function renderFokus() {
       <button class="btn besar penuh" style="margin-top:18px" data-act="sambungRehat" id="btnSambungRehat">Sambung blok seterusnya</button><div style="margin-top:12px">${htmlKeluarFokus(t, false)}</div>`;
   } else if (a.fasa === 'siap') {
     h = `<h2 style="margin-top:28px">Bukti siap</h2><p class="kecil redup" style="margin-top:4px">Siap tanpa bukti hanyalah perasaan. Tulis apa yang benar-benar siap: fail, bilangan, pautan.</p>
-      <textarea id="bukti" style="margin-top:12px" rows="3" placeholder="cth. Draf bab 2 (2,400 patah perkataan) disimpan di Drive, 6 rujukan Shamela"></textarea>
+      <textarea autocapitalize="sentences" id="bukti" style="margin-top:12px" rows="3" placeholder="cth. Draf bab 2 (2,400 patah perkataan) disimpan di Drive, 6 rujukan Shamela"></textarea>
       <label class="semak" style="border:0"><input type="checkbox" id="sahTakrif"><div><div class="tj">Aku sahkan ia siap ikut takrif</div><div class="ds">${esc(t.takrif)}</div></div></label>
       <button class="btn besar penuh tahan" data-tahan="1500" data-act="sahkanSiap">Tahan untuk sahkan siap</button>
       <button class="btn teks" style="margin-top:10px" data-act="belumSiap">Sebenarnya belum siap</button>`;
@@ -619,7 +741,7 @@ function dialogLepas(id) {
   const { t } = cariTugas(id); if (!t) return;
   bukaDialog(`<h2>Lepaskan tugasan?</h2><p class="kecil">${esc(t.tajuk)}</p>
     <div class="kad tipis amaran" style="margin-top:12px"><ul class="peraturan" style="margin:0"><li>Hari ini menjadi GAGAL.</li><li>Streak kembali kepada 0.</li><li>Tugasan masuk Kubur Tugasan bersama sebab kau, untuk dibaca semula.</li></ul></div>
-    <label class="l" for="sebabLepas">Sebab sebenar <small>(min 30 aksara, jujur)</small></label><textarea id="sebabLepas" data-f="sebabLepas" rows="3" placeholder="Bukan 'tiada masa'. Apa sebenarnya?"></textarea><div class="kira" data-kira="sebabLepas">0/30</div>
+    <label class="l" for="sebabLepas">Sebab sebenar <small>(min 30 aksara, jujur)</small></label><textarea autocapitalize="sentences" id="sebabLepas" data-f="sebabLepas" rows="3" placeholder="Bukan 'tiada masa'. Apa sebenarnya?"></textarea><div class="kira" data-kira="sebabLepas">0/30</div>
     <div class="butang-baris" style="margin-top:14px"><button class="btn garis" data-act="tutupDialog">Kembali kerja</button><button class="btn merah tahan" data-tahan="5000" data-act="sahLepas" data-id="${id}" id="btnLepas" disabled>Tahan 5 saat untuk lepaskan</button></div>`);
 }
 function sahLepas(id) {
@@ -647,7 +769,7 @@ function sahTangguh() {
 function dialogBonus() {
   bukaDialog(`<h2>Tugasan bonus</h2><p class="kecil redup">Selepas ditambah, ia terikat sama seperti ikrar: mesti siap, atau hari gagal.</p>
     <label class="l" for="bonusPilih">Tugasan</label><select id="bonusPilih">${SUSUNAN_KELAS.map(c => `<optgroup label="${KELAS[c].nama} · ${KELAS[c].model}">${S.pustaka.filter(p => p.kelas === c).map(p => `<option value="${p.id}">${esc(p.tajuk)}</option>`).join('')}</optgroup>`).join('')}</select>
-    <label class="l" for="bonusTakrif">Siap bermaksud <small>(min 10)</small></label><input type="text" id="bonusTakrif" maxlength="140">
+    <label class="l" for="bonusTakrif">Siap bermaksud <small>(min 10)</small></label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="bonusTakrif" maxlength="140">
     <div class="butang-baris" style="margin-top:14px"><button class="btn garis" data-act="tutupDialog">Batal</button><button class="btn tahan" data-tahan="1500" data-act="sahBonus">Tahan untuk ikrar bonus</button></div>`);
 }
 function sahBonus() {
@@ -671,12 +793,12 @@ function vMinimalis() {
   h += `<p class="kecil redup" style="margin-top:-4px">Kurang 60% menjadikan hari SEPARA walaupun semua tugasan siap.</p>`;
   const bulan = k.slice(0, 7), keluarBulan = S.keluar.filter(x => kunciHari(x.pada).startsWith(bulan)).length;
   h += `<div class="bah"><h2>Barang keluar</h2><small>${keluarBulan} bulan ini · ${S.keluar.length} jumlah</small></div>
-    <div class="kad"><div class="baris"><input type="text" id="keluarNama" placeholder="Apa yang keluar hari ini?" maxlength="80"><select id="keluarCara" style="width:auto"><option>Sedekah</option><option>Buang</option><option>Jual</option><option>Kitar semula</option></select></div><button class="btn" style="margin-top:8px" data-act="tambahKeluar">Catat</button>
+    <div class="kad"><div class="baris"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="keluarNama" placeholder="Apa yang keluar hari ini?" maxlength="80"><select id="keluarCara" style="width:auto"><option>Sedekah</option><option>Buang</option><option>Jual</option><option>Kitar semula</option></select></div><button class="btn" style="margin-top:8px" data-act="tambahKeluar">Catat</button>
     ${S.keluar.length ? `<ul class="senarai" style="margin-top:12px">${S.keluar.slice(-6).reverse().map(x => `<li class="baris jarak"><span>${esc(x.nama)}</span><span class="redup m kecil">${esc(x.cara)} · ${esc(labelTarikh(kunciHari(x.pada)))}</span></li>`).join('')}</ul>` : ''}</div>`;
   const jimat = S.tunggu.filter(x => x.status === 'batal').reduce((a, x) => a + (Number(x.harga) || 0), 0);
   h += `<div class="bah"><h2>Senarai tunggu 30 hari</h2><small>jimat RM${jimat.toFixed(2)}</small></div>
     <div class="kad"><p class="kecil redup">Mahu beli sesuatu? Tulis di sini. Butang beli hanya terbuka selepas 30 hari. Kebanyakan keinginan mati sebelum itu.</p>
-    <div class="baris" style="margin-top:10px"><input type="text" id="tungguNama" placeholder="Barang" maxlength="80"><input type="number" id="tungguHarga" placeholder="RM" min="0" step="0.01" style="width:110px"></div><button class="btn" style="margin-top:8px" data-act="tambahTunggu">Masuk senarai</button>
+    <div class="baris" style="margin-top:10px"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="tungguNama" placeholder="Barang" maxlength="80"><input type="number" id="tungguHarga" placeholder="RM" min="0" step="0.01" style="width:110px"></div><button class="btn" style="margin-top:8px" data-act="tambahTunggu">Masuk senarai</button>
     <ul class="senarai" style="margin-top:12px">${S.tunggu.filter(x => !x.status).map(x => {
       const hari = Math.floor((Date.now() - x.pada) / 864e5), boleh = hari >= 30;
       return `<li><div class="baris jarak"><b>${esc(x.nama)}</b><span class="m kecil">RM${(Number(x.harga) || 0).toFixed(2)}</span></div><div class="progres"><i style="width:${Math.min(100, hari / 30 * 100)}%"></i></div><div class="baris jarak" style="margin-top:6px"><span class="redup kecil m">hari ${Math.min(hari, 30)}/30</span><span class="butang-baris"><button class="btn teks" data-act="tungguBatal" data-id="${x.id}">Tak jadi</button><button class="btn teks" data-act="tungguBeli" data-id="${x.id}" ${boleh ? '' : 'disabled'}>Beli</button></span></div></li>`;
@@ -690,13 +812,23 @@ function vRekod() {
   const kini = hariIni();
   const minit7 = [...Array(7)].reduce((a, _, i) => { const d = S.hari[tambahHari(kini, -i)]; return a + (d ? d.sesi.filter(s => s.sah).reduce((x, s) => x + s.minit, 0) : 0); }, 0);
   const dorSemua = Object.values(S.hari).flatMap(d => d.dorongan || []), dorMenang = dorSemua.filter(x => x.menang).length;
-  let h = `<div class="stat-grid" style="margin-top:4px">
+  // Ringkasan: tiang fokus 7 hari dan cincin kadar lulus 30 hari
+  const hari7 = [...Array(7)].map((_, i) => { const k = tambahHari(kini, i - 6); return { k, v: minitSah(k) }; });
+  const maks7 = Math.max(30, ...hari7.map(x => x.v));
+  let dinilai = 0, lulus = 0;
+  for (let i = 0; i < 30; i++) { const r = keputusan(tambahHari(kini, -i)); if (['lulus', 'separa', 'gagal'].includes(r)) { dinilai++; if (r === 'lulus') lulus++; } }
+  const kadar = dinilai ? Math.round(lulus / dinilai * 100) : null;
+  let h = `<div class="ringkas">
+    <div class="kad"><span class="kad-tajuk">${ikon('kilat')}Fokus sah</span><div class="tiang" role="img" aria-label="Minit fokus sah 7 hari">${hari7.map((x, i) => `<div class="${i === 6 ? 'kini' : ''}" title="${labelTarikh(x.k)}: ${fmtMinit(x.v)}" style="--h:${Math.max(4, x.v / maks7 * 70)}px"><i style="height:${Math.max(4, x.v / maks7 * 70)}px"></i>${i === 6 ? `<span class="tag">${fmtMinit(x.v)}</span>` : ''}</div>`).join('')}</div>
+      <div class="angka"><b>${fmtMinit(minit7)}</b><span>dalam<br>7 hari</span></div></div>
+    <div class="kad"><span class="kad-tajuk">${ikon('sasaran')}Kadar lulus</span><div class="viz" style="width:min(118px,100%)">${cincin((kadar ?? 0) / 100)}<div class="tengah"><b>${kadar ?? '—'}${kadar !== null ? '%' : ''}</b><small>${lulus}/${dinilai} hari</small></div></div><div class="bawah redup kecil" style="text-align:center;margin-top:6px">30 hari terakhir</div></div></div>
+  <div class="stat-grid">
     <div class="stat"><b>${streak()}</b><small>Streak semasa</small></div>
     <div class="stat"><b>${streakTerbaik()}</b><small>Streak terbaik</small></div>
     <div class="stat"><b>${indeks() ?? '—'}</b><small>Indeks disiplin (14 hari)</small></div>
-    <div class="stat"><b>${fmtMinit(minit7)}</b><small>Fokus sah, 7 hari</small></div>
     <div class="stat"><b>${dorMenang}/${dorSemua.length}</b><small>Dorongan ditewaskan</small></div>
-    <div class="stat"><b>${S.keluar.length}</b><small>Barang keluar</small></div></div>`;
+    <div class="stat"><b>${S.keluar.length}</b><small>Barang keluar</small></div>
+    <div class="stat"><b>${Object.values(S.hari).reduce((a, d) => a + d.tugas.filter(t => t.status === 'siap').length, 0)}</b><small>Tugasan siap</small></div></div>`;
   // Kalendar 5 minggu
   const mula = tarikhDari(kini);
   while (mula.getDay() !== 1) mula.setDate(mula.getDate() - 1);
@@ -718,6 +850,7 @@ function vRekod() {
     if (d.ikrar) kira[d.ikrar.emosi] = (kira[d.ikrar.emosi] || 0) + 1;
     for (const s of d.sesi) { if (s.emosi) { kira[s.emosi] = (kira[s.emosi] || 0) + 1; const tgt = EMOSI[s.emosi].nada === 'negatif' ? neg : pos; tgt[0] += s.sah ? 1 : 0; tgt[1] += 1; } }
     if (d.muhasabah) for (const e of d.muhasabah.emosi) kira[e] = (kira[e] || 0) + 1;
+    for (const c of d.checkin || []) kira[c.emosi] = (kira[c.emosi] || 0) + 1;
   }
   const ent = Object.entries(kira).sort((a, b) => b[1] - a[1]), maks = ent.length ? ent[0][1] : 1;
   h += `<div class="bah"><h2>Peta emosi</h2><small>30 hari</small></div><div class="kad">`;
@@ -759,16 +892,34 @@ function vTetapan() {
     <p class="kecil redup" style="margin-top:10px">Hari bermula jam 4:00 pagi. Kerja selepas tengah malam kekal dalam hari yang sama.</p></div>`;
   h += `<div class="bah"><h2>Blok fokus</h2><small>minit</small></div><div class="kad">${SUSUNAN_KELAS.map(c => `<div class="baris" style="margin-top:8px"><div style="flex:1">${htmlKelas(c)}<div class="kecil redup">${KELAS[c].ringkas}</div></div><input type="number" min="10" max="120" style="width:80px" data-f="blok" data-id="${c}" value="${blokMin(c)}" aria-label="Blok ${KELAS[c].nama}"><input type="number" min="3" max="30" style="width:70px" data-f="rehat" data-id="${c}" value="${rehatMin(c)}" aria-label="Rehat ${KELAS[c].nama}"></div>`).join('')}<p class="kecil redup" style="margin-top:8px">Kiri: blok fokus. Kanan: rehat. Blok 10–120, rehat 3–30.</p></div>`;
   h += `<div class="bah"><h2>Pustaka tugasan</h2><small>${S.pustaka.length}/30</small></div><div class="kad">${SUSUNAN_KELAS.map(c => `<div class="kumpulan">${htmlKelas(c)}${S.pustaka.filter(p => p.kelas === c).map(p => `<div class="baris jarak" style="padding:8px 0;border-top:1px solid var(--garis)"><span class="kecil">${esc(p.tajuk)}</span><button class="btn teks merah" data-act="buangPustaka" data-id="${p.id}" aria-label="Buang ${esc(p.tajuk)}">Buang</button></div>`).join('')}</div>`).join('')}
-    <div class="baris" style="margin-top:14px"><input type="text" id="pustakaTajuk" placeholder="Tugasan baharu" maxlength="90"><select id="pustakaKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}">${KELAS[c].nama}</option>`).join('')}</select></div><button class="btn garis" style="margin-top:8px" data-act="tambahPustaka" ${S.pustaka.length >= 30 ? 'disabled' : ''}>Tambah</button></div>`;
-  h += `<div class="bah"><h2>Kebiasaan minimalis</h2><small>had 5</small></div><div class="kad">${T.kebiasaan.map((x, i) => `<input type="text" style="margin-top:${i ? 8 : 0}px" data-f="kebiasaan" data-i="${i}" value="${esc(x)}" maxlength="80" aria-label="Kebiasaan ${i + 1}">`).join('')}<p class="kecil redup" style="margin-top:8px">Kosongkan untuk buang. Perubahan berkuat kuasa serta-merta.</p></div>`;
+    <div class="baris" style="margin-top:14px"><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="pustakaTajuk" placeholder="Tugasan baharu" maxlength="90"><select id="pustakaKelas" style="width:auto">${SUSUNAN_KELAS.map(c => `<option value="${c}">${KELAS[c].nama}</option>`).join('')}</select></div><button class="btn garis" style="margin-top:8px" data-act="tambahPustaka" ${S.pustaka.length >= 30 ? 'disabled' : ''}>Tambah</button></div>`;
+  h += `<div class="bah"><h2>Kebiasaan minimalis</h2><small>had 5</small></div><div class="kad">${T.kebiasaan.map((x, i) => `<input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" style="margin-top:${i ? 8 : 0}px" data-f="kebiasaan" data-i="${i}" value="${esc(x)}" maxlength="80" aria-label="Kebiasaan ${i + 1}">`).join('')}<p class="kecil redup" style="margin-top:8px">Kosongkan untuk buang. Perubahan berkuat kuasa serta-merta.</p></div>`;
   h += `<div class="bah"><h2>Peringatan & paparan</h2></div><div class="kad"><div class="butang-baris"><button class="btn garis" data-act="notifikasi">Benarkan notifikasi tamat blok</button><button class="btn garis" data-act="tema">Tema: ${document.documentElement.dataset.theme || 'ikut peranti'}</button></div></div>`;
   h += `<div class="bah"><h2>Sandaran</h2></div><div class="kad"><p class="kecil redup">Data disimpan dalam peranti ini sahaja. Muat turun sandaran setiap minggu.</p><div class="butang-baris" style="margin-top:10px"><button class="btn garis" data-act="eksport">Muat turun sandaran</button><label class="btn garis" for="importFail">Pulihkan<input type="file" id="importFail" accept="application/json" hidden></label></div></div>`;
-  h += `<div class="bah"><h2>Padam semua</h2></div><div class="kad amaran"><label class="l" for="padamTeks">Taip PADAM untuk memadam semua data</label><input type="text" id="padamTeks" autocomplete="off"><button class="btn merah tahan" style="margin-top:10px" data-tahan="3000" data-act="padam">Tahan untuk padam</button></div>`;
+  h += `<div class="bah"><h2>Padam semua</h2></div><div class="kad amaran"><label class="l" for="padamTeks">Taip PADAM untuk memadam semua data</label><input type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" id="padamTeks" autocomplete="off"><button class="btn merah tahan" style="margin-top:10px" data-tahan="3000" data-act="padam">Tahan untuk padam</button></div>`;
   return h;
 }
 
 /* ---------- Tindakan ---------- */
 const ACT = {
+  keTab(el) { tab = el.dataset.tab; render(); window.scrollTo(0, 0); },
+  keIkrar() { const b = $('#ikrarBorang'); b && b.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+  keMuhasabah() { const b = $('#muhasabahSeksyen'); b && b.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+  titik(el) { titikPilih = Number(el.dataset.i); const c = document.querySelector('.carta'); if (c) c.outerHTML = htmlCartaFokus(); },
+  checkin() {
+    bukaDialog(`<h2>Apa rasa kau sekarang?</h2><p class="kecil redup">Emosi dicatat dan dikira dalam peta emosi. Emosi negatif membawa satu arahan ringkas.</p><div class="emosi-grid" style="margin-top:14px">${htmlEmosiGrid('', 'rekodCheckin')}</div><button class="btn garis penuh" style="margin-top:14px" data-act="tutupDialog">Tutup</button>`);
+  },
+  rekodCheckin(el) {
+    const e = el.dataset.e, d = dapatHari(hariIni(), true);
+    (d.checkin = d.checkin || []).push({ pada: Date.now(), emosi: e }); simpan(); tutupDialog();
+    const iv = EMOSI[e].iv;
+    toast(iv ? `${INTERVENSI[iv].tajuk}: ${INTERVENSI[iv].arahan.split('. ').slice(0, 2).join('. ')}.` : 'Dicatat. Guna rasa ini untuk tugasan semasa.', !!iv);
+    render();
+  },
+  lihatFikiran() {
+    const f = S.fikiran.filter(x => !x.selesai);
+    bukaDialog(`<h2>Peti fikiran</h2><p class="kecil redup">Fikiran yang disimpan semasa fokus. Urus ketika muhasabah, bukan semasa blok.</p>${f.length ? `<ul class="senarai" style="margin-top:10px">${f.map(x => `<li>${esc(x.teks)}<div class="redup">${esc(labelTarikh(kunciHari(x.pada)))} ${jam(x.pada)}</div></li>`).join('')}</ul>` : '<p class="redup" style="margin-top:12px">Kosong. Fikiran tenang.</p>'}<button class="btn garis penuh" style="margin-top:14px" data-act="tutupDialog">Tutup</button>`);
+  },
   kerjaRehat() { draf().paksa = true; simpan(); render(); },
   drafEmosi(el) { draf().emosi = el.dataset.e; simpan(); render(); },
   drafTenaga(el) { draf().tenaga = Number(el.dataset.n); simpan(); render(); },
@@ -867,6 +1018,15 @@ document.addEventListener('click', e => {
 $('#dlg').addEventListener('click', e => { if (e.target.id === 'dlg') tutupDialog(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#dlg').hidden) tutupDialog(); });
 
+/* Menaip: sembunyikan bar tab, bawa ruangan ke tengah skrin selepas papan kekunci terbuka, dan jangan lukis semula paparan semasa menaip. */
+const bolehTaip = el => el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && /^(text|number|search|time)$/.test(el.type)));
+document.addEventListener('focusin', e => {
+  if (!bolehTaip(e.target)) return;
+  document.body.classList.add('menaip');
+  const el = e.target; setTimeout(() => { if (document.activeElement === el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 350);
+});
+document.addEventListener('focusout', () => setTimeout(() => { if (!bolehTaip(document.activeElement)) document.body.classList.remove('menaip'); }, 50));
+function sedangMenaip() { return bolehTaip(document.activeElement); }
 document.addEventListener('input', e => {
   const el = e.target, f = el.dataset && el.dataset.f; if (!f) return;
   const kemasKira = (key, n, min) => { const k = document.querySelector(`[data-kira="${key}"]`); if (k) { k.textContent = `${n}/${min}`; k.classList.toggle('ok', n >= min); } };
@@ -915,7 +1075,7 @@ document.addEventListener('visibilitychange', () => {
   else {
     if (a && a.fasa === 'fokus' && a.keluarPada) { const ms = Date.now() - a.keluarPada; a.keluarPada = null; if (ms > 2000) catatGanggu(ms, 'Kau keluar dari app'); else simpan(); }
     if (a) mintaKunciSkrin();
-    if (kunciHari() !== render.hari) render();
+    if (kunciHari() !== render.hari && !sedangMenaip()) render();
   }
 });
 
@@ -924,7 +1084,7 @@ setInterval(() => {
   const a = S.aktif;
   if (a && a.fasa === 'fokus' && !document.hidden) { a.denyut = Date.now(); if (Date.now() % 5000 < 1000) simpan(); }
   detikFokus();
-  if (kunciHari() !== render.hari) { render.hari = kunciHari(); render(); }
+  if (kunciHari() !== render.hari && !sedangMenaip()) { render.hari = kunciHari(); render(); }
 }, 1000);
 
 /* Mula */
@@ -937,6 +1097,7 @@ setInterval(() => {
     else if (!a.jeda && Date.now() - (a.denyut || Date.now()) > 20000) { a.ganggu += 1; a.keluarMs += Date.now() - a.denyut; }
     simpan();
   }
+  renderNav();
   render.hari = kunciHari();
   render();
   if (a && a.fasa === 'fokus' && a.ganggu) toast(`App ditutup semasa fokus. Gangguan ${a.ganggu}/${HAD_GANGGU}.`, true);

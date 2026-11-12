@@ -8,8 +8,8 @@ const shots = process.env.SHOTS || '';
 
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 400, height: 860 } });
-  await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+  const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 400, height: 860 }, deviceScaleFactor: Number(process.env.DPR || 1) });
+  if (!process.env.FONTS) await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
   const page = await ctx.newPage(); const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.clock.install({ time: new Date('2026-11-12T08:00:00') });
@@ -27,6 +27,10 @@ const shots = process.env.SHOTS || '';
   await berat.click();
   assert.equal(await page.locator('.kumpulan').nth(0).locator('input[data-act="drafPilih"]').nth(1).isDisabled(), true, 'Hanya satu tugasan Berat');
   await page.locator('input[data-f="takrif"]').first().fill('Draf bahagian 2 lengkap dengan 5 rujukan');
+  const kotak = await page.locator('input[data-f="takrif"]').first().boundingBox();
+  assert.ok(kotak.width > 200 && kotak.height >= 40, 'Ruangan takrif cukup besar untuk ditaip');
+  const kotakNiat = await page.locator('input[data-f="niat"]').first().boundingBox();
+  assert.ok(kotakNiat.width > 200, 'Ruangan niat cukup besar untuk ditaip');
   const harian = page.locator('.kumpulan').nth(1).locator('input[data-act="drafPilih"]').first();
   await harian.click();
   await page.locator('input[data-f="takrif"]').nth(1).fill('Lima soal-jawab Subuh siap disemak');
