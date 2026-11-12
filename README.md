@@ -6,6 +6,8 @@ Dunia 3D peribadi Eryth Sayf sebagai app sebenar: boleh dipasang di skrin utama 
 - **Pemilik** dibuktikan kepada pelayan melalui akaun emel + kata laluan. PIN dunia tidak pernah keluar dari peranti.
 - **Tetamu** masuk dengan pas PIN masing-masing. Pemilik boleh mengunci dunia, mengeluarkan atau menyekat peranti, dan melihat log masuk. Semua ini dikuatkuasakan oleh pelayan.
 
+**Baharu: [Kota GitHub](kota-github/)**: profil GitHub sebagai kota 3D hidup di atas pulau terapung. Repo jadi bangunan, push jadi trak commit, isu terbuka membakar bumbung, PR terbuka jadi kren. Lihat [`kota-github/README.md`](kota-github/README.md).
+
 ## Persediaan sekali sahaja
 
 ### 1. Supabase

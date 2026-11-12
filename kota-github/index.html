@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kota GitHub</title>
+<meta name="description" content="Profil GitHub menjadi kota 3D yang hidup di atas pulau terapung: repo jadi bangunan, push jadi trak commit, isu terbuka membakar bumbung, PR terbuka jadi kren.">
+<meta name="theme-color" content="#bfe3ff">
+<link rel="icon" href="ikon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="gaya.css">
+</head>
+<body>
+<div id="pentas" aria-label="Kota 3D daripada profil GitHub. Seret untuk pusing, cubit atau tatal untuk zum, ketik bangunan untuk butiran."></div>
+
+<header class="bar">
+  <a class="jenama" href="./" aria-label="Kota GitHub">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 26h24v2H4z" fill="#1e293b"/><path d="M6 26V14h6v12zM13 26V6h7v20zM21 26V11h6v15z" fill="#3b82f6"/><path d="M15 9h3v2h-3zM15 13h3v2h-3zM15 17h3v2h-3zM8 17h2v2H8zM23 14h2v2h-2zM23 18h2v2h-2z" fill="#fff"/></svg>
+    <b>Kota GitHub</b>
+  </a>
+  <form class="cari" id="cari" autocomplete="off">
+    <label class="sr" for="nama">Nama pengguna GitHub</label>
+    <input id="nama" name="nama" type="text" inputmode="text" spellcheck="false" autocapitalize="off" placeholder="nama pengguna GitHub" maxlength="39">
+    <button type="submit">Bina</button>
+  </form>
+  <nav class="alat" aria-label="Kawalan kota">
+    <button type="button" id="btnTur" title="Tur berpandu">Tur</button>
+    <button type="button" id="btnTrak" title="Ikut trak commit">Ikut trak</button>
+    <button type="button" id="btnMalam" title="Tukar siang atau malam" aria-pressed="false">Malam</button>
+    <button type="button" id="btnKongsi" title="Salin pautan kota ini">Kongsi</button>
+  </nav>
+</header>
+
+<aside class="kad profil" id="profil" aria-live="polite"></aside>
+
+<aside class="kad suapan" id="suapan">
+  <div class="kepala-kad"><h2>Aktiviti terkini</h2><button type="button" class="tutup" id="tutupSuapan" aria-label="Sembunyikan aktiviti">×</button></div>
+  <ol id="senaraiSuapan"></ol>
+</aside>
+
+<section class="kad legenda" id="legenda">
+  <details id="legendaButir" open>
+    <summary>Cara baca kota</summary>
+    <ul class="peta">
+      <li><i class="ik ik-bina"></i>Repo jadi bangunan, bintang menjadikannya tinggi</li>
+      <li><i class="ik ik-trak"></i>Trak commit membawa push sebenar</li>
+      <li><i class="ik ik-api"></i>Isu terbuka membakar bumbung</li>
+      <li><i class="ik ik-kren"></i>PR terbuka menjadi kren</li>
+      <li><i class="ik ik-aktif"></i>Cincin bercahaya: push dalam 14 hari</li>
+      <li><i class="ik ik-rumah"></i>Fork jadi rumah berbumbung</li>
+    </ul>
+    <div class="bahasa" id="bahasa"></div>
+  </details>
+</section>
+
+<aside class="kad repo" id="repoKad" hidden></aside>
+
+<div class="kapsyen" id="kapsyen" aria-live="polite"><span class="nombor" id="kapsyenNo"></span><span id="kapsyenTeks">Membina kota…</span></div>
+
+<button type="button" class="tunjuk-suapan" id="tunjukSuapan" hidden>Aktiviti</button>
+
+<div class="muat" id="muat" role="status">
+  <div class="muat-isi">
+    <div class="pulau-kecil" aria-hidden="true"><span></span><span></span><span></span></div>
+    <p id="muatTeks">Menyediakan pulau…</p>
+    <div class="muat-ralat" id="muatRalat" hidden></div>
+  </div>
+</div>
+
+<script src="../vendor/three/three.min.js"></script>
+<script src="kota.js"></script>
+</body>
+</html>
