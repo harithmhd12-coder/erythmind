@@ -16,6 +16,7 @@ Satu kod, dua bentuk: website responsif di komputer, dan app boleh dipasang di t
 | §8 Model pendapatan | Pakej Explorer / Knowledge Plus / Coffee Break Club dengan senarai menunggu (uji kesanggupan membayar), e-buku |
 | §10 Sistem editorial | Studio: draf, aliran kerja 7 langkah, semakan integriti data, semakan tajuk umpan klik, ukuran kefahaman (bukan pageview), laporan pembaca → pembetulan terbuka yang dimaklumkan kepada pembaca asal |
 | Integriti (Trust Me, I'm Lying) | 9 taktik Ryan Holiday dipetakan kepada benteng dalam app (`TAKTIK` dalam `data.js`, dipaparkan di Tentang). Kad integriti di setiap artikel menjawab: siapa sumber asal, siapa untung, adakah tajuk dijawab, apa yang berubah. Kad fakta disalin bersama sumbernya. Laluan baharu Celik media |
+| Siri (ilmu pemilik) | `#siri`: **Tadabbur Surah al-Mukminun** (15 episod soal-jawab, Sep–Nov 2026) dan **Akhlak dan Adab** (4 episod) disalin hampir verbatim daripada skrip, dengan ayat dan hadis Arab (RTL), maksud dan rujukan; **Kenali Munafik** (17 soalan muhasabah daripada analisis kitab al-Maydani, tanda disimpan dalam peranti sahaja); **Kenali Kebenaran** (karusel 12 slaid, 5 Berhala Kaum Nuh); **Kuliah Pemikiran** (3 kuliah, 11 sebab kesilapan berfikir); **Sip n Speak** (akan datang). Episod bertarikh hadapan muncul pada tarikhnya. Hadis tanpa rujukan dilabel "Rujukan belum dinyatakan" dan disenaraikan di Studio |
 | §11, §12 | Halaman Tentang: misi, prinsip, standard editorial, peranan komuniti, pelan 12 bulan |
 
 ## Buka
@@ -28,11 +29,13 @@ python3 -m http.server 8000
 # buka http://localhost:8000
 ```
 
-Di GitHub Pages (repo ini dihidangkan dari `main`, folder root), app ini berada di `https://NAMA-GITHUB.github.io/erythmind/ruang-ilmu/` selepas digabungkan ke `main`.
+Ujian asap (dari root repo, sambil menghidangkan repo pada port 8000): `node tests/ruang-ilmu-smoke.cjs`. `TEST_ORIGIN=https://harithmhd12-coder.github.io/erythmind` menguji laman sebenar.
+
+Di GitHub Pages (repo ini dihidangkan dari `main`, folder root), app ini berada di `https://harithmhd12-coder.github.io/erythmind/ruang-ilmu/`.
 
 ## Pautan halaman
 
-Setiap paparan mempunyai pautan sendiri: `#utama`, `#baca`, `#lihat`, `#dengar`, `#teroka`, `#teroka.psikologi`, `#laluan`, `#l.berfikir-jelas`, `#a.kenapa-percaya-ramalan` (artikel), `#v.kenapa-percaya-ramalan` (video), `#kopi`, `#p.sng-spanish-latte` (produk), `#troli`, `#rehat`, `#ahli`, `#profil`, `#tentang`, `#studio`.
+Setiap paparan mempunyai pautan sendiri: `#utama`, `#baca`, `#lihat`, `#dengar`, `#teroka`, `#teroka.psikologi`, `#laluan`, `#l.berfikir-jelas`, `#a.kenapa-percaya-ramalan` (artikel), `#v.kenapa-percaya-ramalan` (video), `#kopi`, `#p.caramel` (produk), `#troli`, `#rehat`, `#ahli`, `#profil`, `#tentang`, `#studio`, `#siri`, `#s.kenali-munafik` (halaman siri), `#e.benci-kepada-kebenaran` (episod).
 
 ## Struktur
 
@@ -40,6 +43,8 @@ Setiap paparan mempunyai pautan sendiri: `#utama`, `#baca`, `#lihat`, `#dengar`,
 index.html            rangka halaman, kepala, tab bar telefon
 styles.css            token warna (terang + gelap), tipografi, susun atur
 data.js               skema bahan, kategori, 15 bahan, laluan, taktik & benteng, e-buku, produk Sip 'n Go
+siri.js               siri ilmu pemilik: SIRI, EPISOD (soal-jawab dan kuliah), SEMAK (senarai semak), KARUSEL
+SPEC.md, PLAN.md      spesifikasi dan pelan kerja ciri Siri
 app.js                router, paparan, pemain audio/video, kedai, profil, studio
 manifest.webmanifest  app boleh dipasang (ikon, pintasan Dengar / Rehat / Kedai)
 sw.js                 luar talian: rangkaian dahulu, salinan simpanan bila tiada internet
@@ -54,4 +59,5 @@ media/sng/            gambar botol, logo dan foto Sip 'n Go
 - **Audio** menggunakan suara sintetik pelayar (Web Speech). Gantikan dengan rakaman narator.
 - **Video** ialah penerangan visual animasi yang dijana daripada artikel. Gantikan dengan video sebenar; bab dan transkrip sudah tersedia.
 - **Pakej keahlian** ialah andaian yang perlu disahkan. Bahan contoh perlu disemak oleh penyemak bidang sebenar (terutama kandungan agama) sebelum diterbitkan.
+- **Siri**: kelompok kedua skrip SMU dan Dhuha, bahan Sip n Speak, dan takhrij 12 hadis berlabel "Rujukan belum dinyatakan" masih menunggu.
 - "Ruang Ilmu" ialah nama kerja seperti dalam blueprint.
