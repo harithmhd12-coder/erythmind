@@ -176,6 +176,7 @@ const shots = process.env.SHOTS || '';
     assert.match(studio, /Semua bahan lulus semakan/i, 'Semakan integriti lulus');
     assert.match(studio, /12 hadis tanpa rujukan/i, 'Studio menyenaraikan hadis tanpa rujukan (11 skrip + 1 hadis fitrah kuliah)');
     await buka('profil'); await tiadaLimpahan('profil');
+    assert.match(await page.locator('.statistik').first().innerText(), /\b1\s*bahan selesai/i, 'Karusel dan senarai semak tidak dikira sebagai bahan');
 
     for (const h of ['utama', 'a.kenapa-percaya-ramalan', 'kopi', 'studio', 'tentang']) { await buka(h); await tiadaLimpahan(h); }
     assert.deepEqual(errors, [], 'Tiada ralat konsol');

@@ -86,7 +86,7 @@ function semakTajuk(tajuk, ringkas60) {
 }
 const pembetulanBahan = slug => S.pembetulan[slug] || [];
 function sejarahBahan(a) {
-  const x = [{ tarikh: a.terbit, jenis: 'Terbit', teks: 'Diterbitkan selepas semakan editorial.' }];
+  const x = a.terbit ? [{ tarikh: a.terbit, jenis: 'Terbit', teks: 'Diterbitkan selepas semakan editorial.' }] : [];
   if (a.kemas && a.kemas !== a.terbit) x.push({ tarikh: a.kemas, jenis: 'Semakan', teks: 'Fakta dan sumber disemak semula oleh penyemak bidang.' });
   pembetulanBahan(a.slug).forEach(p => x.push({ tarikh: p.tarikh, jenis: 'Pembetulan', teks: p.teks }));
   return x.sort((p, q) => String(q.tarikh).localeCompare(String(p.tarikh)));
@@ -174,6 +174,8 @@ const minit = a => {
 const penulis = a => a.penulis || 'Meja Editorial Ruang Ilmu';
 const penyemak = a => a.penyemak || `Penyemak bidang (${KAT[a.kategori]?.nama.split(' & ')[0] || 'Umum'})`;
 const selesai = slug => !!S.selesai[slug];
+/* Bahan sebenar yang selesai (tanpa kunci siri sintetik 's-<slug>' bagi senarai semak dan karusel). */
+const bahanSelesai = () => Object.keys(S.selesai).filter(k => !k.startsWith('s-'));
 function disimpan(slug) { return S.simpan.includes(slug); }
 
 function adegan(a) {
@@ -261,7 +263,7 @@ function lencanaSenarai() {
   const kuizPenuh = Object.entries(S.kuiz).some(([slug, j]) => { const a = cari(slug); return a && a.kuiz.length && a.kuiz.every((q, i) => j[i] === q.j); });
   const hariAktif = Object.values(S.hari).filter(h => h.aktif).length;
   return [
-    { s: 'Ⅰ', n: 'Langkah pertama', d: 'Selesaikan satu kandungan.', ok: Object.keys(S.selesai).length >= 1 },
+    { s: 'Ⅰ', n: 'Langkah pertama', d: 'Selesaikan satu kandungan.', ok: bahanSelesai().length >= 1 },
     { s: '◎', n: 'Tiga deria', d: 'Baca, lihat dan dengar sekurang-kurangnya sekali.', ok: ['baca', 'lihat', 'dengar'].every(f => formatGuna.has(f)) },
     { s: '✓', n: 'Faham betul', d: 'Jawab semua soalan satu kuiz dengan tepat.', ok: kuizPenuh },
     { s: '⟶', n: 'Penjejak laluan', d: 'Lengkapkan satu laluan ilmu.', ok: Object.keys(S.laluanSiap).length >= 1 },
@@ -842,7 +844,7 @@ V.profil = () => {
   const nota = Object.entries(S.nota).filter(([, n]) => n && n.trim());
   return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">${S.akaun ? 'Akaun' : 'Tetamu · data disimpan dalam peranti ini'}</span><h1>${S.akaun ? `Salam, ${esc(S.akaun.nama)}.` : 'Peta ilmu kau'}</h1>
   ${S.akaun ? `<p class="lede">${esc(S.akaun.emel)}</p>` : `<p class="lede">Kau boleh meneroka tanpa mendaftar. Cipta akaun untuk menyelaras simpanan dan kemajuan merentas peranti.</p><div><button class="btn" data-act="masuk">Cipta akaun / log masuk</button></div>`}</header>
-  <div class="statistik"><div><b>${S.xp}</b><span>XP kefahaman</span></div><div><b>${Object.keys(S.selesai).length}</b><span>bahan selesai</span></div><div><b>${Object.values(S.hari).filter(h => h.aktif).length}</b><span>hari aktif</span></div>${S.tetapan.siri ? `<div><b>${siri}</b><span>siri hari · 1 hari rehat seminggu dibenarkan</span></div>` : ''}<div><b>${S.rehat}</b><span>Coffee Break 15 minit</span></div></div>
+  <div class="statistik"><div><b>${S.xp}</b><span>XP kefahaman</span></div><div><b>${bahanSelesai().length}</b><span>bahan selesai</span></div><div><b>${Object.values(S.hari).filter(h => h.aktif).length}</b><span>hari aktif</span></div>${S.tetapan.siri ? `<div><b>${siri}</b><span>siri hari · 1 hari rehat seminggu dibenarkan</span></div>` : ''}<div><b>${S.rehat}</b><span>Coffee Break 15 minit</span></div></div>
 
   <section class="seksyen"><div class="ritual"><svg class="cincin" viewBox="0 0 120 120" role="img" aria-label="${minitHari} daripada ${g} minit hari ini"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--garis)" stroke-width="8"/><circle cx="60" cy="60" r="52" fill="none" stroke="var(--merah)" stroke-width="8" stroke-linecap="${p > 0 ? 'round' : 'butt'}" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"/><text x="60" y="58" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-size="28" fill="var(--dakwat)">${minitHari}</text><text x="60" y="78" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="11" fill="var(--kelabu)">/ ${g} minit</text></svg>
     <div style="display:grid;gap:10px;min-width:0;flex:1 1 260px"><span class="eyebrow">Ritual ilmu harian</span><h2 class="h-seksyen">${p >= 1 ? 'Matlamat hari ini tercapai.' : 'Sasaran kecil, setiap hari.'}</h2><p class="kecil-nota">Masa dikira semasa membaca, mendengar atau menonton. XP pula hanya diberi untuk kefahaman: tanda selesai, kuiz dan laluan.</p>
@@ -931,7 +933,7 @@ V.studio = () => {
   <section class="seksyen">${kepalaSeksyen('Semakan integriti data', isu.length ? `${isu.length} isu perlu dibetulkan` : 'Semua bahan lulus semakan', 'Dijalankan setiap kali Studio dibuka: jenis sumber, dakwaan fakta tanpa sumber, rujukan yang tiada, tajuk umpan klik dan pautan yang putus.')}
     ${isu.length ? `<ul class="senarai-isu">${isu.map(([t, m]) => `<li><b>${esc(t)}</b> · ${esc(m)}</li>`).join('')}</ul>` : `<p class="lulus">✓ ${bahan.length} bahan, ${bahan.reduce((t, a) => t + (a.dakwaan || []).length, 0)} dakwaan, ${bahan.reduce((t, a) => t + a.rujukan.length, 0)} sumber, ${LALUAN.length} laluan dan ${PRODUK.length} produk disemak.</p>`}</section>
 
-  ${(() => { const h = EP.flatMap(e => e.soalan.flatMap((q, n) => q.blok.filter(b => (b.j === 'hadis' || b.j === 'petikan') && !b.ruj).map(b => ({ e, n, b })))); return `<section class="seksyen">${kepalaSeksyen('Rujukan untuk disemak', h.length ? `${h.length} hadis tanpa rujukan` : 'Semua hadis bersumber', 'Hadis dalam skrip asal yang belum dinyatakan rujukannya. Dipaparkan kepada pembaca sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.')}${h.length ? `<ul class="senarai-baris">${h.map(({ e, n, b }) => `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)} · Soalan ${n + 1}</a><span class="kecil-nota" lang="ar" dir="rtl" style="font-family:Amiri,serif;font-size:1.05rem;text-align:right">${esc(b.ar)}</span><span class="kecil-nota">${esc(b.maksud || '')}</span></div></div></li>`).join('')}</ul>` : ''}</section>`; })()}
+  ${(() => { const h = EP.flatMap(e => e.soalan.flatMap((q, n) => q.blok.filter(b => (b.j === 'hadis' || b.j === 'petikan') && !b.ruj).map(b => ({ e, n, b })))); return `<section class="seksyen">${kepalaSeksyen('Rujukan untuk disemak', h.length ? `${h.length} ${h.every(x => x.b.j === 'hadis') ? 'hadis' : 'hadis/petikan'} tanpa rujukan` : 'Semua hadis bersumber', 'Hadis dalam skrip asal yang belum dinyatakan rujukannya. Dipaparkan kepada pembaca sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.')}${h.length ? `<ul class="senarai-baris">${h.map(({ e, n, b }) => `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)} · Soalan ${n + 1}</a><span class="kecil-nota" lang="ar" dir="rtl" style="font-family:Amiri,serif;font-size:1.05rem;text-align:right">${esc(b.ar)}</span><span class="kecil-nota">${esc(b.maksud || '')}</span></div></div></li>`).join('')}</ul>` : ''}</section>`; })()}
 
   <section class="seksyen">${kepalaSeksyen('Ukuran yang kami pilih', 'Kefahaman, bukan pageview', 'Data peranti ini sahaja. Kami sengaja tidak menjadikan jumlah tontonan sebagai ukuran utama, kerana penerbit yang mengejar tontonan akan mengejar sensasi.')}
     <div class="statistik"><div><b>${jum('buka') ? Math.round(jum('selesai') / jum('buka') * 100) + '%' : '–'}</b><span>kadar lengkap (selesai ÷ dibuka)</span></div><div><b>${kuizSemua.length ? Math.round(kuizSemua.filter(e => e.betul).length / kuizSemua.length * 100) + '%' : '–'}</b><span>jawapan kuiz tepat</span></div><div><b>${hariAktif}</b><span>hari pembaca kembali aktif</span></div><div><b>${Object.values(S.format).filter(f => Object.keys(f).length > 1).length}</b><span>bahan dinikmati dalam lebih satu format</span></div><div><b>${jum('simpan')}</b><span>disimpan untuk dibaca semula</span></div></div>
@@ -968,9 +970,10 @@ function borangDraf(d) {
 
 /* ================= Siri ================= */
 const itemSemak = slug => (SEMAK[slug]?.kumpulan || []).flatMap((g, a) => g.item.map((x, b) => ({ ...x, k: `${a}-${b}` })));
+const kiraSemak = slug => { const item = itemSemak(slug); return { siap: item.filter(x => S.semak[slug]?.[x.k]).length, jumlah: item.length }; };
 const pautanBahan = a => a.episod ? `#e.${a.slug}` : `#a.${a.slug}`;
 function kemajuanSiri(s) {
-  if (s.jenis === 'senarai-semak') { const jumlah = itemSemak(s.slug).length; const siap = itemSemak(s.slug).filter(x => S.semak[s.slug]?.[x.k]).length; return { siap, jumlah, peratus: jumlah ? Math.round(siap / jumlah * 100) : 0 }; }
+  if (s.jenis === 'senarai-semak') { const { siap, jumlah } = kiraSemak(s.slug); return { siap, jumlah, peratus: jumlah ? Math.round(siap / jumlah * 100) : 0 }; }
   if (s.jenis === 'karusel') { const siap = selesai('s-' + s.slug) ? 1 : 0; return { siap, jumlah: 1, peratus: siap * 100 }; }
   const jumlah = s.episod.length; const siap = s.episod.filter(selesai).length;
   return { siap, jumlah, peratus: jumlah ? Math.round(siap / jumlah * 100) : 0 };
@@ -1053,8 +1056,8 @@ function paparanSemak(s) {
       <p class="soal-muhasabah">${esc(x.t)}</p>${dalil(x.dalil)}
       <div class="kaki-item"><label class="tanda-renung"><input type="checkbox" data-semak="${esc(s.slug)}" data-k="${k}"${tanda[k] ? ' checked' : ''}> Sudah kurenung</label><span class="kecil-nota">al-Maydani, hlm. ${esc(x.hlm)}</span></div></li>`; }).join('')}</ol>`).join('')}
     <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center">
-      <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem" id="statusSemak">${Object.keys(tanda).length === itemSemak(s.slug).length ? 'Muhasabah lengkap.' : 'Renung satu demi satu.'}</b><span class="kecil-nota">Muhasabah boleh diulang. Kosongkan tanda untuk mula semula.</span></div>
-      <button class="btn garis" data-act="semak-kosong" data-slug="${esc(s.slug)}"${Object.keys(tanda).length ? '' : ' disabled'}>Kosongkan tanda</button>
+      <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem" id="statusSemak">${kiraSemak(s.slug).siap === kiraSemak(s.slug).jumlah ? 'Muhasabah lengkap.' : 'Renung satu demi satu.'}</b><span class="kecil-nota">Muhasabah boleh diulang. Kosongkan tanda untuk mula semula.</span></div>
+      <button class="btn garis" data-act="semak-kosong" data-slug="${esc(s.slug)}"${kiraSemak(s.slug).siap ? '' : ' disabled'}>Kosongkan tanda</button>
     </div>
     <figure class="ayat doa"><span class="eyebrow">Doa</span><p class="ar" lang="ar" dir="rtl">${esc(d.doa.ar)}</p><figcaption><p class="maksud">Maksudnya: “${esc(d.doa.maksud)}”</p><span class="ruj">${esc(d.doa.ruj)}</span></figcaption></figure>
     <p class="kecil-nota">Sumber: analisis pemilik atas kitab ${esc(d.kitab)}. Nombor halaman merujuk kepada fail PDF kitab. Ayat al-Quran disalin daripada mushaf; hadis daripada Sahih al-Bukhari dan Sahih Muslim.</p>
@@ -1258,7 +1261,7 @@ A.tema = el => { S.tetapan.tema = el.dataset.v; simpan(); terapTetapan(); $$('[d
 A.selesai = el => {
   const s = el.dataset.slug;
   if (S.selesai[s]) { delete S.selesai[s]; simpan(); toast('Tanda selesai dibuang'); render(); return; }
-  S.selesai[s] = hariIni(); (S.format[s] ||= {}).baca = true; catat('selesai', s);
+  S.selesai[s] = hariIni(); if (!s.startsWith('s-')) { (S.format[s] ||= {}).baca = true; catat('selesai', s); }
   if (!S.xpSelesai?.[s]) { (S.xpSelesai ||= {})[s] = 1; tambahXP(20, 'Bahan selesai'); } else { tandaAktif(); toast('Ditanda selesai'); }
   semakLaluan(); render();
 };
@@ -1355,7 +1358,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { tutupModal(); $('.popover')?.remove(); return; }
-  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.target.closest?.('input, textarea, select, [contenteditable]') && !$('.lapik')) {
+  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.altKey && !e.ctrlKey && !e.metaKey && (e.target.closest?.('.karusel') || e.target === document.body) && !$('.lapik')) {
     const k = $('[data-karusel]'); if (!k) return;
     e.preventDefault(); const slug = k.dataset.karusel; Karusel.ke(slug, (Karusel.indeks[slug] || 0) + (e.key === 'ArrowRight' ? 1 : -1));
   }
@@ -1365,8 +1368,9 @@ document.addEventListener('change', e => {
   const sm = e.target.dataset?.semak;
   if (sm && Object.hasOwn(SEMAK, sm)) {
     const k = e.target.dataset.k; const t = (S.semak[sm] ||= {});
+    Object.keys(t).forEach(x => { if (!itemSemak(sm).some(i => i.k === x)) delete t[x]; });
     if (e.target.checked) t[k] = hariIni(); else delete t[k];
-    const lengkap = Object.keys(t).length === itemSemak(sm).length;
+    const { siap, jumlah } = kiraSemak(sm); const lengkap = siap === jumlah;
     if (lengkap && !S.selesai['s-' + sm]) { S.selesai['s-' + sm] = hariIni(); if (!S.xpSelesai?.['s-' + sm]) { (S.xpSelesai ||= {})['s-' + sm] = 1; tambahXP(20, 'Muhasabah lengkap'); } }
     if (!lengkap) delete S.selesai['s-' + sm];
     simpan(); tandaAktif();
