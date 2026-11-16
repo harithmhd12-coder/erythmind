@@ -32,7 +32,7 @@
    Kemudian: Kad integriti, "Tanda episod selesai", navigasi episod sebelum/seterusnya.
 4. **Senarai semak** (Kenali Munafik): item semak untuk muhasabah diri; tanda disimpan dalam peranti sahaja dan tidak pernah dihantar.
 5. **Karusel** (Kenali Kebenaran): slaid boleh leret, dengan nombor slaid, rujukan dan teks alternatif.
-6. **Kuliah**: dipaparkan sebagai artikel Ruang Ilmu biasa dalam satu siri.
+6. **Kuliah**: tiga kuliah daripada "Peta Sebab Kesilapan Berfikir" (sebelas sebab, al-Maydani, *Basa'ir li al-Muslim al-Mu'asir* Fasal 4, hlm. 105–151). Kerana mengandungi matan Arab dan dalil, kuliah menggunakan susun atur episod (bacaan berterusan) dengan label "Kuliah N daripada 3", "Sebab N" dan "Amalan". Nota cara menyampaikan untuk penceramah tidak dipaparkan. Kuliah tiada tarikh.
 - Episod juga muncul dalam Teroka/carian (bidang Agama & Kerohanian), halaman utama (seksyen "Siri terkini"), peta ilmu, Simpanan dan pemain audio.
 
 ## Model data dan storan

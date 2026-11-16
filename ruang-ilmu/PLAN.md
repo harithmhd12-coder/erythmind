@@ -16,8 +16,8 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
    Fail: `siri.js`, `app.js`, `styles.css`. Ujian: tanda kekal selepas muat semula; tiada permintaan rangkaian; data rosak ditapis; `page.clock` 16 Nov → 12 episod, 18 Nov → episod Rabbi Arji'un muncul.
 7. [x] **Kenali Kebenaran** sebagai karusel 12 slaid (daripada reka bentuk 5 Berhala Kaum Nuh; slaid 11 tanpa nama akaun dan kapsyen pengunggah, nama penyedia tidak dipaparkan).
    Fail: `siri.js`, `app.js`, `styles.css`. Ujian: butang, titik, kekunci anak panah dan leret mendatar menukar slaid; kedudukan kekal selepas tanda selesai.
-8. [ ] **Kuliah Pemikiran** (Kuliah 1–3 + Peta Sebab Kesilapan Berfikir) sebagai artikel dalam satu siri.
-   Fail: `siri.js`. Ujian: tiga kuliah dibuka; semakan integriti lulus.
+8. [x] **Kuliah Pemikiran**: 3 kuliah (11 sebab + amalan) daripada Peta Sebab Kesilapan Berfikir, dalam susun atur episod berlabel Kuliah/Sebab; 1 hadis (fitrah) dilabel "Rujukan belum dinyatakan" seperti nota pemilik.
+   Fail: `siri.js`, `app.js`. Ujian: tiga kuliah dibuka, 11 sebab, matan RTL berujukan, tiada nota penceramah; semakan integriti lulus.
 9. [ ] **Release prep, Security review, Final review.** README, versi cache `sw.js`, semua ujian, 400px/1366px, mod gelap, `/security-review`, `/code-review`, kriteria penerimaan satu demi satu, PR.
 
 ## Susulan selepas kelompok pertama

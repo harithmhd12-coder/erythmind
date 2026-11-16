@@ -135,6 +135,25 @@ const shots = process.env.SHOTS || '';
     await buka('siri');
     assert.match(await page.locator('.siri-kad').nth(3).innerText(), /Karusel · 12 slaid[\s\S]*1\/1 selesai/i);
 
+    // Kuliah Pemikiran (Tugasan 8)
+    await buka('s.kuliah-pemikiran');
+    assert.equal(await page.locator('.senarai-baris li').count(), 3, 'Tiga kuliah');
+    assert.match(await page.locator('.halaman-kepala').innerText(), /Mula kuliah 1/i);
+    const kuliah = await page.evaluate(() => SIRI.find(s => s.slug === 'kuliah-pemikiran').episod);
+    let jumlahSebab = 0;
+    for (const [i, slug] of kuliah.entries()) {
+      await buka('e.' + slug);
+      assert.match(await page.locator('.artikel-kepala').innerText(), new RegExp(`Kuliah ${i + 1} daripada 3`, 'i'));
+      jumlahSebab += await page.locator('.no-soal', { hasText: /^Sebab \d+$/ }).count();
+      assert.ok(await page.locator('.ayat.petikan .ar[dir="rtl"]').count() >= 1, `Matan kitab dalam ${slug}`);
+      assert.equal(await page.locator('.ayat .ruj, .ayat .tiada-ruj').count(), await page.locator('.ayat').count(), `Rujukan setiap blok dalam ${slug}`);
+      const t = await page.locator('#kandungan').innerText();
+      for (const larang of [/Jangan menamakan/i, /Bacakan teguran/i, /Wajib sampaikan/i, /belum disemak dalam kitab hadis/i, /claude\.ai/i]) assert.doesNotMatch(t, larang, `Nota penceramah ${larang} dalam ${slug}`);
+      assert.match(t, /Amalan untuk minggu ini/);
+    }
+    assert.equal(jumlahSebab, 11, 'Sebelas sebab dalam tiga kuliah');
+    await tiadaLimpahan('kuliah'); await shot('kuliah');
+
     // Integrasi (Tugasan 5)
     await buka('teroka');
     await page.fill('#medanCari', 'benci kebenaran');
@@ -154,7 +173,7 @@ const shots = process.env.SHOTS || '';
     await buka('studio');
     const studio = await page.locator('#kandungan').innerText();
     assert.match(studio, /Semua bahan lulus semakan/i, 'Semakan integriti lulus');
-    assert.match(studio, /11 hadis tanpa rujukan/i, 'Studio menyenaraikan hadis tanpa rujukan');
+    assert.match(studio, /12 hadis tanpa rujukan/i, 'Studio menyenaraikan hadis tanpa rujukan (11 skrip + 1 hadis fitrah kuliah)');
     await buka('profil'); await tiadaLimpahan('profil');
 
     for (const h of ['utama', 'a.kenapa-percaya-ramalan', 'kopi', 'studio', 'tentang']) { await buka(h); await tiadaLimpahan(h); }
