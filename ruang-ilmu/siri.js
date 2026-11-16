@@ -28,6 +28,76 @@ const SIRI = [
 ];
 
 const EPISOD = [
+  { slug: 'interaksi-sesama-manusia', siri: 'akhlak-dan-adab', tarikh: '2026-08-04', tajuk: 'Interaksi Sesama Manusia', tag: ['akhlak', 'adab', 'sahabat', 'jiran'],
+    soalan: [
+      { s: 'Mengapakah Islam menitikberatkan soal memilih rakan?', blok: [
+        { j: 'teks', t: 'Islam sangat menitikberatkan soal memilih rakan kerana pengaruh persekitaran memainkan peranan yang amat penting dalam membentuk akhlak seseorang, sehinggakan tindakan menjauhi rakan-rakan yang buruk itu dikira sebagai sebahagian daripada kesempurnaan taubat. Rakan yang baik akan sentiasa membawa aura positif dan manfaat, manakala rakan yang buruk hanya akan mendedahkan kita kepada pelbagai bentuk keburukan.' },
+        { j: 'teks', t: 'Kepentingan memilih rakan ini telah dijelaskan dengan sangat indah melalui dalil sabda Nabi SAW berdasarkan riwayat Al-Bukhari dan Muslim:' },
+        { j: 'hadis', ar: 'إِنَّمَا مَثَلُ جَلِيسِ الصَّالِحِ وَجَلِيسِ السُّوءِ كَحَامِلِ الْمِسْكِ وَنَافِخِ الْكِيرِ، حَامِلُ الْمِسْكِ إِمَّا أَنْ يُحْذِيَكَ، وَإِمَّا أَنْ تَبْتَاعَ مِنْهُ، وَإِمَّا أَنْ تَجِدَ مِنْهُ رِيحًا طَيِّبَةً، وَنَافِخُ الْكِيرِ إِمَّا أَنْ يُحْرِقَ ثِيَابَكَ، وَإِمَّا أَنْ تَجِدَ مِنْهُ رِيحًا خَبِيثَةً', maksud: '', ruj: 'HR al-Bukhari dan Muslim' },
+        { j: 'teks', t: 'Berdasarkan hadis tersebut, baginda SAW mengumpamakan rakan yang soleh seperti pembawa minyak wangi kasturi; di mana kita pasti akan mendapat kebaikan, sama ada dia memberikannya kepada kita, kita membelinya daripada dia, atau sekurang-kurangnya kita akan mendapat tempias bau yang harum. Sebaliknya, rakan yang buruk pula diumpamakan seperti peniup api tukang besi; di mana kehadirannya mendatangkan kesan negatif, sama ada percikan apinya akan membakar pakaian kita, atau sekurang-kurangnya kita akan terpalit dengan bau yang busuk daripadanya.' }
+      ]},
+      { s: 'Bagaimanakah Islam mengajar cara untuk bersosial sesama manusia?', blok: [
+        { j: 'teks', t: 'Islam mengajar umatnya agar membina asas pergaulan dan sosial yang menjamin keharmonian serta keselamatan orang lain. Asas ini menuntut setiap Muslim untuk sentiasa menjaga tingkah laku dan tutur kata agar tidak menyakiti orang sekeliling, sebagaimana sabda Nabi SAW:' },
+        { j: 'hadis', ar: 'الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ', maksud: 'Seorang Muslim yang sebenar itu adalah mereka yang orang Islam lain terselamat daripada keburukan lidah dan tangannya.', ruj: '' },
+        { j: 'teks', t: 'Apabila bersosial di tempat awam seperti jalanan atau tempat berkumpul, Islam menetapkan adab-adab dan tanggungjawab moral yang perlu dipatuhi bagi memelihara hak masyarakat awam. Hal ini dijelaskan oleh Rasulullah SAW apabila para sahabat ingin duduk berbual di jalanan, menerusi sabdanya:' },
+        { j: 'hadis', ar: 'إِذَا أَبَيْتُمْ إِلَّا الْمَجْلِسَ فَأَعْطُوا الطَّرِيقَ حَقَّهُ... غَضُّ الْبَصَرِ، وَكَفُّ الْأَذَى، وَرَدُّ السَّلَامِ، وَالْأَمْرُ بِالْمَعْرُوفِ، وَالنَّهْيُ عَنِ الْمُنْكَرِ', maksud: 'Jika kamu enggan melainkan tetap mahu duduk-duduk di situ, maka berikanlah jalan itu haknya, iaitu menundukkan pandangan, menahan diri daripada menyakiti, menjawab salam, menyuruh kepada kebaikan, dan mencegah kemungkaran.', ruj: 'HR Abu Daud, 4815' },
+        { j: 'teks', t: 'Selain itu, etika bersosial dalam konteks yang lebih rapat seperti jiran tetangga dan tetamu juga dikaitkan secara langsung dengan kesempurnaan iman kepada Allah dan hari akhirat. Baginda SAW memberikan panduan yang sangat jelas agar kita sentiasa berbuat baik dan menjaga lisan melalui sabdanya:' },
+        { j: 'hadis', ar: 'مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيُكْرِمْ ضَيْفَهُ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيُحْسِنْ إِلَى جَارِهِ، وَمَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ', maksud: 'Sesiapa yang beriman kepada Allah dan hari akhirat, maka hendaklah dia memuliakan tetamunya. Dan sesiapa yang beriman kepada Allah dan hari akhirat, maka hendaklah dia berbuat baik kepada jirannya. Dan sesiapa yang beriman kepada Allah dan hari akhirat, maka hendaklah dia berkata yang baik atau diam.', ruj: 'HR Bukhari, 6018' }
+      ]}
+    ]},
+  { slug: 'kesempurnaan-islam', siri: 'akhlak-dan-adab', tarikh: '2026-08-11', tajuk: 'Kesempurnaan Islam', tag: ['akhlak', 'adab', 'khusyuk', 'masa'],
+    soalan: [
+      { s: 'Bagaimana Islam mengajar cara menghindari gangguan dalam beribadah?', blok: [
+        { j: 'teks', t: 'Islam mengajar umatnya untuk membina kesedaran mental bahawa segala urusan duniawi selain Allah SWT adalah sia-sia agar hati lebih fokus dan tidak melayang ketika beribadah. Asas ini bersandarkan kepada sabda Rasulullah SAW yang membenarkan bait syair penyair Arab:' },
+        { j: 'hadis', ar: 'أَلَا كُلُّ شَيْءٍ مَا خَلَا اللَّهَ بَاطِلُ', maksud: 'Ketahuilah, setiap sesuatu selain Allah itu adalah batil.', ruj: '' },
+        { j: 'teks', t: 'Ini sebagai peringatan agar kebesaran Allah sahaja yang hadir di dalam hati.' },
+        { j: 'teks', t: 'Dari sudut tindakan fizikal pula, Islam menuntut kita menyingkirkan atau menjauhi sebarang objek yang berpotensi menarik perhatian mata dan mengganggu tumpuan. Hal ini dicontohkan secara praktikal oleh Rasulullah SAW apabila baginda menukarkan pakaian bersulam (khamisah) yang dipakainya kepada pakaian tebal yang tidak bercorak (anbijaniyyah) demi menjaga kualiti dan fokus ibadahnya.' },
+        { j: 'teks', t: 'Tindakan baginda itu dilakukan semata-mata untuk menutup ruang kelalaian pandangan dengan serta-merta ketika sedang bermunajat. Ia dijelaskan menerusi sabda baginda:' },
+        { j: 'hadis', ar: 'إِنِّي كُنْتُ أَنْظُرُ إِلَى عَلَمِهَا فِي الصَّلَاةِ', maksud: 'Sesungguhnya aku terpandang pada coraknya ketika di dalam solat.', ruj: '' },
+        { j: 'teks', t: 'Kemudian ditegaskan lagi kemudaratan hal tersebut dalam riwayat lain:' },
+        { j: 'hadis', ar: 'فَإِنَّهَا أَلْهَتْنِي فِي صَلَاتِي', maksud: 'Maka sesungguhnya ia telah melalaikan aku dalam solatku.', ruj: '' }
+      ]},
+      { s: 'Apakah ciri kesempurnaan Islam seseorang?', blok: [
+        { j: 'teks', t: 'Ciri utama kesempurnaan dan kebaikan Islam seseorang individu terletak pada kebijaksanaannya dalam menguruskan masa serta perhatiannya. Hal ini dapat dicapai apabila seseorang Muslim itu mengambil langkah untuk meninggalkan apa jua urusan, perkataan, atau perbuatan yang tidak mendatangkan manfaat (sia-sia) kepada dirinya, baik dari sudut dunia mahupun akhirat.' },
+        { j: 'teks', t: 'Prinsip ini merupakan satu panduan kukuh yang telah ditetapkan oleh baginda Nabi SAW. Terdapat pelbagai jalur periwayatan bagi hadis ini, antaranya melalui Abu Hurairah RA dan riwayat sahih secara mursal daripada Ali bin Al-Husain, di mana Rasulullah SAW telah bersabda:' },
+        { j: 'hadis', ar: 'مِنْ حُسْنِ إِسْلَامِ الْمَرْءِ تَرْكُهُ مَا لَا يَعْنِيهِ', maksud: 'Sebahagian daripada kebaikan keislaman seseorang itu adalah dia meninggalkan apa yang tidak bermanfaat baginya.', ruj: '' },
+        { j: 'teks', t: 'Oleh itu, tindakan mengelakkan diri daripada mencampuri perkara yang melalaikan bukan sahaja menjaga kualiti iman seseorang, malah ia merupakan bukti nyata akan keelokan dan kesempurnaan pegangan agamanya.' }
+      ]}
+    ]},
+  { slug: 'muraqabah', siri: 'akhlak-dan-adab', tarikh: '2026-08-18', tajuk: 'Muraqabah', tag: ['akhlak', 'adab', 'ihsan', 'muraqabah'],
+    soalan: [
+      { s: 'Apakah yang dimaksudkan dengan konsep Ihsan, dan bagaimanakah ia membentuk sikap sentiasa muraqabah dalam diri seorang hamba ketika beribadah?', blok: [
+        { j: 'teks', t: 'Konsep Ihsan merujuk kepada tahap penghayatan kerohanian tertinggi di mana seorang hamba menyembah dan beribadah kepada Allah SWT seolah-olah dia sedang melihat-Nya secara langsung di hadapannya. Sekiranya dia tidak mampu mencapai tahap kepekaan spiritual tersebut, dia wajib menanamkan keyakinan yang teguh bahawa Allah SWT sentiasa melihat, memantau, dan menyedari setiap gerak-gerinya.' },
+        { j: 'teks', t: 'Penghayatan inilah yang secara langsung membentuk sikap muraqabah (rasa sentiasa diawasi) dalam diri seorang hamba. Apabila seseorang sentiasa sedar bahawa pemerhatian Allah tidak pernah luput daripadanya, hatinya akan terdorong untuk beribadah dengan penuh ikhlas, khusyuk, dan berwaspada daripada melakukan maksiat atau kecuaian, kerana dia tahu tiada apa yang tersembunyi daripada pandangan pencipta-Nya.' },
+        { j: 'teks', t: 'Konsep dan asas penting ini dijelaskan dengan jelas melalui sabda Rasulullah SAW ketika menjawab pertanyaan mengenai Ihsan dalam hadis Jibril yang masyhur:' },
+        { j: 'hadis', ar: 'الْإِحْسَانُ أَنْ تَعْبُدَ اللَّهَ كَأَنَّكَ تَرَاهُ، فَإِنْ لَمْ تَكُنْ تَرَاهُ فَإِنَّهُ يَرَاكَ', maksud: 'Ihsan itu adalah engkau menyembah Allah seolah-olah engkau melihat-Nya, maka sekiranya engkau tidak dapat melihat-Nya, maka ketahuilah bahawa sesungguhnya Dia melihatmu.', ruj: 'HR Bukhari, 50' }
+      ]},
+      { s: 'Apakah tahap keimanan yang paling tinggi bagi seseorang?', blok: [
+        { j: 'teks', t: 'Tahap keimanan yang paling afdal atau utama bagi seseorang hamba adalah apabila dia memiliki kesedaran dan keyakinan mutlak bahawa Allah SWT sentiasa bersamanya walau di mana jua dia berada. Perasaan ini merupakan teras kepada amalan muraqabah yang menuntut seseorang untuk sentiasa merasai pengawasan Allah dalam setiap tindakan dan tingkah lakunya.' },
+        { j: 'teks', t: 'Keutamaan mencapai tahap keimanan tertinggi ini telah ditegaskan secara langsung oleh Rasulullah SAW. Perkara ini dibuktikan menerusi sebuah hadis yang diriwayatkan daripada \'Ubadah bin al-Samit RA, di mana baginda telah bersabda:' },
+        { j: 'hadis', ar: 'أَفْضَلُ الْإِيمَانِ أَنْ تَعْلَمَ أَنَّ اللَّهَ مَعَكَ حَيْثُمَا كُنْتَ', maksud: 'Sebaik-baik iman ialah engkau mengetahui bahawa Allah sentiasa bersamamu walau di mana jua engkau berada.', ruj: 'HR Tabrani, 8796' },
+        { j: 'teks', t: 'Walau bagaimanapun, konsep kebersamaan Allah dengan hamba-Nya di sini perlulah difahami dengan landasan akidah yang betul. Sebagaimana yang telah dijelaskan oleh Syeikh Ahmad, maksud Allah sentiasa bersama hamba-Nya itu adalah kebersamaan dari sudut ilmu-Nya (pengetahuan-Nya). Ini bermakna Allah sentiasa memerhati dan Maha Mengetahui segala perbuatan, keadaan, dan isi hati hamba-Nya pada setiap masa.' }
+      ]}
+    ]},
+  { slug: 'sifat-malu', siri: 'akhlak-dan-adab', tarikh: '2026-08-25', tajuk: 'Sifat Malu', tag: ['akhlak', 'adab', 'malu', 'iman', 'digital'],
+    soalan: [
+      { s: 'Bagaimanakah sifat malu itu menjadi perisai yang mencegah daripada melakukan kemaksiatan secara terang-terangan mahupun sembunyi?', blok: [
+        { j: 'teks', t: 'Sifat malu berkait rapat dengan kesempurnaan iman. Sifat malu adalah komponen utama dalam keimanan seseorang. Apabila iman bertapak kukuh di dalam hati, sifat malu akan wujud secara semula jadi. Perasaan malu kepada Allah SWT akan melahirkan rasa sentiasa diawasi (muraqabah), sekaligus menjadi perisai yang menghalang seseorang daripada melakukan maksiat walaupun bersendirian di tempat yang tersembunyi.' },
+        { j: 'hadis', ar: 'دَعْهُ، فَإِنَّ الْحَيَاءَ مِنَ الْإِيمَانِ', maksud: 'Biarkan dia, kerana sesungguhnya sifat malu itu adalah sebahagian daripada iman.', ruj: '' },
+        { j: 'teks', t: 'Sifat malu menghalang terjadinya keburukan. Sifat malu yang sebenar tidak akan membiarkan pemiliknya terjebak ke lembah dosa. Ia sentiasa membimbing tingkah laku ke arah ketaatan dan secara automatik menahan diri daripada melakukan perbuatan keji yang boleh mengundang murka Allah mahupun celaan manusia.' },
+        { j: 'hadis', ar: 'وَالْحَيَاءُ لَا يَأْتِي إِلَّا بِخَيْرٍ', maksud: '...dan sifat malu itu tidak mendatangkan (sesuatu) melainkan kebaikan.', ruj: '' },
+        { j: 'teks', t: 'Malu merupakan suatu kebaikan. Sifat malu merangkumi kebaikan secara keseluruhan, baik dari segi akhlak, pertuturan, mahupun tindakan fizikal. Orang yang memiliki sifat ini akan berasa segan dan jijik untuk mempamerkan dosa atau berbangga dengan maksiat secara terang-terangan, kerana sifat malu itu memelihara maruahnya secara total.' },
+        { j: 'hadis', ar: 'الْحَيَاءُ كُلُّهُ خَيْرٌ', maksud: 'Sifat malu itu keseluruhannya adalah kebaikan…', ruj: '' }
+      ]},
+      { s: 'Apakah langkah-langkah praktikal yang boleh kita lakukan pada hari ini untuk memelihara daripada anasir yang merosakkan iman di era digital?', blok: [
+        { j: 'teks', t: 'Memelihara pancaindera dan fikiran. Di era digital, kita terdedah kepada lambakan maklumat dan visual melalui skrin peranti. Langkah praktikalnya adalah dengan menapis dan menjaga pandangan mata, pendengaran, serta fikiran daripada melihat atau membaca kandungan yang tidak bermanfaat, lucah, atau fitnah di media sosial.' },
+        { j: 'hadis', ar: 'فَلْيَحْفَظِ الرَّأْسَ وَمَا وَعَى', maksud: '...maka hendaklah dia memelihara kepala dan apa yang ada padanya (pancaindera dan fikiran)...', ruj: '' },
+        { j: 'teks', t: 'Memastikan sumber pendapatan bebas unsur haram. Kita perlu berhati-hati dalam setiap transaksi digital, perniagaan online, atau penjanaan pendapatan melalui internet agar bebas daripada unsur penipuan, riba, atau perkara syubhah. Ini memastikan rezeki yang membesarkan tubuh badan dan masuk ke dalam perut kekal halal dan diberkati.' },
+        { j: 'hadis', ar: 'وَلْيَحْفَظِ الْبَطْنَ وَمَا حَوَى', maksud: '...hendaklah dia memelihara perut dan apa yang dikandungnya (rezeki yang halal)...', ruj: '' },
+        { j: 'teks', t: 'Tidak terpedaya dengan ilusi media sosial. Dunia digital sering memaparkan ilusi kesempurnaan, kemewahan, dan gaya hidup materialistik. Langkah terbaik untuk memelihara iman adalah dengan tidak berlumba-lumba mengejar erti kejayaan palsu tersebut, sebaliknya mengehadkan masa skrin, bermuhasabah tentang kematian, dan meletakkan matlamat akhirat sebagai keutamaan.' },
+        { j: 'hadis', ar: 'وَلْيَذْكُرِ الْمَوْتَ وَالْبِلَى، وَمَنْ أَرَادَ الْآخِرَةَ تَرَكَ زِينَةَ الدُّنْيَا', maksud: '...dan hendaklah dia sentiasa mengingati kematian dan kehancuran jasad. Dan sesiapa yang menginginkan akhirat, dia akan meninggalkan perhiasan dunia.', ruj: '' }
+      ]}
+    ]},
   { slug: 'kehormatan-diri', siri: 'tadabbur-al-mukminun', tarikh: '2026-09-02', julat: 'Ayat 5–6', tajuk: 'Kehormatan Diri', tag: ['tadabbur', 'al-Mukminun', 'iffah', 'maruah'],
     soalan: [
       { s: 'Bagaimana konsep kesucian dan kehormatan diri dalam Islam?', blok: [

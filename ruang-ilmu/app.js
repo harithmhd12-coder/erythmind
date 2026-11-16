@@ -995,7 +995,7 @@ const blokEpisod = b => {
   if (b.j === 'teks') return `<p class="huraian">${esc(b.t)}</p>`;
   const label = b.j === 'hadis' ? '<span class="eyebrow">Hadis</span>' : b.j === 'petikan' ? '<span class="eyebrow">Petikan kitab</span>' : '';
   const ruj = b.ruj ? `<span class="ruj">${esc(b.ruj)}</span>` : `<span class="cip tiada-ruj">Rujukan belum dinyatakan</span>`;
-  return `<figure class="ayat ${b.j}">${label}${b.ar ? `<p class="ar" lang="ar" dir="rtl">${esc(b.ar)}</p>` : ''}<figcaption><p class="maksud">${b.maksud ? `Maksudnya: “${esc(b.maksud)}”` : ''}</p>${ruj}</figcaption></figure>`;
+  return `<figure class="ayat ${b.j}">${label}${b.ar ? `<p class="ar" lang="ar" dir="rtl">${esc(b.ar)}</p>` : ''}<figcaption>${b.maksud ? `<p class="maksud">Maksudnya: “${esc(b.maksud)}”</p>` : ''}${ruj}</figcaption></figure>`;
 };
 function paparanEpisod(a) {
   const e = a.episod; const s = SIRI_OF[e.siri]; const m = minit(a);

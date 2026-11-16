@@ -46,7 +46,7 @@ const shots = process.env.SHOTS || '';
 
     // Setiap episod siri soal-jawab dibuka bersih (Tugasan 3 dan 4)
     const episod = await page.evaluate(() => SIRI.filter(s => s.jenis === 'soal-jawab').flatMap(s => s.episod));
-    assert.ok(episod.length >= 15, `Sekurang-kurangnya 15 episod (dapat ${episod.length})`);
+    assert.ok(episod.length >= 19, `Sekurang-kurangnya 19 episod (dapat ${episod.length})`);
     for (const slug of episod) {
       await buka('e.' + slug);
       assert.ok(await page.locator('.soalan-ep').count() >= 1, `Episod ${slug} ada soalan`);
@@ -56,6 +56,10 @@ const shots = process.env.SHOTS || '';
     }
     await buka('siri');
     assert.match(await page.locator('.siri-kad').first().innerText(), /15 episod/i);
+    assert.match(await page.locator('.siri-kad').nth(1).innerText(), /4 episod/i);
+    await buka('e.sifat-malu');
+    assert.ok(await page.locator('.tiada-ruj').count() >= 1, 'Hadis tanpa rujukan dilabel');
+    assert.match(await page.locator('.tiada-ruj').first().innerText(), /Rujukan belum dinyatakan/i);
 
     for (const h of ['utama', 'a.kenapa-percaya-ramalan', 'kopi', 'studio', 'tentang']) { await buka(h); await tiadaLimpahan(h); }
     assert.deepEqual(errors, [], 'Tiada ralat konsol');
