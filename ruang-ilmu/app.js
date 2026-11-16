@@ -133,7 +133,33 @@ function drafKeArtikel(d) {
     kepentingan: d.kepentingan, berkaitan: [], penulis: d.penulis, penyemak: d.penyemak, drafStudio: true
   };
 }
-const semua = () => KANDUNGAN.concat(S.draf.filter(d => d.langkah >= 6).map(drafKeArtikel));
+/* Siri: episod soal-jawab dan kuliah ditukar kepada bentuk bahan supaya simpan, selesai, dengar, carian, peta ilmu dan Kad integriti berfungsi tanpa kod pendua. */
+const SIRI_OF = Object.fromEntries(SIRI.map(s => [s.slug, s]));
+EPISOD.forEach(e => { const s = SIRI_OF[e.siri]; if (s && !s.episod.includes(e.slug)) s.episod.push(e.slug); });
+KULIAH.forEach(k => { const s = SIRI_OF[k.siri]; if (s && !s.episod.includes(k.slug)) s.episod.push(k.slug); });
+const polosAyat = t => String(t || '').replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+[\s؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿.,:;!?()"'«»…\-]*/g, '').replace(/\s{2,}/g, ' ').trim();
+function episodKeBahan(e) {
+  const siri = SIRI_OF[e.siri]; const sumber = []; const dakwaan = [];
+  const indeks = ruj => { let i = sumber.findIndex(x => x.t === ruj); if (i < 0) { sumber.push({ j: 'primer', t: ruj }); i = sumber.length - 1; } return i; };
+  e.soalan.forEach(q => q.blok.forEach(b => {
+    if (b.j === 'ayat' || b.j === 'hadis') {
+      const ringkas = polosAyat(b.maksud).replace(/^Maksudnya:\s*/i, '');
+      if (b.ruj) dakwaan.push({ t: `${b.ruj}: ${ringkas.length > 140 ? ringkas.slice(0, 137) + '…' : ringkas}`, j: 'fakta', s: [indeks(b.ruj)] });
+      else dakwaan.push({ t: `Hadis: ${ringkas.length > 140 ? ringkas.slice(0, 137) + '…' : ringkas}`, j: 'riwayat', s: [] });
+    }
+  }));
+  const teks = q => q.blok.flatMap(b => b.j === 'teks' ? [polosAyat(b.t)] : b.maksud ? [polosAyat(b.maksud)] : []).filter(Boolean);
+  const pertama = e.soalan[0]?.blok.find(b => b.j === 'teks');
+  const r60 = polosAyat(pertama?.t || '').split(/\s+/).slice(0, 60).join(' ');
+  return {
+    slug: e.slug, tajuk: e.tajuk, dek: `${siri?.nama || 'Siri'} · Episod ${e.no}${e.julat ? ` · ${e.julat}` : ''}`,
+    kategori: siri?.kategori || 'agama', tag: e.tag || [], tahap: 'Asas', terbit: e.tarikh, kemas: e.tarikh,
+    ringkas60: r60, bahagian: e.soalan.map(q => ({ h: q.s, v: '', p: teks(q) })),
+    fakta: [], kuiz: [], refleksi: '', rujukan: sumber, dakwaan, berkaitan: [], episod: e
+  };
+}
+const BAHAN_SIRI = EPISOD.map(episodKeBahan).concat(KULIAH);
+const semua = () => KANDUNGAN.concat(BAHAN_SIRI, S.draf.filter(d => d.langkah >= 6).map(drafKeArtikel));
 const cari = slug => semua().find(a => a.slug === slug);
 const teksPenuh = a => [a.ringkas60, ...a.bahagian.flatMap(b => b.p)].join(' ');
 const minit = a => {
@@ -404,8 +430,8 @@ const Rehat = {
 
 /* ================= Paparan ================= */
 let CURR = { v: 'utama', p: '' };
-const NAV_TAB = { utama: 'utama', surat: 'utama', teroka: 'teroka', baca: 'teroka', lihat: 'teroka', dengar: 'dengar', laluan: 'teroka', l: 'teroka', a: 'teroka', v: 'teroka', kopi: 'kopi', p: 'kopi', troli: 'kopi', o: 'kopi', rehat: 'kopi', profil: 'profil', ahli: 'profil', masuk: 'profil' };
-const NAV_ATAS = { baca: 'baca', a: 'baca', lihat: 'lihat', v: 'lihat', dengar: 'dengar', teroka: 'teroka', laluan: 'laluan', l: 'laluan', kopi: 'kopi', p: 'kopi', troli: 'kopi', o: 'kopi', rehat: 'kopi', ahli: 'ahli' };
+const NAV_TAB = { siri: 'teroka', s: 'teroka', utama: 'utama', surat: 'utama', teroka: 'teroka', baca: 'teroka', lihat: 'teroka', dengar: 'dengar', laluan: 'teroka', l: 'teroka', a: 'teroka', v: 'teroka', kopi: 'kopi', p: 'kopi', troli: 'kopi', o: 'kopi', rehat: 'kopi', profil: 'profil', ahli: 'profil', masuk: 'profil' };
+const NAV_ATAS = { siri: 'siri', s: 'siri', baca: 'baca', a: 'baca', lihat: 'lihat', v: 'lihat', dengar: 'dengar', teroka: 'teroka', laluan: 'laluan', l: 'laluan', kopi: 'kopi', p: 'kopi', troli: 'kopi', o: 'kopi', rehat: 'kopi', ahli: 'ahli' };
 
 const V = {};
 
@@ -928,6 +954,45 @@ function borangDraf(d) {
     <button class="btn" type="submit">Simpan draf</button></form>`;
 }
 
+/* ================= Siri ================= */
+const pautanBahan = a => a.episod ? `#e.${a.slug}` : `#a.${a.slug}`;
+function kemajuanSiri(s) {
+  if (s.jenis === 'senarai-semak' || s.jenis === 'karusel') { const siap = selesai('s-' + s.slug) ? 1 : 0; return { siap, jumlah: 1, peratus: siap * 100 }; }
+  const jumlah = s.episod.length; const siap = s.episod.filter(selesai).length;
+  return { siap, jumlah, peratus: jumlah ? Math.round(siap / jumlah * 100) : 0 };
+}
+function labelSiri(s) {
+  if (s.jenis === 'akan-datang') return 'Akan datang';
+  if (s.jenis === 'senarai-semak') return `Senarai semak · ${(SEMAK[s.slug]?.item || []).length} tanda`;
+  if (s.jenis === 'karusel') return `Karusel · ${(KARUSEL[s.slug]?.slaid || []).length} slaid`;
+  if (s.jenis === 'kuliah') return `${s.episod.length} kuliah`;
+  const tarikhan = s.episod.map(x => EPISOD.find(e => e.slug === x)?.tarikh).filter(Boolean).sort();
+  const bulan = d => BULAN[new Date(d).getMonth()];
+  const julat = tarikhan.length ? (bulan(tarikhan[0]) === bulan(tarikhan.at(-1)) ? `${bulan(tarikhan[0])} ${tarikhan[0].slice(0, 4)}` : `${bulan(tarikhan[0])}–${bulan(tarikhan.at(-1))} ${tarikhan.at(-1).slice(0, 4)}`) : '';
+  return `${s.episod.length} episod${julat ? ' · ' + julat : ''}`;
+}
+const kadSiri = s => {
+  if (s.jenis === 'akan-datang') return `<div class="siri-kad kosong-siri" aria-label="${esc(s.nama)}, akan datang"><span class="eyebrow">Akan datang</span><h3>${esc(s.nama)}</h3><p>${esc(s.ringkas)}</p></div>`;
+  const k = kemajuanSiri(s);
+  return `<a class="siri-kad" href="#s.${s.slug}"><span class="eyebrow">${esc(labelSiri(s))}</span><h3>${esc(s.nama)}</h3><p>${esc(s.ringkas)}</p><div class="bar" role="progressbar" aria-valuenow="${k.peratus}" aria-valuemin="0" aria-valuemax="100"><i style="width:${k.peratus}%"></i></div><span class="meta"><span>${k.siap}/${k.jumlah} selesai</span></span></a>`;
+};
+V.siri = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Siri ilmu</span><h1>Siri</h1><p class="lede">Himpunan soal-jawab, kuliah dan karusel. Ikut satu siri dari mula hingga habis.</p></header>
+  <section class="seksyen" style="border-top:0;padding-top:0"><div class="grid-siri">${SIRI.map(kadSiri).join('')}</div></section></div>`;
+V.s = slug => {
+  const s = SIRI_OF[slug]; if (!s || s.jenis === 'akan-datang') return V.tiada();
+  const k = kemajuanSiri(s);
+  const kepala = `<header class="halaman-kepala"><a class="pautan" href="#siri">← Semua siri</a><span class="eyebrow">${esc(labelSiri(s))}</span><h1>${esc(s.nama)}</h1><p class="lede">${esc(s.ringkas)}</p>
+    <div class="bar" style="max-width:420px"><i style="width:${k.peratus}%"></i></div><span class="meta"><span>${k.siap} daripada ${k.jumlah} selesai</span></span>`;
+  if (s.jenis === 'senarai-semak') return `<div class="bekas">${kepala}</header>${paparanSemak(s)}</div>`;
+  if (s.jenis === 'karusel') return `<div class="bekas">${kepala}</header>${paparanKarusel(s)}</div>`;
+  const bahan = s.episod.map(cari).filter(Boolean);
+  const lepas = bahan.find(a => !selesai(a.slug));
+  return `<div class="bekas">${kepala}${lepas ? `<div><a class="btn" href="${pautanBahan(lepas)}">${k.siap ? `Sambung episod ${bahan.indexOf(lepas) + 1}` : 'Mula episod 1'}</a></div>` : bahan.length ? '<p><b>Siri ini lengkap.</b></p>' : ''}</header>
+  <section class="seksyen">${bahan.length ? `<ul class="senarai-baris">${bahan.map((a, i) => `<li><div class="baris"><span class="no">${String(i + 1).padStart(2, '0')}</span><div class="tajuk-baris"><a href="${pautanBahan(a)}">${esc(a.tajuk)}</a><span class="meta">${a.episod ? `<span>${a.episod.soalan.length} soalan</span>${a.episod.julat ? `<span>${esc(a.episod.julat)}</span>` : ''}<span>${tarikh(a.terbit)}</span>` : `<span>${minit(a).baca} min baca</span>`}</span></div>${selesai(a.slug) ? '<span class="cip selesai">Selesai</span>' : a === lepas ? '<span class="cip merah">Seterusnya</span>' : '<span class="cip">Belum</span>'}</div></li>`).join('')}</ul>` : '<p class="kosong">Episod sedang disediakan.</p>'}</section></div>`;
+};
+const paparanSemak = s => `<p class="kosong">Senarai semak sedang disediakan.</p>`;
+const paparanKarusel = s => `<p class="kosong">Karusel sedang disediakan.</p>`;
+
 V.tiada = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Tidak dijumpai</span><h1>Halaman ini tiada di rak kami.</h1><p class="lede">Mungkin pautannya sudah berubah. <a class="pautan" href="#teroka">Cari ilmu</a> atau kembali ke <a class="pautan" href="#utama">halaman utama</a>.</p></header></div>`;
 
 /* ================= Kaki ================= */
@@ -945,7 +1010,9 @@ function kaki() {
 function bacaHash() {
   const h = decodeURIComponent(location.hash.replace(/^#/, '')) || 'utama';
   const i = h.indexOf('.');
-  return i > 0 ? { v: h.slice(0, i), p: h.slice(i + 1) } : { v: h, p: '' };
+  const r = i > 0 ? { v: h.slice(0, i), p: h.slice(i + 1) } : { v: h, p: '' };
+  if (r.v === 'e') { r.v = 'a'; r.nav = 'siri'; }
+  return r;
 }
 function render() {
   const r = bacaHash();
@@ -955,15 +1022,16 @@ function render() {
   const main = $('#kandungan');
   main.innerHTML = fn(r.p);
   document.title = tajukHalaman(r);
-  $$('[data-nav]').forEach(a => { if (a.dataset.nav === NAV_ATAS[r.v]) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  $$('[data-tab]').forEach(a => { if (a.dataset.tab === (NAV_TAB[r.v] || '')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  $$('[data-nav]').forEach(a => { if (a.dataset.nav === NAV_ATAS[r.nav || r.v]) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  $$('[data-tab]').forEach(a => { if (a.dataset.tab === (NAV_TAB[r.nav || r.v] || '')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   $('#kemajuanBaca').hidden = r.v !== 'a';
   selepasRender(r, lama);
 }
 function tajukHalaman(r) {
   if (r.v === 'a' || r.v === 'v') { const a = cari(r.p); return a ? `${a.tajuk} · Ruang Ilmu` : 'Ruang Ilmu'; }
   if (r.v === 'p') return `${PROD[r.p]?.nama || 'Kopi'} · Sip 'n Go Coffee`;
-  const n = { baca: 'Baca', lihat: 'Lihat', dengar: 'Dengar', teroka: 'Teroka', laluan: 'Laluan Ilmu', kopi: "Sip 'n Go Coffee", troli: 'Troli', rehat: 'Coffee Break 15 Minit', ahli: 'Keahlian', profil: 'Profil', tentang: 'Tentang', studio: 'Studio' }[r.v];
+  if (r.v === 's') return `${SIRI_OF[r.p]?.nama || 'Siri'} · Ruang Ilmu`;
+  const n = { siri: 'Siri', baca: 'Baca', lihat: 'Lihat', dengar: 'Dengar', teroka: 'Teroka', laluan: 'Laluan Ilmu', kopi: "Sip 'n Go Coffee", troli: 'Troli', rehat: 'Coffee Break 15 Minit', ahli: 'Keahlian', profil: 'Profil', tentang: 'Tentang', studio: 'Studio' }[r.v];
   return n ? `${n} · Ruang Ilmu` : 'Ruang Ilmu';
 }
 function selepasRender(r, lama) {
