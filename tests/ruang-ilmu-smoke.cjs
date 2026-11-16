@@ -27,6 +27,23 @@ const shots = process.env.SHOTS || '';
     await buka('s.sip-n-speak');
     assert.match(await page.locator('h1').innerText(), /tiada di rak/, 'Siri akan datang tiada halaman');
 
+    // Episod soal-jawab (arah A: semua soalan terbuka)
+    await buka('e.benci-kepada-kebenaran');
+    assert.match(await page.locator('h1').innerText(), /Benci kepada Kebenaran/);
+    assert.equal(await page.locator('.soalan-ep').count(), 2, 'Dua soalan dipaparkan');
+    assert.ok(await page.locator('.ayat .ar').count() >= 5, 'Ayat dipaparkan');
+    assert.equal(await page.locator('.ayat .ar').first().getAttribute('dir'), 'rtl');
+    assert.match(await page.locator('.ayat .ruj').first().innerText(), /Surah al-Mukminun, ayat 68/);
+    const teks = await page.locator('#kandungan').innerText();
+    for (const larang of [/Assalamualaikum Subuh/i, /PANEL/, /USTAZ BAKHTIAR/i, /MUSIL/, /Al-?Bayan/i, /drive\.google/i, /QR/]) assert.doesNotMatch(teks, larang, `Teks terlarang: ${larang}`);
+    assert.equal(await page.locator('[data-nav="siri"][aria-current="page"]').count(), 1, 'Nav Siri aktif di episod');
+    await tiadaLimpahan('episod'); await shot('episod');
+    await page.click('[data-act="selesai"][data-slug="benci-kepada-kebenaran"]');
+    await buka('s.tadabbur-al-mukminun');
+    assert.match(await page.locator('.halaman-kepala').innerText(), /1 daripada 1 selesai/, 'Kemajuan siri dikemas kini');
+    await buka('siri');
+    assert.match(await page.locator('.siri-kad').first().innerText(), /1\/1 selesai/);
+
     for (const h of ['utama', 'a.kenapa-percaya-ramalan', 'kopi', 'studio', 'tentang']) { await buka(h); await tiadaLimpahan(h); }
     assert.deepEqual(errors, [], 'Tiada ralat konsol');
     await ctx.close();

@@ -4,7 +4,7 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 
 1. [x] **Model dan rangka Siri.** Cipta `siri.js` (SIRI, EPISOD kosong, Sip n Speak), muatkan dalam `index.html`, tambah laluan `#siri`, `#s.<slug>`, pautan nav "Siri", penyesuai `episodKeBahan`.
    Fail: `siri.js`, `index.html`, `app.js`, `styles.css`. Ujian: `#siri` papar kad, Sip n Speak "Akan datang", tiada ralat konsol.
-2. [ ] **Paparan episod soal-jawab** (arah A atau B yang dipilih pemilik): blok teks, ayat (Arab RTL + fon Amiri), hadis, label "Rujukan belum dinyatakan", navigasi episod, tanda selesai.
+2. [x] **Paparan episod soal-jawab** (arah A, dipilih pemilik): blok teks, ayat (Arab RTL + fon Amiri), hadis, label "Rujukan belum dinyatakan", navigasi episod, tanda selesai.
    Fail: `app.js`, `styles.css`, `index.html` (fon). Ujian: episod contoh papar soalan dan ayat; tanda selesai mengemas kini kemajuan siri.
 3. [ ] **Import Tadabbur Surah al-Mukminun.** Baca setiap fail SMU bersegmen Tadabbur Surah Mukminun dari Drive, buang nama program, panel, kempen dan pautan, tukar ke EPISOD.
    Fail: `siri.js`. Ujian: setiap episod dibuka tanpa ralat; carian teks terlarang (nama program, panel, MUSIL, Al-Bayan, drive.google) pulang kosong.

@@ -135,7 +135,7 @@ function drafKeArtikel(d) {
 }
 /* Siri: episod soal-jawab dan kuliah ditukar kepada bentuk bahan supaya simpan, selesai, dengar, carian, peta ilmu dan Kad integriti berfungsi tanpa kod pendua. */
 const SIRI_OF = Object.fromEntries(SIRI.map(s => [s.slug, s]));
-EPISOD.forEach(e => { const s = SIRI_OF[e.siri]; if (s && !s.episod.includes(e.slug)) s.episod.push(e.slug); });
+EPISOD.sort((x, y) => x.tarikh.localeCompare(y.tarikh)).forEach(e => { const s = SIRI_OF[e.siri]; if (!s) return; if (!s.episod.includes(e.slug)) s.episod.push(e.slug); e.no = s.episod.indexOf(e.slug) + 1; });
 KULIAH.forEach(k => { const s = SIRI_OF[k.siri]; if (s && !s.episod.includes(k.slug)) s.episod.push(k.slug); });
 const polosAyat = t => String(t || '').replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+[\s؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿.,:;!?()"'«»…\-]*/g, '').replace(/\s{2,}/g, ' ').trim();
 function episodKeBahan(e) {
@@ -580,7 +580,7 @@ function kadIntegriti(a) {
   <dl class="empat-soalan">
     <div><dt>Siapa sumber asal?</dt><dd>${kira.map(([j, n]) => `${n} ${JENIS_SUMBER[j].toLowerCase()}`).join(', ') || 'Tiada sumber'}. Senarai penuh di bawah, dirujuk terus kepada asalnya.</dd></div>
     <div><dt>Siapa yang untung?</dt><dd>${esc(kepentingan(a))}</dd></div>
-    <div><dt>Adakah tajuk dijawab?</dt><dd>${soalan ? (kiraPerkataan(a.ringkas60) >= 20 ? 'Ya. Jawapan ringkas berada di bahagian Faham dalam 60 saat, sebelum isi penuh.' : 'Belum. Bahan ini sedang disemak.') : 'Tajuk bukan soalan. Ringkasan berada di bahagian Faham dalam 60 saat.'}</dd></div>
+    <div><dt>Adakah tajuk dijawab?</dt><dd>${a.episod ? 'Ya. Episod ini disusun sebagai soal-jawab; setiap soalan dijawab terus dengan ayat atau hadis dan huraiannya.' : soalan ? (kiraPerkataan(a.ringkas60) >= 20 ? 'Ya. Jawapan ringkas berada di bahagian Faham dalam 60 saat, sebelum isi penuh.' : 'Belum. Bahan ini sedang disemak.') : 'Tajuk bukan soalan. Ringkasan berada di bahagian Faham dalam 60 saat.'}</dd></div>
     <div><dt>Apa yang telah berubah?</dt><dd><ol class="sejarah">${sejarahBahan(a).map(h => `<li><span class="meta"><span>${tarikh(h.tarikh)}</span><span>${h.jenis}</span></span>${esc(h.teks)}</li>`).join('')}</ol></dd></div>
   </dl>
   ${(a.dakwaan || []).length ? `<h4>Dakwaan utama</h4><ol class="dakwaan">${a.dakwaan.map(d => `<li><span class="cip dakwaan-${d.j}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> ${esc(d.t)}${d.s.length ? ` <span class="rujuk">${d.s.map(n => `[${n + 1}]`).join('')}</span>` : ''}</li>`).join('')}</ol><p class="kecil-nota">Nombor dalam kurungan merujuk senarai sumber di bawah. Fakta dan pengiraan wajib bersumber.</p>` : ''}
@@ -589,6 +589,7 @@ function kadIntegriti(a) {
 
 V.a = slug => {
   const a = cari(slug); if (!a) return V.tiada();
+  if (a.episod) return paparanEpisod(a);
   const m = minit(a); const jawapan = S.kuiz[slug] || {};
   const laluan = LALUAN.find(l => l.item.includes(slug));
   const lepas = laluan && laluan.item[laluan.item.indexOf(slug) + 1];
@@ -990,6 +991,44 @@ V.s = slug => {
   return `<div class="bekas">${kepala}${lepas ? `<div><a class="btn" href="${pautanBahan(lepas)}">${k.siap ? `Sambung episod ${bahan.indexOf(lepas) + 1}` : 'Mula episod 1'}</a></div>` : bahan.length ? '<p><b>Siri ini lengkap.</b></p>' : ''}</header>
   <section class="seksyen">${bahan.length ? `<ul class="senarai-baris">${bahan.map((a, i) => `<li><div class="baris"><span class="no">${String(i + 1).padStart(2, '0')}</span><div class="tajuk-baris"><a href="${pautanBahan(a)}">${esc(a.tajuk)}</a><span class="meta">${a.episod ? `<span>${a.episod.soalan.length} soalan</span>${a.episod.julat ? `<span>${esc(a.episod.julat)}</span>` : ''}<span>${tarikh(a.terbit)}</span>` : `<span>${minit(a).baca} min baca</span>`}</span></div>${selesai(a.slug) ? '<span class="cip selesai">Selesai</span>' : a === lepas ? '<span class="cip merah">Seterusnya</span>' : '<span class="cip">Belum</span>'}</div></li>`).join('')}</ul>` : '<p class="kosong">Episod sedang disediakan.</p>'}</section></div>`;
 };
+const blokEpisod = b => {
+  if (b.j === 'teks') return `<p class="huraian">${esc(b.t)}</p>`;
+  const label = b.j === 'hadis' ? '<span class="eyebrow">Hadis</span>' : '';
+  const ruj = b.ruj ? `<span class="ruj">${esc(b.ruj)}</span>` : `<span class="cip tiada-ruj">Rujukan belum dinyatakan</span>`;
+  return `<figure class="ayat ${b.j}">${label}${b.ar ? `<p class="ar" lang="ar" dir="rtl">${esc(b.ar)}</p>` : ''}<figcaption><p class="maksud">${b.maksud ? `Maksudnya: “${esc(b.maksud)}”` : ''}</p>${ruj}</figcaption></figure>`;
+};
+function paparanEpisod(a) {
+  const e = a.episod; const s = SIRI_OF[e.siri]; const m = minit(a);
+  const senarai = s.episod; const i = senarai.indexOf(a.slug);
+  const sebelum = i > 0 && cari(senarai[i - 1]), lepas = i < senarai.length - 1 && cari(senarai[i + 1]);
+  return `<div class="bekas"><article class="artikel episod-qa">
+  <div class="badan-utama">
+    <header class="artikel-kepala">
+      <div class="meta"><a href="#s.${s.slug}" style="color:var(--merah);text-decoration:none">${esc(s.nama)}</a><span>Episod ${e.no} daripada ${senarai.length}</span></div>
+      <h1>${esc(a.tajuk)}</h1>
+      <div class="meta">${e.julat ? `<span>${esc(e.julat)}</span>` : ''}<span>${e.soalan.length} soalan</span><span>${m.baca} min baca</span><span>${tarikh(e.tarikh)}</span></div>
+    </header>
+    <div class="bar-tindakan" style="position:relative">
+      <button class="btn-tindak" data-act="dengar" data-slug="${a.slug}" aria-pressed="${Pemain.slug === a.slug && Pemain.main}">${IKON.dengar} Dengar ${m.dengar} min</button>
+      <span class="ruang"></span>
+      <button class="btn-tindak" data-act="simpan" data-slug="${a.slug}" aria-pressed="${disimpan(a.slug)}">${disimpan(a.slug) ? IKON.simpanPenuh : IKON.simpan} ${disimpan(a.slug) ? 'Disimpan' : 'Simpan'}</button>
+      <button class="btn-tindak" data-act="kongsi" aria-label="Salin pautan">${IKON.kongsi}</button>
+      <button class="btn-tindak" data-act="tetapan-baca" aria-label="Tetapan bacaan" aria-expanded="false">${IKON.aa}</button>
+    </div>
+    <div id="prosa" class="soal-jawab">${e.soalan.map((q, n) => `<section class="soalan-ep" aria-labelledby="bab-${n}"><span class="no-soal">Soalan ${n + 1}</span><h2 id="bab-${n}" class="soal">${esc(q.s)}</h2>${q.blok.map(blokEpisod).join('')}</section>`).join('')}</div>
+    <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center">
+      <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem">${selesai(a.slug) ? 'Episod ini telah kau selesaikan.' : 'Sudah faham?'}</b><span class="kecil-nota">${selesai(a.slug) ? `Ditanda pada ${tarikh(S.selesai[a.slug])}.` : 'Tanda selesai untuk mengemas kini kemajuan siri.'}</span></div>
+      <button class="btn ${selesai(a.slug) ? 'garis' : ''}" data-act="selesai" data-slug="${a.slug}">${selesai(a.slug) ? 'Selesai' : 'Tanda episod selesai'}</button>
+    </div>
+    <section class="kotak" aria-label="Nota peribadi"><span class="eyebrow">Nota peribadi</span><label class="sr" for="nota-${a.slug}">Nota peribadi</label><textarea id="nota-${a.slug}" rows="3" data-nota="${a.slug}" placeholder="Apa yang kau ambil daripada episod ini?">${esc(S.nota[a.slug] || '')}</textarea><span class="kecil-nota" id="notaStatus">${S.nota[a.slug] ? 'Disimpan.' : ''}</span></section>
+    ${kadIntegriti(a)}
+    <section style="display:grid;gap:12px;max-width:var(--lajur)" id="sumber"><span class="eyebrow">Sumber</span><ol class="rujukan">${a.rujukan.map(r => `<li><span class="cip sumber-primer">Primer</span> ${esc(r.t)}</li>`).join('')}</ol>
+      <p class="kecil-nota">Terjumpa kesilapan? <button class="pautan" data-act="lapor" data-slug="${a.slug}">Laporkan kesilapan</button>.</p></section>
+    <nav class="navep" aria-label="Episod lain">${sebelum ? `<a class="pautan" href="#e.${sebelum.slug}">← ${esc(sebelum.tajuk)}</a>` : '<span></span>'}${lepas ? `<a class="pautan" href="#e.${lepas.slug}">${esc(lepas.tajuk)} →</a>` : `<a class="pautan" href="#s.${s.slug}">Kembali ke siri</a>`}</nav>
+  </div>
+  <aside class="sisi" aria-label="Soalan dalam episod"><div><span class="eyebrow">Soalan</span><ol class="isi-kandungan">${e.soalan.map((q, n) => `<li><a href="#e.${a.slug}" data-act="bab" data-bab="${n}">${esc(q.s.length > 70 ? q.s.slice(0, 67) + '…' : q.s)}</a></li>`).join('')}</ol></div></aside>
+  </article></div>`;
+}
 const paparanSemak = s => `<p class="kosong">Senarai semak sedang disediakan.</p>`;
 const paparanKarusel = s => `<p class="kosong">Karusel sedang disediakan.</p>`;
 

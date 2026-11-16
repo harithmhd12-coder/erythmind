@@ -523,3 +523,17 @@ a.siri-kad:hover { border-color: var(--dakwat); }
 .siri-kad h3 { font-size: 1.3rem; }
 .siri-kad p { color: var(--kelabu); font-size: .95rem; }
 .kosong-siri { border-style: dashed; }
+.soal-jawab { display: grid; gap: 34px; max-width: var(--lajur); }
+.soalan-ep { display: grid; gap: 14px; scroll-margin-top: 90px; }
+.soalan-ep + .soalan-ep { border-top: 1px solid var(--garis); padding-top: 28px; }
+.no-soal { font-family: var(--mono); font-size: .76rem; color: var(--merah); letter-spacing: .08em; text-transform: uppercase; }
+.soal { font-family: var(--serif); font-size: 1.45rem; font-weight: 600; line-height: 1.3; }
+.huraian { font-family: var(--serif); font-size: var(--fs-bacaan); line-height: 1.7; }
+.ayat { margin: 0; border: 1px solid var(--garis); border-radius: 10px; background: var(--permukaan); padding: 16px 18px; display: grid; gap: 10px; }
+.ayat .ar { font-family: "Amiri", "Scheherazade New", "Noto Naskh Arabic", "Geeza Pro", serif; font-size: 1.6rem; line-height: 2.1; text-align: right; color: var(--dakwat); }
+.ayat figcaption { display: grid; gap: 6px; }
+.ayat .maksud { font-family: var(--serif); font-size: 1.05rem; line-height: 1.6; }
+.ayat .ruj { font-family: var(--mono); font-size: .76rem; color: var(--merah); }
+.ayat.hadis { border-left: 3px solid var(--merah); }
+.cip.tiada-ruj { border-style: dashed; border-color: var(--kelabu); color: var(--kelabu); justify-self: start; }
+.navep { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--dakwat); padding-top: 16px; max-width: var(--lajur); }
