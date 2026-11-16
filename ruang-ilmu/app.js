@@ -145,7 +145,7 @@ EP.forEach(e => { const s = SIRI_OF[e.siri]; if (!s) return; if (!s.episod.inclu
 const polosAyat = t => String(t || '').replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+[\s؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿.,:;!?()"'«»…\-]*/g, '').replace(/\s{2,}/g, ' ').trim();
 function episodKeBahan(e) {
   const siri = SIRI_OF[e.siri]; const sumber = []; const dakwaan = [];
-  if (e.luar) { sumber.push({ j: 'primer', t: `Rakaman "${e.luar.tajuk}" (sesi ${e.luar.sesi}), penceramah ${e.luar.penceramah}, saluran YouTube ${e.luar.saluran}: ${e.luar.url}` }); (e.dakwaan || []).forEach(d => dakwaan.push({ t: `Penceramah: ${d.t}`, j: d.j, s: [0] })); }
+  if (e.luar) { sumber.push({ j: 'primer', t: `Rakaman "${e.luar.tajuk}" (sesi ${e.luar.sesi}), penceramah ${e.luar.penceramah}, saluran YouTube ${e.luar.saluran}: ${e.luar.url}` }); (e.dakwaan || []).forEach(d => dakwaan.push({ t: `${d.oleh === 'moderator' ? 'Moderator' : 'Penceramah'} (belum disemak): ${d.t}`, j: d.j, s: [] })); }
   const indeks = ruj => { let i = sumber.findIndex(x => x.t === ruj); if (i < 0) { sumber.push({ j: 'primer', t: ruj }); i = sumber.length - 1; } return i; };
   e.soalan.forEach(q => q.blok.forEach(b => {
     if (b.j === 'ayat' || b.j === 'hadis' || b.j === 'petikan') {
@@ -159,7 +159,7 @@ function episodKeBahan(e) {
   const r60 = polosAyat(pertama?.t || '').split(/\s+/).slice(0, 60).join(' ');
   return {
     slug: e.slug, tajuk: e.tajuk, dek: `${siri?.nama || 'Siri'} · ${unitSiri(e.siri)[0]} ${e.no}${e.julat ? ` · ${e.julat}` : ''}`,
-    kategori: siri?.kategori || 'agama', tag: e.tag || [], tahap: 'Asas', terbit: e.tarikh, kemas: e.tarikh,
+    kategori: e.kategori || siri?.kategori || 'agama', tag: e.tag || [], tahap: 'Asas', terbit: e.tarikh, kemas: e.tarikh,
     ringkas60: r60, bahagian: e.soalan.map(q => ({ h: polosAyat(q.s), v: '', p: teks(q) })),
     fakta: [], kuiz: [], refleksi: '', rujukan: sumber, dakwaan, berkaitan: [], episod: e,
     kepentingan: e.luar ? `Rakaman milik saluran YouTube ${e.luar.saluran}. Ruang Ilmu tidak berafiliasi dengan penceramah atau saluran itu dan tiada kepentingan komersial pada bahan ini.` : undefined
@@ -596,7 +596,7 @@ function kadIntegriti(a) {
     <div><dt>Adakah tajuk dijawab?</dt><dd>${a.episod ? (a.episod.luar ? 'Nota kuliah sumber luar. Setiap bahagian dipautkan ke minit rakaman asal, dan dakwaan penceramah yang belum disemak disenaraikan berasingan.' : SIRI_OF[a.episod.siri]?.jenis === 'kuliah' ? 'Kuliah ini disusun mengikut sebab; setiap sebab disertakan matan kitab berhalaman, dalil dan huraiannya.' : 'Ya. Episod ini disusun sebagai soal-jawab; setiap soalan dijawab terus dengan ayat atau hadis dan huraiannya.') : soalan ? (kiraPerkataan(a.ringkas60) >= 20 ? 'Ya. Jawapan ringkas berada di bahagian Faham dalam 60 saat, sebelum isi penuh.' : 'Belum. Bahan ini sedang disemak.') : 'Tajuk bukan soalan. Ringkasan berada di bahagian Faham dalam 60 saat.'}</dd></div>
     <div><dt>Apa yang telah berubah?</dt><dd><ol class="sejarah">${sejarahBahan(a).map(h => `<li><span class="meta"><span>${tarikh(h.tarikh)}</span><span>${h.jenis}</span></span>${esc(h.teks)}</li>`).join('')}</ol></dd></div>
   </dl>
-  ${(a.dakwaan || []).length ? `<h4>Dakwaan utama</h4><ol class="dakwaan">${a.dakwaan.map(d => `<li><span class="cip dakwaan-${d.j}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> ${esc(d.t)}${d.s.length ? ` <span class="rujuk">${d.s.map(n => `[${n + 1}]`).join('')}</span>` : ''}</li>`).join('')}</ol><p class="kecil-nota">Nombor dalam kurungan merujuk senarai sumber di bawah. Fakta dan pengiraan wajib bersumber.</p>` : ''}
+  ${a.episod?.luar ? '<p class="kecil-nota">Dakwaan dalam rakaman disenaraikan dalam kotak "Dakwaan dalam rakaman yang belum disemak" bersama pautan minitnya.</p>' : (a.dakwaan || []).length ? `<h4>Dakwaan utama</h4><ol class="dakwaan">${a.dakwaan.map(d => `<li><span class="cip dakwaan-${d.j}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> ${esc(d.t)}${d.s.length ? ` <span class="rujuk">${d.s.map(n => `[${n + 1}]`).join('')}</span>` : ''}</li>`).join('')}</ol><p class="kecil-nota">Nombor dalam kurungan merujuk senarai sumber di bawah. Fakta dan pengiraan wajib bersumber.</p>` : ''}
 </section>`;
 }
 
@@ -1015,13 +1015,14 @@ const blokEpisod = b => {
   const ruj = b.ruj ? `<span class="ruj">${esc(b.ruj)}</span>` : `<span class="cip tiada-ruj">Rujukan belum dinyatakan</span>`;
   return `<figure class="ayat ${b.j}">${label}${b.ar ? `<p class="ar" lang="ar" dir="rtl">${esc(b.ar)}</p>` : ''}<figcaption>${b.maksud ? `<p class="maksud">Maksudnya: “${esc(b.maksud)}”</p>` : ''}${ruj}</figcaption></figure>`;
 };
-const minitRakaman = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
-const pautanMinit = (luar, n) => `${luar.url}&t=${Math.max(0, Math.floor(n))}s`;
-const kreditLuar = l => `<aside class="kredit-luar" aria-label="Sumber luar"><span class="cip luar">Sumber luar</span><p>Sesi <b>${esc(l.sesi)}</b> · penceramah <b>${esc(l.penceramah)}</b> · saluran YouTube <b>${esc(l.saluran)}</b></p><p class="kecil-nota">${esc(l.nota)}</p><a class="pautan" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">Tonton rakaman asal di YouTube ↗</a></aside>`;
+const minitRakaman = n => { const j = Math.floor(n / 3600), m = Math.floor(n % 3600 / 60), d = n % 60; return `${j ? `${j}:${String(m).padStart(2, '0')}` : m}:${String(d).padStart(2, '0')}`; };
+/* Pautan minit ke rakaman; hanya URL https diterima. */
+const pautanMinit = (luar, n) => { try { const u = new URL(luar.url); if (u.protocol !== 'https:') return '#'; u.searchParams.set('t', `${Math.max(0, Math.floor(n))}s`); return u.href; } catch (e) { return '#'; } };
+const kreditLuar = l => `<aside class="kredit-luar" aria-label="Sumber luar"><span class="cip luar">Sumber luar</span><p>Sesi <b>${esc(l.sesi)}</b> · penceramah <b>${esc(l.penceramah)}</b> · saluran YouTube <b>${esc(l.saluran)}</b></p><p class="kecil-nota">${esc(l.nota)}</p><a class="pautan" href="${esc(pautanMinit(l, 0).replace(/[?&]t=0s$/, ''))}" target="_blank" rel="noopener noreferrer">Tonton rakaman asal di YouTube ↗</a></aside>`;
 function tambahanLuar(e) {
   if (!e.luar) return '';
-  return `<section class="kotak dakwaan-luar" aria-label="Dakwaan penceramah yang belum disemak"><span class="eyebrow">Dakwaan penceramah yang belum disemak</span><p class="kecil-nota">Dakwaan ini disebut dalam rakaman tanpa sumber. Ruang Ilmu belum menyemaknya. Jangan kongsi sebagai fakta.</p>
-    <ol class="dakwaan">${(e.dakwaan || []).map(d => `<li><span class="cip dakwaan-${esc(d.j)}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> ${esc(d.t)} <a class="pautan kecil-nota" href="${esc(pautanMinit(e.luar, d.mula))}" target="_blank" rel="noopener noreferrer">minit ${minitRakaman(d.mula)} ↗</a></li>`).join('')}</ol></section>
+  return `<section class="kotak dakwaan-luar" aria-label="Dakwaan dalam rakaman yang belum disemak"><span class="eyebrow">Dakwaan dalam rakaman yang belum disemak</span><p class="kecil-nota">Dakwaan ini disebut dalam rakaman tanpa sumber. Ruang Ilmu belum menyemaknya. Jangan kongsi sebagai fakta.</p>
+    <ol class="dakwaan">${(e.dakwaan || []).map(d => `<li><span class="cip dakwaan-${esc(d.j)}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> <b>${d.oleh === 'moderator' ? 'Moderator' : 'Penceramah'}:</b> ${esc(d.t)} <a class="pautan kecil-nota" href="${esc(pautanMinit(e.luar, d.mula))}" target="_blank" rel="noopener noreferrer">minit ${minitRakaman(d.mula)} ↗</a></li>`).join('')}</ol></section>
   ${(e.bacaan || []).length ? `<section class="kotak" aria-label="Bacaan yang disyorkan penceramah"><span class="eyebrow">Bacaan yang disyorkan penceramah</span><ul class="bacaan-luar">${e.bacaan.map(b => `<li>${esc(b)}</li>`).join('')}</ul></section>` : ''}`;
 }
 function paparanEpisod(a) {

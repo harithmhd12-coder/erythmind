@@ -33,3 +33,4 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 10. [x] **Data Kuliah 4**: nota bahagian demi bahagian daripada transkrip, kredit dan pautan minit, dakwaan untuk disemak, bacaan yang disyorkan. Fail: `siri.js`. Ujian: 4 kuliah, kredit dan pautan YouTube wujud, tiada iframe, Studio lulus.
 11. [x] **Paparan sumber luar**: kotak kredit, pautan "Tonton bahagian ini", kotak dakwaan belum disemak. Fail: `app.js`, `styles.css`. Ujian: tiada permintaan rangkaian ke YouTube semasa dibuka; 400px/1366px, gelap.
 12. [x] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-7`).
+   Nota: tugasan 10 dan 11 tergabung dalam satu commit (a1ec429) kerana ujian data bergantung pada paparan.

@@ -12,7 +12,7 @@
    SEMAK     { [slugSiri]: { kitab, pengenalan: [p], kumpulan: [{ tajuk, item: [{ t, hlm, dalil?: { j, ar, maksud, ruj } }] }], doa } }
    KARUSEL   { [slugSiri]: { tajuk, slaid: [{ label, tajuk, besar?, ar?, maksud?, ruj?, isi?: [p], nama?: [[ar, latin]], butir?: [[k, v]], langkah?: [p], alur?: [p], nota?: [tajuk, teks], petik?, ruj2? }] } }
    Kuliah    Disimpan sebagai EPISOD dengan siri kuliah-pemikiran; soalan.label = "Sebab N" atau "Amalan", tarikh kosong.
-             Sumber luar: luar { tajuk, sesi, penceramah, saluran, url, nota }, soalan[].mula (saat), dakwaan [{ t, j, mula }], bacaan [teks]. */
+             Sumber luar: luar { tajuk, sesi, penceramah, saluran, url, nota }, soalan[].mula (saat), dakwaan [{ t, j, mula, oleh?: 'moderator' }], bacaan [teks], kategori? (menggantikan kategori siri). */
 
 const SIRI = [
   { slug: 'tadabbur-al-mukminun', nama: 'Tadabbur Surah al-Mukminun', jenis: 'soal-jawab', kategori: 'agama',
@@ -483,7 +483,7 @@ EPISOD.push(
    Soal jawab penonton yang tidak jelas dan ramalan tentang individu sebenar tidak dimasukkan.
    mula = saat dalam rakaman (untuk pautan minit ke YouTube). */
 EPISOD.push({
-  slug: 'kolonial-kapitalis-neoliberalisme', siri: 'kuliah-pemikiran', tarikh: '', julat: 'Sumber luar · rakaman 2 jam 12 minit',
+  slug: 'kolonial-kapitalis-neoliberalisme', siri: 'kuliah-pemikiran', kategori: 'sejarah', tarikh: '', julat: 'Sumber luar · rakaman 2 jam 12 minit',
   tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', tag: ['kolonialisme', 'kapitalisme', 'neoliberalisme', 'teknofeudalisme', 'geopolitik'],
   luar: {
     tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', sesi: 'Projek Israelisasi di Asia Tenggara',
@@ -557,7 +557,7 @@ EPISOD.push({
   dakwaan: [
     { t: 'Nvidia mempunyai kaitan dengan Israel, dan pelaburan Nvidia di Malaysia membawa pengaruh itu masuk ke universiti, teknologi dan ekonomi.', j: 'dibahas', mula: 120 },
     { t: 'Lobi normalisasi dengan Israel di Indonesia datang daripada lobi perniagaan; Indonesia antara pengeksport minyak sawit terbesar ke Israel.', j: 'dibahas', mula: 120 },
-    { t: 'Kira-kira lapan tahun lalu Netanyahu memaparkan peta dan berkata "we are colouring the map blue" (dakwaan moderator).', j: 'dibahas', mula: 480 },
+    { t: 'Kira-kira lapan tahun lalu Netanyahu memaparkan peta dan berkata "we are colouring the map blue".', j: 'dibahas', mula: 480, oleh: 'moderator' },
     { t: 'Pemimpin anti-kolonial tahun 1960-an seperti Lumumba dan Nkrumah dibunuh atau digulingkan.', j: 'dibahas', mula: 780 },
     { t: 'Indonesia, Thailand dan Filipina mempunyai kadar penggunaan media sosial tertinggi di dunia (lebih 8 jam sehari), berbanding Jepun sekitar 1 jam 40 minit.', j: 'dibahas', mula: 2780 },
     { t: 'Sekitar 1996, editorial Financial Times menyambut Taliban menawan Kabul kerana ia membuka jalan untuk saluran paip minyak dan gas.', j: 'dibahas', mula: 3480 },
@@ -565,7 +565,7 @@ EPISOD.push({
     { t: 'African Oil Policy Initiative Group (AOPIG) ditubuhkan di Washington selepas Perang Teluk untuk menguasai minyak Afrika, dengan kepentingan Israel di belakangnya.', j: 'dibahas', mula: 4740 },
     { t: 'Minyak dan gas sesetengah negara Afrika telah dijual untuk tempoh 75 tahun.', j: 'dibahas', mula: 4900 },
     { t: 'Banyak konflik di Afrika dirancang dari luar untuk mengekalkan kelemahan negara-negara Afrika.', j: 'pendapat', mula: 5160 },
-    { t: 'Kerangka fardu ain yang sempit dan istilah "lingkaran syaitan" berasal daripada Snouck Hurgronje (dakwaan moderator).', j: 'dibahas', mula: 7560 }
+    { t: 'Kerangka fardu ain yang sempit dan istilah "lingkaran syaitan" berasal daripada Snouck Hurgronje.', j: 'dibahas', mula: 7560, oleh: 'moderator' }
   ],
   bacaan: [
     'Yanis Varoufakis, Technofeudalism (dan syarahan dalam talian beliau)',

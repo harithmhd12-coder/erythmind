@@ -154,6 +154,8 @@ const shots = process.env.SHOTS || '';
     }
     assert.equal(jumlahSebab, 11, 'Sebelas sebab dalam tiga kuliah');
 
+    await tiadaLimpahan('kuliah'); await shot('kuliah');
+
     // Kuliah 4: sumber luar WUI 1.0 (Tugasan 10–11)
     const mintaLuar = []; const catatLuar = r => { if (/youtube|ytimg|googlevideo/.test(r.url())) mintaLuar.push(r.url()); };
     page.on('request', catatLuar);
@@ -171,11 +173,13 @@ const shots = process.env.SHOTS || '';
     for (const a of await page.locator('#kandungan a[target="_blank"]').all()) assert.match(await a.getAttribute('rel'), /noopener/, 'Pautan luar guna noopener');
     assert.ok(await page.locator('.dakwaan-luar li').count() >= 8, 'Kotak dakwaan belum disemak');
     assert.equal(await page.locator('.dakwaan-luar .dakwaan-fakta').count(), 0, 'Tiada dakwaan penceramah berlabel fakta');
+    assert.equal(await page.locator('.dakwaan-luar li', { hasText: /^Dibahas\s*Moderator:/ }).count(), 2, 'Dakwaan moderator dinisbahkan kepada moderator');
+    assert.equal(await page.locator('#integriti ol.dakwaan').count(), 0, 'Dakwaan tidak diulang dalam Kad integriti');
+    assert.match(await page.locator('.dakwaan-luar').innerText(), /minit 2:06:00/, 'Minit melebihi sejam dipapar sebagai j:mm:ss');
     assert.match(await page.locator('.bacaan-luar').innerText(), /Varoufakis/);
     const t4 = await page.locator('#kandungan').innerText();
     for (const larang of [/akan mati/i, /Tauri/i, /Captain Ibrahim/i, /Dubai chocolate/i]) assert.doesNotMatch(t4, larang, `Teks yang dikecualikan: ${larang}`);
     await tiadaLimpahan('kuliah4'); await shot('kuliah4');
-    await tiadaLimpahan('kuliah'); await shot('kuliah');
 
     // Integrasi (Tugasan 5)
     await buka('teroka');
