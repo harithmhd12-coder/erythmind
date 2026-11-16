@@ -5,7 +5,7 @@
 - Kelompok pertama:
   1. **Tadabbur Surah al-Mukminun**: skrip soal-jawab subuh (Google Drive, fail `SMU …` bersegmen "Tadabbur Surah Mukminun", Sep–Nov 2026, dijangka 12–14 episod).
   2. **Akhlak dan Adab**: skrip soal-jawab dhuha (folder Drive `DUHA`, fail `AB …`, Ogos 2026, dijangka 4–5 episod).
-  3. **Kenali Munafik**: daripada artifak "Checklist Kenali Munafik".
+  3. **Kenali Munafik**: senarai semak muhasabah daripada analisis pemilik atas kitab *Ẓāhirat al-Nifāq* (al-Maydani), dokumen Drive "Analisis Kitab — ظاهرة النفاق…" (keputusan pemilik; artifak "Checklist Kenali Munafik" ialah senarai semak produksi karusel, bukan kandungan). Hanya Qism 1–2 (takrif, sifat, nas) digunakan; bahagian sejarah dan pertubuhan (Qism 3–4) tidak dimasukkan kerana ia dakwaan pengarang yang dipertikaikan.
   4. **Kenali Kebenaran**: daripada artifak "Kenali Kebenaran — 5 Berhala Kaum Nuh a.s.".
   5. **Kuliah Pemikiran**: artifak "Kuliah 1 — Mata Hati Tersasar", "Kuliah 2 — Buaian Pemikiran", "Kuliah 3 — Lima Kunci Fikiran" (dengan "Peta Sebab Kesilapan Berfikir" sebagai bahan iringan).
   6. **Sip n Speak**: siri kosong berlabel "Akan datang".
@@ -13,6 +13,7 @@
 
 ## Bukan matlamat
 - Tidak memuat skrip SMU/Dhuha selain kelompok di atas (kelompok kedua selepas format disahkan).
+- Episod bertarikh hadapan (skrip yang disediakan awal) **dipaparkan hanya apabila tarikhnya tiba** (keputusan pemilik), mengikut jam peranti pembaca.
 - Tidak menambah takhrij atau huraian baharu ke atas skrip. Teks dikekalkan hampir verbatim; pembetulan hanya untuk format dan ejaan yang jelas silap.
 - Tiada backend; kemajuan kekal dalam peranti seperti ciri sedia ada.
 
@@ -41,12 +42,13 @@ SIRI = [{ slug, nama, jenis: 'soal-jawab'|'senarai-semak'|'karusel'|'kuliah'|'ak
           ringkas, kategori, episod: [slug] }]
 EPISOD = [{ slug, siri, no, tajuk, tarikh, julat,
             soalan: [{ s, blok: [ {j:'teks', t} | {j:'ayat', ar, maksud, ruj} | {j:'hadis', ar, maksud, ruj|null} ] }] }]
-SEMAK = { slug, pengenalan, item: [{ t, dalil: {ar, maksud, ruj} }] }      // Kenali Munafik
+SEMAK = { [slug]: { kitab, pengenalan: [p], kumpulan: [{ tajuk, item: [{ t, hlm, dalil?: {j, ar, maksud, ruj} }] }], doa } }  // Kenali Munafik
 KARUSEL = { slug, slaid: [{ tajuk, isi, ruj }] }                            // Kenali Kebenaran
 ```
 - Fungsi penyesuai `episodKeBahan(e)` menukar setiap episod kepada bentuk bahan sedia ada, supaya simpan, selesai, dengar, carian, peta ilmu dan Kad integriti berfungsi tanpa kod pendua. `rujukan` dijana daripada `ruj` ayat/hadis (jenis `primer`), dan `dakwaan` dijana sebagai satu dakwaan `fakta` bagi setiap ayat/hadis yang dirujuk.
 - Kemajuan siri = episod selesai ÷ jumlah episod (guna `S.selesai` sedia ada).
-- Tanda senarai semak disimpan dalam `S.semak[slug]` (localStorage).
+- Tanda senarai semak disimpan dalam `S.semak[slug][kunci] = tarikh` (localStorage) dan ditapis bentuknya semasa dimuat. Semua item ditanda = siri selesai; "Kosongkan tanda" untuk muhasabah semula.
+- Episod disaring `tarikh <= hari ini` sebelum didaftar ke siri, carian, utama dan Studio.
 
 ## Teks UI penting
 - Navigasi: "Siri". Tajuk halaman: "Siri". Lede: "Himpunan soal-jawab, kuliah dan karusel. Ikut satu siri dari mula hingga habis."
@@ -65,4 +67,5 @@ KARUSEL = { slug, slaid: [{ tajuk, isi, ruj }] }                            // K
 8. Senarai semak Kenali Munafik mengingati tanda selepas muat semula, dan tiada data dihantar keluar.
 9. Karusel Kenali Kebenaran boleh dileret dan dikawal dengan papan kekunci.
 10. Tiada ralat konsol dan tiada limpahan mendatar pada 400px dan 1366px, mod terang dan gelap.
+12. Episod bertarikh selepas hari ini tidak muncul dalam senarai siri, carian atau pautan terus, dan muncul pada tarikhnya.
 11. Semakan integriti Studio lulus untuk semua bahan selain isu "Rujukan belum dinyatakan" yang disengajakan.

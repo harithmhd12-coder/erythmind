@@ -9,7 +9,7 @@ const shots = process.env.SHOTS || '';
 (async () => {
   const browser = await chromium.launch();
   for (const [nama, viewport] of [['tel', { width: 400, height: 860 }], ['desk', { width: 1366, height: 900 }]]) {
-    const ctx = await browser.newContext({ serviceWorkers: 'block', viewport });
+    const ctx = await browser.newContext({ serviceWorkers: 'block', timezoneId: 'Asia/Kuala_Lumpur', viewport });
     if (!process.env.FONTS) await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
     await ctx.addInitScript(() => {
       window.__ucapan = [];
@@ -17,6 +17,8 @@ const shots = process.env.SHOTS || '';
       Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { speak(u) { window.__ucapan.push(u.text); setTimeout(() => u.onend && u.onend(), 5); }, cancel() {}, getVoices() { return []; }, addEventListener() {} } });
     });
     const page = await ctx.newPage(); const errors = [];
+    // Jam ditetapkan selepas episod terakhir kelompok pertama (26 Nov 2026) supaya semua episod kelihatan.
+    await page.clock.setFixedTime(new Date('2026-11-27T09:00:00+08:00'));
     page.on('pageerror', e => errors.push(e.message));
     const buka = async h => { await page.goto(origin + '#' + h); await page.waitForTimeout(250); };
     const tiadaLimpahan = async h => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `Limpahan mendatar pada ${h} (${nama})`);
@@ -66,6 +68,39 @@ const shots = process.env.SHOTS || '';
     assert.ok(await page.locator('.tiada-ruj').count() >= 1, 'Hadis tanpa rujukan dilabel');
     assert.match(await page.locator('.tiada-ruj').first().innerText(), /Rujukan belum dinyatakan/i);
 
+    // Kenali Munafik: senarai semak muhasabah (Tugasan 6)
+    await buka('s.kenali-munafik');
+    const kotak = page.locator('input[data-semak="kenali-munafik"]');
+    const jumlahSemak = await kotak.count();
+    assert.ok(jumlahSemak >= 12, `Item muhasabah dipaparkan (${jumlahSemak})`);
+    assert.match(await page.locator('.nota-privasi').innerText(), /Untuk muhasabah diri, bukan untuk menilai orang lain\. Tanda kau disimpan dalam peranti ini sahaja\./);
+    assert.equal(await page.locator('.item-muhasabah .ayat .ruj').count(), await page.locator('.item-muhasabah .ayat').count(), 'Setiap dalil ada rujukan');
+    assert.equal(await page.locator('.item-muhasabah .tiada-ruj').count(), 0, 'Tiada dalil tanpa rujukan');
+    assert.doesNotMatch(await page.locator('#kandungan').innerText(), /Freemason|Rotary|Lions|Protokol|Protocols/i, 'Bahagian sejarah dan pertubuhan tidak dimasukkan');
+    await tiadaLimpahan('semak'); await shot('semak');
+    const permintaan = []; const catatMinta = r => permintaan.push(r.url());
+    page.on('request', catatMinta);
+    await kotak.nth(0).check(); await kotak.nth(3).check();
+    await page.waitForTimeout(200);
+    page.off('request', catatMinta);
+    assert.deepEqual(permintaan, [], 'Menanda tidak menghantar apa-apa permintaan rangkaian');
+    assert.match(await page.locator('#kemajuanSiri').innerText(), new RegExp(`2 daripada ${jumlahSemak} sudah direnung`));
+    assert.equal(await page.evaluate(() => document.activeElement?.dataset?.k), '0-3', 'Fokus kekal pada kotak yang ditanda');
+    await page.reload(); await page.waitForTimeout(250);
+    assert.ok(await kotak.nth(0).isChecked() && await kotak.nth(3).isChecked() && !(await kotak.nth(1).isChecked()), 'Tanda kekal selepas muat semula');
+    assert.equal(await page.locator('.item-muhasabah.direnung').count(), 2);
+    await buka('siri');
+    assert.match(await page.locator('.siri-kad').nth(2).innerText(), new RegExp(`2/${jumlahSemak} selesai`));
+    await buka('s.kenali-munafik');
+    for (let i = 0; i < jumlahSemak; i++) if (!(await kotak.nth(i).isChecked())) await kotak.nth(i).check();
+    assert.match(await page.locator('#statusSemak').innerText(), /Muhasabah lengkap/);
+    assert.equal(await page.evaluate(() => !!JSON.parse(localStorage.getItem('ruangilmu.v1')).selesai['s-kenali-munafik']), true, 'Muhasabah lengkap ditanda selesai');
+    await page.click('[data-act="semak-kosong"]');
+    assert.equal(await page.locator('input[data-semak]:checked').count(), 0, 'Kosongkan tanda');
+    await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('ruangilmu.v1')); s.semak = { 'kenali-munafik': { '0-0': '2026-11-01', '<img>': 'x', '0-1': 5 }, palsu: { '0-0': 'x' } }; localStorage.setItem('ruangilmu.v1', JSON.stringify(s)); });
+    await page.reload(); await page.waitForTimeout(250);
+    assert.equal(await page.locator('input[data-semak]:checked').count(), 1, 'Data semak yang rosak ditapis semasa dimuat');
+
     // Integrasi (Tugasan 5)
     await buka('teroka');
     await page.fill('#medanCari', 'benci kebenaran');
@@ -90,6 +125,30 @@ const shots = process.env.SHOTS || '';
 
     for (const h of ['utama', 'a.kenapa-percaya-ramalan', 'kopi', 'studio', 'tentang']) { await buka(h); await tiadaLimpahan(h); }
     assert.deepEqual(errors, [], 'Tiada ralat konsol');
+    await ctx.close();
+  }
+
+  // Episod bertarikh hadapan hanya dipaparkan apabila tarikhnya tiba
+  {
+    const ctx = await browser.newContext({ serviceWorkers: 'block', timezoneId: 'Asia/Kuala_Lumpur', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.clock.setFixedTime(new Date('2026-11-16T09:00:00+08:00'));
+    const buka = async h => { await page.goto(origin + '#' + h); await page.waitForTimeout(250); };
+    await buka('s.tadabbur-al-mukminun');
+    const senarai = await page.locator('.senarai-baris').innerText();
+    assert.match(senarai, /Menolak Kejahatan dengan Kebaikan/, 'Episod 11 Nov kelihatan');
+    assert.doesNotMatch(senarai, /Rabbi Arji|Timbangan Amal|Penyesalan Ahli Neraka/i, 'Episod 18–26 Nov belum kelihatan');
+    assert.match(await page.locator('.halaman-kepala').innerText(), /0 daripada 12 selesai/);
+    await buka('e.permintaan-di-saat-nazak');
+    assert.match(await page.locator('h1').innerText(), /tiada di rak/, 'Episod hadapan tidak boleh dibuka melalui pautan');
+    await buka('teroka'); await page.fill('#medanCari', 'timbangan amal');
+    assert.doesNotMatch(await page.locator('#hasilCari').innerText(), /Timbangan Amal Penentu/i, 'Carian tidak mendedahkan episod hadapan');
+    await page.clock.setFixedTime(new Date('2026-11-18T06:00:00+08:00'));
+    await buka('s.tadabbur-al-mukminun'); await page.reload(); await page.waitForTimeout(250);
+    assert.match(await page.locator('.senarai-baris').innerText(), /Rabbi Arji/i, 'Episod muncul pada tarikhnya');
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (jam)');
     await ctx.close();
   }
   await browser.close();

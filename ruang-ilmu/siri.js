@@ -4,11 +4,12 @@
 
    SIRI[]    { slug, nama, jenis, ringkas, kategori, episod: [slug] }
              jenis = soal-jawab | senarai-semak | karusel | kuliah | akan-datang
-   EPISOD[]  { slug, siri, no, tajuk, tarikh, julat, tag,
+   EPISOD[]  Episod bertarikh hadapan disembunyikan sehingga tarikhnya tiba.
+             { slug, siri, no, tajuk, tarikh, julat, tag,
                soalan: [{ s, blok: [ {j:'teks', t} | {j:'ayat', ar, maksud, ruj} | {j:'hadis', ar, maksud, ruj} | {j:'petikan', ar, maksud, ruj} ] }] }
              petikan = petikan kitab tafsir atau syarah (bukan ayat atau hadis).
              Hadis dengan ruj kosong dipaparkan sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.
-   SEMAK     { [slugSiri]: { pengenalan, item: [{ t, dalil: { ar, maksud, ruj } }] } }
+   SEMAK     { [slugSiri]: { kitab, pengenalan: [p], kumpulan: [{ tajuk, item: [{ t, hlm, dalil?: { j, ar, maksud, ruj } }] }], doa } }
    KARUSEL   { [slugSiri]: { slaid: [{ tajuk, isi, ruj }] } }
    KULIAH[]  Bahan berbentuk artikel Ruang Ilmu biasa, dengan medan siri. */
 
@@ -467,6 +468,61 @@ const EPISOD = [
       ]}
     ]}
 ];
-const SEMAK = {};
+/* Kenali Munafik: senarai semak muhasabah, disusun daripada analisis pemilik atas kitab
+   Zahirat al-Nifaq wa Khaba'ith al-Munafiqin fi al-Tarikh (al-Maydani). "hlm." = halaman PDF kitab.
+   Hanya Qism 1–2 (takrif, sifat dan nas) digunakan. Bahagian sejarah dan pertubuhan (Qism 3–4) tidak dimasukkan. */
+const SEMAK = {
+  'kenali-munafik': {
+    kitab: "ʿAbd al-Raḥmān Ḥasan Ḥabannakah al-Maydānī, Ẓāhirat al-Nifāq wa Khabā'ith al-Munāfiqīn fī al-Tārīkh",
+    pengenalan: [
+      'Para sahabat takut nifaq ada pada diri mereka sendiri. Umar r.a. bertanya kepada Huzaifah, "Adakah aku daripada mereka?" Al-Hasan al-Basri berkata: tiada yang takutkan nifaq melainkan mukmin, dan tiada yang merasa aman daripadanya melainkan munafik. (hlm. 77–81)',
+      'Senarai ini menyentuh nifaq kecil, iaitu sifat dan perbuatan yang boleh menjangkiti sesiapa sahaja. Nifaq besar ialah kufur dalam hati yang disembunyikan, dan hanya Allah yang mengetahui isi hati.',
+      'Berlemah lembut, memberi hadiah, memaafkan dan bermanis muka untuk mendamaikan, berdakwah atau melunakkan hati bukan nifaq. Maksiat kerana tewas kepada nafsu sambil mengakui hak Allah juga berbeza daripada menolak ketaatan secara ingkar. (hlm. 28–29, 73–77, 87, 105)'
+    ],
+    kumpulan: [
+      { tajuk: 'Lidah, janji dan amanah', item: [
+        { t: 'Apabila aku bercakap, adakah aku berdusta, walaupun sedikit atau sekadar bergurau?', hlm: '73–77',
+          dalil: { j: 'hadis', ar: 'آيَةُ الْمُنَافِقِ ثَلَاثٌ: إِذَا حَدَّثَ كَذَبَ، وَإِذَا وَعَدَ أَخْلَفَ، وَإِذَا اؤْتُمِنَ خَانَ', maksud: 'Tanda orang munafik ada tiga: apabila bercakap dia berdusta, apabila berjanji dia mungkir, dan apabila diberi amanah dia khianat.', ruj: 'Sahih al-Bukhari, no. 33; Sahih Muslim, no. 59' } },
+        { t: 'Apabila aku berjanji, adakah aku memungkirinya tanpa uzur?', hlm: '73–77' },
+        { t: 'Apabila aku diberi amanah, sama ada harta, rahsia atau jawatan, adakah aku mengkhianatinya?', hlm: '73–77' },
+        { t: 'Apabila aku berbalah, adakah aku melampaui batas dan tidak lagi berlaku adil?', hlm: '73–77',
+          dalil: { j: 'hadis', ar: 'أَرْبَعٌ مَنْ كُنَّ فِيهِ كَانَ مُنَافِقًا خَالِصًا، وَمَنْ كَانَتْ فِيهِ خَصْلَةٌ مِنْهُنَّ كَانَتْ فِيهِ خَصْلَةٌ مِنَ النِّفَاقِ حَتَّى يَدَعَهَا: إِذَا اؤْتُمِنَ خَانَ، وَإِذَا حَدَّثَ كَذَبَ، وَإِذَا عَاهَدَ غَدَرَ، وَإِذَا خَاصَمَ فَجَرَ', maksud: 'Empat perkara, sesiapa yang ada padanya keempat-empatnya maka dia munafik tulen, dan sesiapa yang ada padanya satu daripadanya maka ada padanya satu sifat nifaq sehingga dia meninggalkannya: apabila diberi amanah dia khianat, apabila bercakap dia berdusta, apabila membuat perjanjian dia mungkir, dan apabila berbalah dia melampaui batas.', ruj: 'Sahih al-Bukhari, no. 34; Sahih Muslim, no. 58' } },
+        { t: 'Adakah aku menjadikan sumpah sebagai perisai untuk menutup kesalahan?', hlm: '781–810',
+          dalil: { j: 'ayat', ar: 'اتَّخَذُوا أَيْمَانَهُمْ جُنَّةً فَصَدُّوا عَن سَبِيلِ اللَّهِ', maksud: 'Mereka menjadikan sumpah mereka sebagai perisai, lalu mereka menghalang manusia dari jalan Allah.', ruj: 'Surah al-Munafiqun, ayat 2' } }
+      ]},
+      { tajuk: 'Ibadah dan niat', item: [
+        { t: 'Adakah aku solat dengan malas dan berzikir sedikit apabila tiada orang yang melihat?', hlm: '59–66',
+          dalil: { j: 'ayat', ar: 'وَإِذَا قَامُوا إِلَى الصَّلَاةِ قَامُوا كُسَالَىٰ يُرَاءُونَ النَّاسَ وَلَا يَذْكُرُونَ اللَّهَ إِلَّا قَلِيلًا', maksud: 'Dan apabila mereka berdiri untuk solat, mereka berdiri dengan malas. Mereka hendak menunjuk-nunjuk kepada manusia, dan mereka tidak mengingati Allah melainkan sedikit.', ruj: "Surah al-Nisa', ayat 142" } },
+        { t: 'Adakah aku beramal supaya dilihat dan dipuji orang?', hlm: '87–97',
+          dalil: { j: 'ayat', ar: 'الَّذِينَ هُمْ يُرَاءُونَ', maksud: 'Orang-orang yang berbuat riyak.', ruj: "Surah al-Ma'un, ayat 6" } },
+        { t: 'Adakah solat Isyak dan Subuh berjemaah terasa paling berat bagiku?', hlm: '73–77',
+          dalil: { j: 'hadis', ar: 'لَيْسَ صَلَاةٌ أَثْقَلَ عَلَى الْمُنَافِقِينَ مِنَ الْفَجْرِ وَالْعِشَاءِ، وَلَوْ يَعْلَمُونَ مَا فِيهِمَا لَأَتَوْهُمَا وَلَوْ حَبْوًا', maksud: 'Tiada solat yang lebih berat bagi orang munafik daripada solat Subuh dan Isyak. Sekiranya mereka tahu ganjaran pada keduanya, nescaya mereka akan datang walaupun dengan merangkak.', ruj: 'Sahih al-Bukhari, no. 657; Sahih Muslim, no. 651' } },
+        { t: 'Apabila aku duduk dalam majlis ilmu, adakah aku keluar tanpa memahami apa-apa?', hlm: '661–698',
+          dalil: { j: 'ayat', ar: 'حَتَّىٰ إِذَا خَرَجُوا مِنْ عِندِكَ قَالُوا لِلَّذِينَ أُوتُوا الْعِلْمَ مَاذَا قَالَ آنِفًا', maksud: 'Sehingga apabila mereka keluar dari sisimu, mereka bertanya kepada orang yang diberi ilmu: Apakah yang dikatakannya tadi?', ruj: 'Surah Muhammad, ayat 16' } }
+      ]},
+      { tajuk: 'Sikap terhadap kebenaran', item: [
+        { t: 'Apabila aku ditegur supaya bertakwa, adakah ego aku bangkit?', hlm: '224–239',
+          dalil: { j: 'ayat', ar: 'وَإِذَا قِيلَ لَهُ اتَّقِ اللَّهَ أَخَذَتْهُ الْعِزَّةُ بِالْإِثْمِ', maksud: 'Dan apabila dikatakan kepadanya: Bertakwalah kepada Allah, dia dibawa oleh keangkuhannya untuk berbuat dosa.', ruj: 'Surah al-Baqarah, ayat 206' } },
+        { t: 'Adakah aku hanya menerima hukum Allah apabila ia menguntungkan aku?', hlm: '752–768',
+          dalil: { j: 'ayat', ar: 'وَإِذَا دُعُوا إِلَى اللَّهِ وَرَسُولِهِ لِيَحْكُمَ بَيْنَهُمْ إِذَا فَرِيقٌ مِّنْهُم مُّعْرِضُونَ ۝ وَإِن يَكُن لَّهُمُ الْحَقُّ يَأْتُوا إِلَيْهِ مُذْعِنِينَ', maksud: 'Dan apabila mereka diajak kepada Allah dan Rasul-Nya supaya Rasul menghukum di antara mereka, tiba-tiba segolongan daripada mereka berpaling. Tetapi jika kebenaran berada di pihak mereka, mereka datang kepadanya dengan patuh.', ruj: 'Surah al-Nur, ayat 48–49' } },
+        { t: 'Apabila agama diperolok dalam majlis atau perbualan, adakah aku terus duduk dan diam?', hlm: '613–642',
+          dalil: { j: 'ayat', ar: 'إِنَّكُمْ إِذًا مِّثْلُهُمْ', maksud: '(Jika kamu terus duduk bersama mereka) sesungguhnya kamu sama seperti mereka.', ruj: "Surah al-Nisa', ayat 140" } },
+        { t: 'Apabila aku diuji kerana berpegang dengan agama, adakah aku menganggap gangguan manusia seberat azab Allah?', hlm: '147–154',
+          dalil: { j: 'ayat', ar: 'وَمِنَ النَّاسِ مَن يَقُولُ آمَنَّا بِاللَّهِ فَإِذَا أُوذِيَ فِي اللَّهِ جَعَلَ فِتْنَةَ النَّاسِ كَعَذَابِ اللَّهِ', maksud: 'Dan di antara manusia ada yang berkata: Kami beriman kepada Allah. Tetapi apabila dia disakiti kerana Allah, dia menganggap fitnah manusia itu seperti azab Allah.', ruj: "Surah al-'Ankabut, ayat 10" } }
+      ]},
+      { tajuk: 'Sikap terhadap orang beriman', item: [
+        { t: 'Adakah aku bercakap lain di hadapan seseorang, dan lain di belakangnya?', hlm: '54–56, 77–81',
+          dalil: { j: 'ayat', ar: 'وَإِذَا لَقُوا الَّذِينَ آمَنُوا قَالُوا آمَنَّا وَإِذَا خَلَوْا إِلَىٰ شَيَاطِينِهِمْ قَالُوا إِنَّا مَعَكُمْ إِنَّمَا نَحْنُ مُسْتَهْزِئُونَ', maksud: 'Dan apabila mereka berjumpa dengan orang beriman, mereka berkata: Kami telah beriman. Tetapi apabila mereka kembali kepada syaitan-syaitan mereka, mereka berkata: Sesungguhnya kami bersama kamu, kami hanya memperolok-olok.', ruj: 'Surah al-Baqarah, ayat 14' } },
+        { t: 'Adakah aku berasa senang apabila saudara seiman ditimpa susah, dan terganggu apabila dia mendapat nikmat?', hlm: '284–302',
+          dalil: { j: 'ayat', ar: 'إِن تَمْسَسْكُمْ حَسَنَةٌ تَسُؤْهُمْ وَإِن تُصِبْكُمْ سَيِّئَةٌ يَفْرَحُوا بِهَا', maksud: 'Jika kamu mendapat kebaikan, mereka berasa susah hati. Dan jika kamu ditimpa keburukan, mereka bergembira dengannya.', ruj: 'Surah Ali Imran, ayat 120' } },
+        { t: 'Adakah aku menyindir atau memperlekeh orang yang bersedekah, sama ada banyak atau sedikit?', hlm: '943–1216',
+          dalil: { j: 'ayat', ar: 'الَّذِينَ يَلْمِزُونَ الْمُطَّوِّعِينَ مِنَ الْمُؤْمِنِينَ فِي الصَّدَقَاتِ وَالَّذِينَ لَا يَجِدُونَ إِلَّا جُهْدَهُمْ فَيَسْخَرُونَ مِنْهُمْ', maksud: 'Orang-orang yang mencela orang beriman yang bersedekah dengan sukarela, dan mencela orang yang tidak memperoleh (untuk disedekahkan) melainkan sekadar kemampuannya, lalu mereka mengejeknya.', ruj: 'Surah al-Taubah, ayat 79' } },
+        { t: 'Adakah aku menyebarkan berita, sama ada yang menenangkan atau yang menakutkan, sebelum menyemaknya?', hlm: '504–571, 733–740',
+          dalil: { j: 'ayat', ar: 'وَإِذَا جَاءَهُمْ أَمْرٌ مِّنَ الْأَمْنِ أَوِ الْخَوْفِ أَذَاعُوا بِهِ', maksud: 'Dan apabila datang kepada mereka sesuatu berita tentang keamanan atau ketakutan, mereka terus menyebarkannya.', ruj: "Surah al-Nisa', ayat 83" } }
+      ]}
+    ],
+    doa: { ar: 'اللهم احفظنا من النفاق وقنا شرور المنافقين وامنحنا البصيرة لمعرفتهم', maksud: 'Ya Allah, peliharalah kami daripada nifaq, lindungilah kami daripada kejahatan orang munafik, dan kurniakanlah kami basirah untuk mengenali mereka.', ruj: 'Doa penutup al-Maydani, Khatimah (hlm. 1415–1416)' }
+  }
+};
 const KARUSEL = {};
 const KULIAH = [];

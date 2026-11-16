@@ -38,7 +38,7 @@ const KUNCI = 'ruangilmu.v1';
 const asal = () => ({
   simpan: [], selesai: {}, kuiz: {}, nota: {}, posisi: {}, format: {}, akses: {}, dengar: {}, lihat: {},
   xp: 0, hari: {}, laluanSiap: {}, rehat: 0, laporan: [], draf: [], troli: {}, pesanan: [],
-  peristiwa: [], pembetulan: {}, lihatBetul: {},
+  peristiwa: [], pembetulan: {}, lihatBetul: {}, semak: {},
   surat: null, akaun: null, ahli: null,
   tetapan: { tema: 'sistem', fon: 1, notifikasi: 'mingguan', sorokKopi: false, matlamat: 10, siri: true }
 });
@@ -51,6 +51,8 @@ let S = (() => {
 })();
 const simpan = () => { try { localStorage.setItem(KUNCI, JSON.stringify(S)); } catch (e) { /* abaikan */ } };
 Object.keys(S.troli).forEach(id => { if (!PROD[id]) delete S.troli[id]; });
+/* Tanda senarai semak: hanya { slugSiri: { kunci: tarikh } } dengan kunci yang wujud dalam SEMAK. */
+S.semak = Object.fromEntries(Object.entries(S.semak && typeof S.semak === 'object' ? S.semak : {}).filter(([k, v]) => SEMAK[k] && v && typeof v === 'object').map(([k, v]) => [k, Object.fromEntries(Object.entries(v).filter(([i, t]) => /^\d+-\d+$/.test(i) && typeof t === 'string'))]));
 S.laporan.forEach(l => { l.id ||= Math.random().toString(36).slice(2, 8); l.status ||= 'baru'; });
 const rekodHari = () => (S.hari[hariIni()] ||= { saat: 0, aktif: false });
 const tandaAktif = () => { rekodHari().aktif = true; simpan(); };
@@ -135,7 +137,9 @@ function drafKeArtikel(d) {
 }
 /* Siri: episod soal-jawab dan kuliah ditukar kepada bentuk bahan supaya simpan, selesai, dengar, carian, peta ilmu dan Kad integriti berfungsi tanpa kod pendua. */
 const SIRI_OF = Object.fromEntries(SIRI.map(s => [s.slug, s]));
-EPISOD.sort((x, y) => x.tarikh.localeCompare(y.tarikh)).forEach(e => { const s = SIRI_OF[e.siri]; if (!s) return; if (!s.episod.includes(e.slug)) s.episod.push(e.slug); e.no = s.episod.indexOf(e.slug) + 1; });
+/* Episod bertarikh hadapan (skrip yang disediakan awal) hanya dipaparkan apabila tarikhnya tiba. */
+const EP = EPISOD.filter(e => e.tarikh <= hariIni()).sort((x, y) => x.tarikh.localeCompare(y.tarikh));
+EP.forEach(e => { const s = SIRI_OF[e.siri]; if (!s) return; if (!s.episod.includes(e.slug)) s.episod.push(e.slug); e.no = s.episod.indexOf(e.slug) + 1; });
 KULIAH.forEach(k => { const s = SIRI_OF[k.siri]; if (s && !s.episod.includes(k.slug)) s.episod.push(k.slug); });
 const polosAyat = t => String(t || '').replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+[\s؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿.,:;!?()"'«»…\-]*/g, '').replace(/\s{2,}/g, ' ').trim();
 function episodKeBahan(e) {
@@ -158,7 +162,7 @@ function episodKeBahan(e) {
     fakta: [], kuiz: [], refleksi: '', rujukan: sumber, dakwaan, berkaitan: [], episod: e
   };
 }
-const BAHAN_SIRI = EPISOD.map(episodKeBahan).concat(KULIAH);
+const BAHAN_SIRI = EP.map(episodKeBahan).concat(KULIAH);
 const semua = () => KANDUNGAN.concat(BAHAN_SIRI, S.draf.filter(d => d.langkah >= 6).map(drafKeArtikel));
 const cari = slug => semua().find(a => a.slug === slug);
 const teksPenuh = a => [a.ringkas60, ...a.bahagian.flatMap(b => b.p)].join(' ');
@@ -475,7 +479,7 @@ V.utama = () => {
     <div class="grid-kategori">${KATEGORI.map(k => `<a class="kategori-kad" href="#teroka.${k.id}"><h3>${esc(k.nama)}<small>${semua().filter(a => a.kategori === k.id).length} bahan</small></h3><p>${esc(k.ringkas)}</p></a>`).join('')}</div></section></div>
 
   <div class="bekas"><section class="seksyen">${kepalaSeksyen('Siri', 'Siri terkini', 'Soal-jawab tadabbur, akhlak dan kuliah, satu episod pada satu masa.', '<a class="pautan" href="#siri">Semua siri</a>')}
-    <ul class="senarai-baris">${EPISOD.slice().sort((x, y) => y.tarikh.localeCompare(x.tarikh)).slice(0, 4).map(e => `<li><div class="baris"><span class="no">${tarikh(e.tarikh).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)}</a><span class="meta"><span>${esc(SIRI_OF[e.siri].nama)}</span><span>Episod ${e.no}</span>${e.julat ? `<span>${esc(e.julat)}</span>` : ''}</span></div>${selesai(e.slug) ? '<span class="cip selesai">Selesai</span>' : `<span class="cip">${e.soalan.length} soalan</span>`}</div></li>`).join('')}</ul>
+    <ul class="senarai-baris">${EP.slice().sort((x, y) => y.tarikh.localeCompare(x.tarikh)).slice(0, 4).map(e => `<li><div class="baris"><span class="no">${tarikh(e.tarikh).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)}</a><span class="meta"><span>${esc(SIRI_OF[e.siri].nama)}</span><span>Episod ${e.no}</span>${e.julat ? `<span>${esc(e.julat)}</span>` : ''}</span></div>${selesai(e.slug) ? '<span class="cip selesai">Selesai</span>' : `<span class="cip">${e.soalan.length} soalan</span>`}</div></li>`).join('')}</ul>
     <div class="grid-siri" style="margin-top:22px">${SIRI.filter(s => s.jenis !== 'akan-datang').slice(0, 3).map(kadSiri).join('')}</div></section></div>
 
   <div class="bekas"><section class="seksyen">${kepalaSeksyen('Koleksi pilihan kurator', 'Laluan ilmu', 'Topik yang disusun mengikut urutan. Setiap langkah membina yang seterusnya.', '<a class="pautan" href="#laluan">Semua laluan</a>')}
@@ -926,7 +930,7 @@ V.studio = () => {
   <section class="seksyen">${kepalaSeksyen('Semakan integriti data', isu.length ? `${isu.length} isu perlu dibetulkan` : 'Semua bahan lulus semakan', 'Dijalankan setiap kali Studio dibuka: jenis sumber, dakwaan fakta tanpa sumber, rujukan yang tiada, tajuk umpan klik dan pautan yang putus.')}
     ${isu.length ? `<ul class="senarai-isu">${isu.map(([t, m]) => `<li><b>${esc(t)}</b> · ${esc(m)}</li>`).join('')}</ul>` : `<p class="lulus">✓ ${bahan.length} bahan, ${bahan.reduce((t, a) => t + (a.dakwaan || []).length, 0)} dakwaan, ${bahan.reduce((t, a) => t + a.rujukan.length, 0)} sumber, ${LALUAN.length} laluan dan ${PRODUK.length} produk disemak.</p>`}</section>
 
-  ${(() => { const h = EPISOD.flatMap(e => e.soalan.flatMap((q, n) => q.blok.filter(b => (b.j === 'hadis' || b.j === 'petikan') && !b.ruj).map(b => ({ e, n, b })))); return `<section class="seksyen">${kepalaSeksyen('Rujukan untuk disemak', h.length ? `${h.length} hadis tanpa rujukan` : 'Semua hadis bersumber', 'Hadis dalam skrip asal yang belum dinyatakan rujukannya. Dipaparkan kepada pembaca sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.')}${h.length ? `<ul class="senarai-baris">${h.map(({ e, n, b }) => `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)} · Soalan ${n + 1}</a><span class="kecil-nota" lang="ar" dir="rtl" style="font-family:Amiri,serif;font-size:1.05rem;text-align:right">${esc(b.ar)}</span><span class="kecil-nota">${esc(b.maksud || '')}</span></div></div></li>`).join('')}</ul>` : ''}</section>`; })()}
+  ${(() => { const h = EP.flatMap(e => e.soalan.flatMap((q, n) => q.blok.filter(b => (b.j === 'hadis' || b.j === 'petikan') && !b.ruj).map(b => ({ e, n, b })))); return `<section class="seksyen">${kepalaSeksyen('Rujukan untuk disemak', h.length ? `${h.length} hadis tanpa rujukan` : 'Semua hadis bersumber', 'Hadis dalam skrip asal yang belum dinyatakan rujukannya. Dipaparkan kepada pembaca sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.')}${h.length ? `<ul class="senarai-baris">${h.map(({ e, n, b }) => `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)} · Soalan ${n + 1}</a><span class="kecil-nota" lang="ar" dir="rtl" style="font-family:Amiri,serif;font-size:1.05rem;text-align:right">${esc(b.ar)}</span><span class="kecil-nota">${esc(b.maksud || '')}</span></div></div></li>`).join('')}</ul>` : ''}</section>`; })()}
 
   <section class="seksyen">${kepalaSeksyen('Ukuran yang kami pilih', 'Kefahaman, bukan pageview', 'Data peranti ini sahaja. Kami sengaja tidak menjadikan jumlah tontonan sebagai ukuran utama, kerana penerbit yang mengejar tontonan akan mengejar sensasi.')}
     <div class="statistik"><div><b>${jum('buka') ? Math.round(jum('selesai') / jum('buka') * 100) + '%' : '–'}</b><span>kadar lengkap (selesai ÷ dibuka)</span></div><div><b>${kuizSemua.length ? Math.round(kuizSemua.filter(e => e.betul).length / kuizSemua.length * 100) + '%' : '–'}</b><span>jawapan kuiz tepat</span></div><div><b>${hariAktif}</b><span>hari pembaca kembali aktif</span></div><div><b>${Object.values(S.format).filter(f => Object.keys(f).length > 1).length}</b><span>bahan dinikmati dalam lebih satu format</span></div><div><b>${jum('simpan')}</b><span>disimpan untuk dibaca semula</span></div></div>
@@ -962,18 +966,20 @@ function borangDraf(d) {
 }
 
 /* ================= Siri ================= */
+const itemSemak = slug => (SEMAK[slug]?.kumpulan || []).flatMap((g, a) => g.item.map((x, b) => ({ ...x, k: `${a}-${b}` })));
 const pautanBahan = a => a.episod ? `#e.${a.slug}` : `#a.${a.slug}`;
 function kemajuanSiri(s) {
-  if (s.jenis === 'senarai-semak' || s.jenis === 'karusel') { const siap = selesai('s-' + s.slug) ? 1 : 0; return { siap, jumlah: 1, peratus: siap * 100 }; }
+  if (s.jenis === 'senarai-semak') { const jumlah = itemSemak(s.slug).length; const siap = itemSemak(s.slug).filter(x => S.semak[s.slug]?.[x.k]).length; return { siap, jumlah, peratus: jumlah ? Math.round(siap / jumlah * 100) : 0 }; }
+  if (s.jenis === 'karusel') { const siap = selesai('s-' + s.slug) ? 1 : 0; return { siap, jumlah: 1, peratus: siap * 100 }; }
   const jumlah = s.episod.length; const siap = s.episod.filter(selesai).length;
   return { siap, jumlah, peratus: jumlah ? Math.round(siap / jumlah * 100) : 0 };
 }
 function labelSiri(s) {
   if (s.jenis === 'akan-datang') return 'Akan datang';
-  if (s.jenis === 'senarai-semak') return `Senarai semak · ${(SEMAK[s.slug]?.item || []).length} tanda`;
+  if (s.jenis === 'senarai-semak') return `Senarai semak · ${itemSemak(s.slug).length} soalan muhasabah`;
   if (s.jenis === 'karusel') return `Karusel · ${(KARUSEL[s.slug]?.slaid || []).length} slaid`;
   if (s.jenis === 'kuliah') return `${s.episod.length} kuliah`;
-  const tarikhan = s.episod.map(x => EPISOD.find(e => e.slug === x)?.tarikh).filter(Boolean).sort();
+  const tarikhan = s.episod.map(x => EP.find(e => e.slug === x)?.tarikh).filter(Boolean).sort();
   const bulan = d => BULAN[new Date(d).getMonth()];
   const julat = tarikhan.length ? (bulan(tarikhan[0]) === bulan(tarikhan.at(-1)) ? `${bulan(tarikhan[0])} ${tarikhan[0].slice(0, 4)}` : `${bulan(tarikhan[0])}–${bulan(tarikhan.at(-1))} ${tarikhan.at(-1).slice(0, 4)}`) : '';
   return `${s.episod.length} episod${julat ? ' · ' + julat : ''}`;
@@ -989,7 +995,7 @@ V.s = slug => {
   const s = SIRI_OF[slug]; if (!s || s.jenis === 'akan-datang') return V.tiada();
   const k = kemajuanSiri(s);
   const kepala = `<header class="halaman-kepala"><a class="pautan" href="#siri">← Semua siri</a><span class="eyebrow">${esc(labelSiri(s))}</span><h1>${esc(s.nama)}</h1><p class="lede">${esc(s.ringkas)}</p>
-    <div class="bar" style="max-width:420px"><i style="width:${k.peratus}%"></i></div><span class="meta"><span>${k.siap} daripada ${k.jumlah} selesai</span></span>`;
+    <div class="bar" style="max-width:420px"><i style="width:${k.peratus}%"></i></div><span class="meta"><span id="kemajuanSiri">${k.siap} daripada ${k.jumlah} ${s.jenis === 'senarai-semak' ? 'sudah direnung' : 'selesai'}</span></span>`;
   if (s.jenis === 'senarai-semak') return `<div class="bekas">${kepala}</header>${paparanSemak(s)}</div>`;
   if (s.jenis === 'karusel') return `<div class="bekas">${kepala}</header>${paparanKarusel(s)}</div>`;
   const bahan = s.episod.map(cari).filter(Boolean);
@@ -1035,7 +1041,24 @@ function paparanEpisod(a) {
   <aside class="sisi" aria-label="Soalan dalam episod"><div><span class="eyebrow">Soalan</span><ol class="isi-kandungan">${e.soalan.map((q, n) => `<li><a href="#e.${a.slug}" data-act="bab" data-bab="${n}">${esc(q.s.length > 70 ? q.s.slice(0, 67) + '…' : q.s)}</a></li>`).join('')}</ol></div></aside>
   </article></div>`;
 }
-const paparanSemak = s => `<p class="kosong">Senarai semak sedang disediakan.</p>`;
+function paparanSemak(s) {
+  const d = SEMAK[s.slug]; if (!d) return '<p class="kosong">Senarai semak sedang disediakan.</p>';
+  const tanda = S.semak[s.slug] || {};
+  const dalil = x => x ? blokEpisod(x) : '';
+  return `<section class="seksyen semak-muhasabah" style="border-top:0;padding-top:0">
+    <p class="nota-privasi" role="note"><b>Untuk muhasabah diri, bukan untuk menilai orang lain.</b> Tanda kau disimpan dalam peranti ini sahaja.</p>
+    <div class="pengenalan-semak">${d.pengenalan.map(p => `<p>${esc(p)}</p>`).join('')}</div>
+    ${d.kumpulan.map((g, a) => `<h2 class="tajuk-kumpulan">${esc(g.tajuk)}</h2><ol class="senarai-muhasabah" start="${d.kumpulan.slice(0, a).reduce((t, x) => t + x.item.length, 0) + 1}">${g.item.map((x, b) => { const k = `${a}-${b}`; return `<li class="item-muhasabah${tanda[k] ? ' direnung' : ''}">
+      <p class="soal-muhasabah">${esc(x.t)}</p>${dalil(x.dalil)}
+      <div class="kaki-item"><label class="tanda-renung"><input type="checkbox" data-semak="${esc(s.slug)}" data-k="${k}"${tanda[k] ? ' checked' : ''}> Sudah kurenung</label><span class="kecil-nota">al-Maydani, hlm. ${esc(x.hlm)}</span></div></li>`; }).join('')}</ol>`).join('')}
+    <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center">
+      <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem" id="statusSemak">${Object.keys(tanda).length === itemSemak(s.slug).length ? 'Muhasabah lengkap.' : 'Renung satu demi satu.'}</b><span class="kecil-nota">Muhasabah boleh diulang. Kosongkan tanda untuk mula semula.</span></div>
+      <button class="btn garis" data-act="semak-kosong" data-slug="${esc(s.slug)}"${Object.keys(tanda).length ? '' : ' disabled'}>Kosongkan tanda</button>
+    </div>
+    <figure class="ayat doa"><span class="eyebrow">Doa</span><p class="ar" lang="ar" dir="rtl">${esc(d.doa.ar)}</p><figcaption><p class="maksud">Maksudnya: “${esc(d.doa.maksud)}”</p><span class="ruj">${esc(d.doa.ruj)}</span></figcaption></figure>
+    <p class="kecil-nota">Sumber: analisis pemilik atas kitab ${esc(d.kitab)}. Nombor halaman merujuk kepada fail PDF kitab. Ayat al-Quran disalin daripada mushaf; hadis daripada Sahih al-Bukhari dan Sahih Muslim.</p>
+  </section>`;
+}
 const paparanKarusel = s => `<p class="kosong">Karusel sedang disediakan.</p>`;
 
 V.tiada = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Tidak dijumpai</span><h1>Halaman ini tiada di rak kami.</h1><p class="lede">Mungkin pautannya sudah berubah. <a class="pautan" href="#teroka">Cari ilmu</a> atau kembali ke <a class="pautan" href="#utama">halaman utama</a>.</p></header></div>`;
@@ -1248,6 +1271,7 @@ A['draf-maju'] = el => {
   d.langkah++; if (d.langkah === 6) { d.terbit = hariIni(); d.kemas = hariIni(); INDEKS = null; toast('Diterbitkan. Bahan kini muncul di Teroka.'); }
   simpan(); render();
 };
+A['semak-kosong'] = el => { const sm = el.dataset.slug; delete S.semak[sm]; delete S.selesai['s-' + sm]; simpan(); toast('Tanda dikosongkan'); render(); };
 A['draf-padam'] = el => { S.draf = S.draf.filter(d => d.id !== el.dataset.id); INDEKS = null; simpan(); render(); };
 
 document.addEventListener('click', e => {
@@ -1272,7 +1296,18 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { tutupModal(); $('.popover')?.remove(); } });
 document.addEventListener('change', e => {
-  if (e.target.id === 'pilihRehat') { Rehat.slug = e.target.value; render(); }
+  if (e.target.id === 'pilihRehat') { Rehat.slug = e.target.value; render(); return; }
+  const sm = e.target.dataset?.semak;
+  if (sm && SEMAK[sm]) {
+    const k = e.target.dataset.k; const t = (S.semak[sm] ||= {});
+    if (e.target.checked) t[k] = hariIni(); else delete t[k];
+    const lengkap = Object.keys(t).length === itemSemak(sm).length;
+    if (lengkap && !S.selesai['s-' + sm]) { S.selesai['s-' + sm] = hariIni(); if (!S.xpSelesai?.['s-' + sm]) { (S.xpSelesai ||= {})['s-' + sm] = 1; tambahXP(20, 'Muhasabah lengkap'); } }
+    if (!lengkap) delete S.selesai['s-' + sm];
+    simpan(); tandaAktif();
+    const y = scrollY; render(); window.scrollTo(0, y);
+    $(`[data-semak="${CSS.escape(sm)}"][data-k="${CSS.escape(k)}"]`)?.focus({ preventScroll: true });
+  }
 });
 
 let notaT;
