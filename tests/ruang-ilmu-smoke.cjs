@@ -11,6 +11,11 @@ const shots = process.env.SHOTS || '';
   for (const [nama, viewport] of [['tel', { width: 400, height: 860 }], ['desk', { width: 1366, height: 900 }]]) {
     const ctx = await browser.newContext({ serviceWorkers: 'block', viewport });
     if (!process.env.FONTS) await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    await ctx.addInitScript(() => {
+      window.__ucapan = [];
+      window.SpeechSynthesisUtterance = function (t) { this.text = t; };
+      Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { speak(u) { window.__ucapan.push(u.text); setTimeout(() => u.onend && u.onend(), 5); }, cancel() {}, getVoices() { return []; }, addEventListener() {} } });
+    });
     const page = await ctx.newPage(); const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     const buka = async h => { await page.goto(origin + '#' + h); await page.waitForTimeout(250); };
@@ -60,6 +65,28 @@ const shots = process.env.SHOTS || '';
     await buka('e.sifat-malu');
     assert.ok(await page.locator('.tiada-ruj').count() >= 1, 'Hadis tanpa rujukan dilabel');
     assert.match(await page.locator('.tiada-ruj').first().innerText(), /Rujukan belum dinyatakan/i);
+
+    // Integrasi (Tugasan 5)
+    await buka('teroka');
+    await page.fill('#medanCari', 'benci kebenaran');
+    assert.match(await page.locator('#hasilCari').innerText(), /Benci kepada Kebenaran/, 'Carian menemui episod');
+    await page.fill('#medanCari', 'sifat malu');
+    assert.match(await page.locator('#hasilCari').innerText(), /Sifat Malu/);
+    assert.match(await page.locator('#hasilCari a[href^="#e."]').first().getAttribute('href'), /^#e\./, 'Kad carian membuka paparan episod');
+    await buka('utama');
+    assert.match(await page.locator('#kandungan').innerText(), /Siri terkini/i);
+    await buka('e.kuasa-mutlak-allah');
+    await page.click('[data-act="dengar"][data-slug="kuasa-mutlak-allah"]');
+    await page.waitForTimeout(600);
+    const ucapan = await page.evaluate(() => window.__ucapan);
+    assert.ok(ucapan.length >= 3, 'Pemain Dengar membaca episod');
+    assert.ok(ucapan.every(u => !/[؀-ۿ]/.test(u)), 'Teks Arab dilangkau oleh pemain');
+    await page.click('[data-act="pemain-tutup"]');
+    await buka('studio');
+    const studio = await page.locator('#kandungan').innerText();
+    assert.match(studio, /Semua bahan lulus semakan/i, 'Semakan integriti lulus');
+    assert.match(studio, /11 hadis tanpa rujukan/i, 'Studio menyenaraikan hadis tanpa rujukan');
+    await buka('profil'); await tiadaLimpahan('profil');
 
     for (const h of ['utama', 'a.kenapa-percaya-ramalan', 'kopi', 'studio', 'tentang']) { await buka(h); await tiadaLimpahan(h); }
     assert.deepEqual(errors, [], 'Tiada ralat konsol');

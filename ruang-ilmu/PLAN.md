@@ -10,7 +10,7 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
    Fail: `siri.js`. Ujian: setiap episod dibuka tanpa ralat; carian teks terlarang (nama program, panel, MUSIL, Al-Bayan, drive.google) pulang kosong.
 4. [x] **Import Akhlak dan Adab** (4 episod, Ogos 2026; 11 hadis tanpa rujukan dilabel) (fail AB dalam folder DUHA) dengan peraturan yang sama.
    Fail: `siri.js`. Ujian: sama seperti tugasan 3.
-5. [ ] **Integrasi**: carian, Teroka (Agama), halaman utama "Siri terkini", peta ilmu, Simpanan, pemain Dengar (langkau Arab), Kad integriti dan semakan Studio (hadis tanpa rujukan disenaraikan).
+5. [x] **Integrasi**: carian, Teroka (Agama), halaman utama "Siri terkini", peta ilmu, Simpanan, pemain Dengar (langkau Arab), Kad integriti dan semakan Studio (hadis tanpa rujukan disenaraikan).
    Fail: `app.js`. Ujian: carian "kebenaran" dan "malu"; teks pemain tiada aksara Arab; Studio menyenaraikan isu rujukan.
 6. [ ] **Kenali Munafik** sebagai senarai semak peribadi (daripada artifak Checklist Kenali Munafik).
    Fail: `siri.js`, `app.js`, `styles.css`. Ujian: tanda kekal selepas muat semula; tiada permintaan rangkaian baharu.

@@ -222,9 +222,9 @@ const PROFIL = { ringan: 'Ringan', manis: 'Manis', pekat: 'Pekat' };
 const KATEGORI_MENU = [{ id: 'kopi', n: 'Kopi' }, { id: 'matcha', n: 'Matcha' }, { id: 'coklat', n: 'Coklat' }];
 const fmtLencana = a => { const m = minit(a); return `<div class="lencana-format"><span>Baca ${m.baca} min</span><span>Dengar ${m.dengar} min</span><span>Lihat ${m.lihat} min</span>${selesai(a.slug) ? '<span class="cip selesai">Selesai</span>' : ''}</div>`; };
 const kadArtikel = (a, sampul = true) => `<article class="artikel-kad">
-  ${sampul ? `<a class="sampul" href="#a.${a.slug}" data-kat="${esc(KAT[a.kategori]?.nama)}" tabindex="-1" aria-hidden="true"><span>${esc(a.bahagian[0]?.v || a.tajuk.split(' ').slice(0, 3).join(' '))}</span></a>` : ''}
+  ${sampul ? `<a class="sampul" href="${pautanBahan(a)}" data-kat="${esc(KAT[a.kategori]?.nama)}" tabindex="-1" aria-hidden="true"><span>${esc(a.bahagian[0]?.v || a.tajuk.split(' ').slice(0, 3).join(' '))}</span></a>` : ''}
   <div class="meta"><span>${esc(KAT[a.kategori]?.nama)}</span><span>${esc(a.tahap)}</span></div>
-  <h3><a href="#a.${a.slug}">${esc(a.tajuk)}</a></h3>
+  <h3><a href="${pautanBahan(a)}">${esc(a.tajuk)}</a></h3>
   <p>${esc(a.dek)}</p>${fmtLencana(a)}</article>`;
 const barisDengar = (a, i) => { const m = minit(a); const aktif = Pemain.slug === a.slug && Pemain.main; return `<li><div class="baris"><span class="no">${String(i + 1).padStart(2, '0')}</span><div class="tajuk-baris"><a href="#a.${a.slug}">${esc(a.tajuk)}</a><span class="meta"><span>${esc(KAT[a.kategori]?.nama)}</span><span>${m.dengar} min</span>${S.dengar[a.slug] ? `<span>Sambung dari bahagian ${S.dengar[a.slug] + 1}</span>` : ''}</span></div><button class="main-btn" data-act="dengar" data-slug="${a.slug}" aria-label="${aktif ? 'Jeda' : 'Dengar'} ${esc(a.tajuk)}">${aktif ? IKON.jeda : IKON.main}</button></div></li>`; };
 const kepalaSeksyen = (eyebrow, tajuk, teks, pautan) => `<div class="seksyen-kepala"><div><span class="eyebrow">${eyebrow}</span><h2 class="h-seksyen">${tajuk}</h2>${teks ? `<p>${teks}</p>` : ''}</div>${pautan || ''}</div>`;
@@ -473,6 +473,10 @@ V.utama = () => {
 
   <div class="bekas"><section class="seksyen">${kepalaSeksyen('Teroka bidang ilmu', 'Enam bidang, satu rasa ingin tahu', '', '<a class="pautan" href="#teroka">Cari dengan soalan</a>')}
     <div class="grid-kategori">${KATEGORI.map(k => `<a class="kategori-kad" href="#teroka.${k.id}"><h3>${esc(k.nama)}<small>${semua().filter(a => a.kategori === k.id).length} bahan</small></h3><p>${esc(k.ringkas)}</p></a>`).join('')}</div></section></div>
+
+  <div class="bekas"><section class="seksyen">${kepalaSeksyen('Siri', 'Siri terkini', 'Soal-jawab tadabbur, akhlak dan kuliah, satu episod pada satu masa.', '<a class="pautan" href="#siri">Semua siri</a>')}
+    <ul class="senarai-baris">${EPISOD.slice().sort((x, y) => y.tarikh.localeCompare(x.tarikh)).slice(0, 4).map(e => `<li><div class="baris"><span class="no">${tarikh(e.tarikh).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)}</a><span class="meta"><span>${esc(SIRI_OF[e.siri].nama)}</span><span>Episod ${e.no}</span>${e.julat ? `<span>${esc(e.julat)}</span>` : ''}</span></div>${selesai(e.slug) ? '<span class="cip selesai">Selesai</span>' : `<span class="cip">${e.soalan.length} soalan</span>`}</div></li>`).join('')}</ul>
+    <div class="grid-siri" style="margin-top:22px">${SIRI.filter(s => s.jenis !== 'akan-datang').slice(0, 3).map(kadSiri).join('')}</div></section></div>
 
   <div class="bekas"><section class="seksyen">${kepalaSeksyen('Koleksi pilihan kurator', 'Laluan ilmu', 'Topik yang disusun mengikut urutan. Setiap langkah membina yang seterusnya.', '<a class="pautan" href="#laluan">Semua laluan</a>')}
     <div class="grid-laluan">${LALUAN.map(kadLaluan).join('')}</div></section></div>
@@ -810,7 +814,7 @@ V.ahli = () => `<div class="bekas"><header class="halaman-kepala"><span class="e
 
 function petaIlmu() {
   const W = 800, H = 560, cx = 400, cy = 272;
-  const pos = {}; const s = semua();
+  const pos = {}; const s = semua().filter(a => !a.episod);
   const nod = KATEGORI.map((k, i) => {
     const sud = -Math.PI / 2 + i * Math.PI * 2 / KATEGORI.length;
     const kx = cx + 300 * Math.cos(sud), ky = cy + 170 * Math.sin(sud);
@@ -921,6 +925,8 @@ V.studio = () => {
 
   <section class="seksyen">${kepalaSeksyen('Semakan integriti data', isu.length ? `${isu.length} isu perlu dibetulkan` : 'Semua bahan lulus semakan', 'Dijalankan setiap kali Studio dibuka: jenis sumber, dakwaan fakta tanpa sumber, rujukan yang tiada, tajuk umpan klik dan pautan yang putus.')}
     ${isu.length ? `<ul class="senarai-isu">${isu.map(([t, m]) => `<li><b>${esc(t)}</b> · ${esc(m)}</li>`).join('')}</ul>` : `<p class="lulus">✓ ${bahan.length} bahan, ${bahan.reduce((t, a) => t + (a.dakwaan || []).length, 0)} dakwaan, ${bahan.reduce((t, a) => t + a.rujukan.length, 0)} sumber, ${LALUAN.length} laluan dan ${PRODUK.length} produk disemak.</p>`}</section>
+
+  ${(() => { const h = EPISOD.flatMap(e => e.soalan.flatMap((q, n) => q.blok.filter(b => (b.j === 'hadis' || b.j === 'petikan') && !b.ruj).map(b => ({ e, n, b })))); return `<section class="seksyen">${kepalaSeksyen('Rujukan untuk disemak', h.length ? `${h.length} hadis tanpa rujukan` : 'Semua hadis bersumber', 'Hadis dalam skrip asal yang belum dinyatakan rujukannya. Dipaparkan kepada pembaca sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.')}${h.length ? `<ul class="senarai-baris">${h.map(({ e, n, b }) => `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)} · Soalan ${n + 1}</a><span class="kecil-nota" lang="ar" dir="rtl" style="font-family:Amiri,serif;font-size:1.05rem;text-align:right">${esc(b.ar)}</span><span class="kecil-nota">${esc(b.maksud || '')}</span></div></div></li>`).join('')}</ul>` : ''}</section>`; })()}
 
   <section class="seksyen">${kepalaSeksyen('Ukuran yang kami pilih', 'Kefahaman, bukan pageview', 'Data peranti ini sahaja. Kami sengaja tidak menjadikan jumlah tontonan sebagai ukuran utama, kerana penerbit yang mengejar tontonan akan mengejar sensasi.')}
     <div class="statistik"><div><b>${jum('buka') ? Math.round(jum('selesai') / jum('buka') * 100) + '%' : '–'}</b><span>kadar lengkap (selesai ÷ dibuka)</span></div><div><b>${kuizSemua.length ? Math.round(kuizSemua.filter(e => e.betul).length / kuizSemua.length * 100) + '%' : '–'}</b><span>jawapan kuiz tepat</span></div><div><b>${hariAktif}</b><span>hari pembaca kembali aktif</span></div><div><b>${Object.values(S.format).filter(f => Object.keys(f).length > 1).length}</b><span>bahan dinikmati dalam lebih satu format</span></div><div><b>${jum('simpan')}</b><span>disimpan untuk dibaca semula</span></div></div>
