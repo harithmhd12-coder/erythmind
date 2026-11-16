@@ -18,9 +18,13 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
    Fail: `siri.js`, `app.js`, `styles.css`. Ujian: butang, titik, kekunci anak panah dan leret mendatar menukar slaid; kedudukan kekal selepas tanda selesai.
 8. [x] **Kuliah Pemikiran**: 3 kuliah (11 sebab + amalan) daripada Peta Sebab Kesilapan Berfikir, dalam susun atur episod berlabel Kuliah/Sebab; 1 hadis (fitrah) dilabel "Rujukan belum dinyatakan" seperti nota pemilik.
    Fail: `siri.js`, `app.js`. Ujian: tiga kuliah dibuka, 11 sebab, matan RTL berujukan, tiada nota penceramah; semakan integriti lulus.
-9. [ ] **Release prep, Security review, Final review.** README, versi cache `sw.js`, semua ujian, 400px/1366px, mod gelap, `/security-review`, `/code-review`, kriteria penerimaan satu demi satu, PR.
+9. [x] **Release prep, Security review, Final review.** README, versi cache `sw.js`, semua ujian, 400px/1366px, mod gelap, `/security-review`, `/code-review`, kriteria penerimaan satu demi satu, PR.
 
 ## Susulan selepas kelompok pertama
+- Dideploy melalui PR #16 (16 Nov 2026). Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
+- Sekatan tarikh dikira semasa app dimuat: app yang terbuka melepasi tengah malam perlu dibuka semula untuk episod hari baharu.
+- Kemas: kotak "selesai" berulang dalam tiga templat (paparanEpisod, paparanSemak, paparanKarusel).
+- Nombor WhatsApp Sip 'n Go (`SNG.whatsapp`) masih kosong.
 - Kelompok kedua: skrip SMU dan Dhuha selebihnya.
 - Bahan Sip n Speak daripada pemilik.
-- Semakan takhrij hadis yang berlabel "Rujukan belum dinyatakan".
+- Semakan takhrij 12 hadis yang berlabel "Rujukan belum dinyatakan" (11 Akhlak dan Adab, 1 hadis fitrah Kuliah 1).
