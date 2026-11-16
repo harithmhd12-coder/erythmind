@@ -28,3 +28,8 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 - Kelompok kedua: skrip SMU dan Dhuha selebihnya.
 - Bahan Sip n Speak daripada pemilik.
 - Semakan takhrij 12 hadis yang berlabel "Rujukan belum dinyatakan" (11 Akhlak dan Adab, 1 hadis fitrah Kuliah 1).
+
+## Tambahan: Kuliah 4 · WUI 1.0 (menunggu "ya" pemilik)
+10. [ ] **Data Kuliah 4**: nota bahagian demi bahagian daripada transkrip, kredit dan pautan minit, dakwaan untuk disemak, bacaan yang disyorkan. Fail: `siri.js`. Ujian: 4 kuliah, kredit dan pautan YouTube wujud, tiada iframe, Studio lulus.
+11. [ ] **Paparan sumber luar**: kotak kredit, pautan "Tonton bahagian ini", kotak dakwaan belum disemak. Fail: `app.js`, `styles.css`. Ujian: tiada permintaan rangkaian ke YouTube semasa dibuka; 400px/1366px, gelap.
+12. [ ] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-7`).
