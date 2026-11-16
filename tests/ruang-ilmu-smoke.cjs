@@ -235,7 +235,7 @@ const shots = process.env.SHOTS || '';
     const page = await ctx.newPage(); const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     await page.clock.setFixedTime(new Date('2026-11-27T09:00:00+08:00'));
-    for (const h of ['siri', 's.tadabbur-al-mukminun', 'e.sifat-malu', 's.kenali-munafik', 's.kenali-kebenaran', 'e.buaian-pemikiran', 'profil', 'studio']) {
+    for (const h of ['siri', 's.tadabbur-al-mukminun', 'e.sifat-malu', 's.kenali-munafik', 's.kenali-kebenaran', 'e.buaian-pemikiran', 'e.kolonial-kapitalis-neoliberalisme', 'profil', 'studio']) {
       await page.goto(origin + '#' + h); await page.waitForTimeout(250);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `Limpahan mendatar (gelap) pada ${h}`);
       const [latar, teks] = await page.evaluate(() => [getComputedStyle(document.body).backgroundColor, getComputedStyle(document.querySelector('h1')).color]);
