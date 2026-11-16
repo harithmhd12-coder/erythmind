@@ -535,5 +535,7 @@ a.siri-kad:hover { border-color: var(--dakwat); }
 .ayat .maksud { font-family: var(--serif); font-size: 1.05rem; line-height: 1.6; }
 .ayat .ruj { font-family: var(--mono); font-size: .76rem; color: var(--merah); }
 .ayat.hadis { border-left: 3px solid var(--merah); }
+.ayat.petikan { background: var(--kertas); border-style: dashed; }
+.ayat.petikan .ar { font-size: 1.35rem; }
 .cip.tiada-ruj { border-style: dashed; border-color: var(--kelabu); color: var(--kelabu); justify-self: start; }
 .navep { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--dakwat); padding-top: 16px; max-width: var(--lajur); }

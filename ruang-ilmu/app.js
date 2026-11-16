@@ -142,9 +142,9 @@ function episodKeBahan(e) {
   const siri = SIRI_OF[e.siri]; const sumber = []; const dakwaan = [];
   const indeks = ruj => { let i = sumber.findIndex(x => x.t === ruj); if (i < 0) { sumber.push({ j: 'primer', t: ruj }); i = sumber.length - 1; } return i; };
   e.soalan.forEach(q => q.blok.forEach(b => {
-    if (b.j === 'ayat' || b.j === 'hadis') {
+    if (b.j === 'ayat' || b.j === 'hadis' || b.j === 'petikan') {
       const ringkas = polosAyat(b.maksud).replace(/^Maksudnya:\s*/i, '');
-      if (b.ruj) dakwaan.push({ t: `${b.ruj}: ${ringkas.length > 140 ? ringkas.slice(0, 137) + '…' : ringkas}`, j: 'fakta', s: [indeks(b.ruj)] });
+      if (b.ruj) dakwaan.push({ t: `${b.ruj}: ${ringkas.length > 140 ? ringkas.slice(0, 137) + '…' : ringkas}`, j: b.j === 'petikan' ? 'tafsiran' : 'fakta', s: [indeks(b.ruj)] });
       else dakwaan.push({ t: `Hadis: ${ringkas.length > 140 ? ringkas.slice(0, 137) + '…' : ringkas}`, j: 'riwayat', s: [] });
     }
   }));
@@ -154,7 +154,7 @@ function episodKeBahan(e) {
   return {
     slug: e.slug, tajuk: e.tajuk, dek: `${siri?.nama || 'Siri'} · Episod ${e.no}${e.julat ? ` · ${e.julat}` : ''}`,
     kategori: siri?.kategori || 'agama', tag: e.tag || [], tahap: 'Asas', terbit: e.tarikh, kemas: e.tarikh,
-    ringkas60: r60, bahagian: e.soalan.map(q => ({ h: q.s, v: '', p: teks(q) })),
+    ringkas60: r60, bahagian: e.soalan.map(q => ({ h: polosAyat(q.s), v: '', p: teks(q) })),
     fakta: [], kuiz: [], refleksi: '', rujukan: sumber, dakwaan, berkaitan: [], episod: e
   };
 }
@@ -993,7 +993,7 @@ V.s = slug => {
 };
 const blokEpisod = b => {
   if (b.j === 'teks') return `<p class="huraian">${esc(b.t)}</p>`;
-  const label = b.j === 'hadis' ? '<span class="eyebrow">Hadis</span>' : '';
+  const label = b.j === 'hadis' ? '<span class="eyebrow">Hadis</span>' : b.j === 'petikan' ? '<span class="eyebrow">Petikan kitab</span>' : '';
   const ruj = b.ruj ? `<span class="ruj">${esc(b.ruj)}</span>` : `<span class="cip tiada-ruj">Rujukan belum dinyatakan</span>`;
   return `<figure class="ayat ${b.j}">${label}${b.ar ? `<p class="ar" lang="ar" dir="rtl">${esc(b.ar)}</p>` : ''}<figcaption><p class="maksud">${b.maksud ? `Maksudnya: “${esc(b.maksud)}”` : ''}</p>${ruj}</figcaption></figure>`;
 };

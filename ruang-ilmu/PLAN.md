@@ -6,7 +6,7 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
    Fail: `siri.js`, `index.html`, `app.js`, `styles.css`. Ujian: `#siri` papar kad, Sip n Speak "Akan datang", tiada ralat konsol.
 2. [x] **Paparan episod soal-jawab** (arah A, dipilih pemilik): blok teks, ayat (Arab RTL + fon Amiri), hadis, label "Rujukan belum dinyatakan", navigasi episod, tanda selesai.
    Fail: `app.js`, `styles.css`, `index.html` (fon). Ujian: episod contoh papar soalan dan ayat; tanda selesai mengemas kini kemajuan siri.
-3. [ ] **Import Tadabbur Surah al-Mukminun.** Baca setiap fail SMU bersegmen Tadabbur Surah Mukminun dari Drive, buang nama program, panel, kempen dan pautan, tukar ke EPISOD.
+3. [x] **Import Tadabbur Surah al-Mukminun.** (15 episod, 2 Sep–26 Nov 2026; "Beradab dalam Tindakan" 7/10 bukan segmen ini, tidak dimasukkan) Baca setiap fail SMU bersegmen Tadabbur Surah Mukminun dari Drive, buang nama program, panel, kempen dan pautan, tukar ke EPISOD.
    Fail: `siri.js`. Ujian: setiap episod dibuka tanpa ralat; carian teks terlarang (nama program, panel, MUSIL, Al-Bayan, drive.google) pulang kosong.
 4. [ ] **Import Akhlak dan Adab** (fail AB dalam folder DUHA) dengan peraturan yang sama.
    Fail: `siri.js`. Ujian: sama seperti tugasan 3.

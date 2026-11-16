@@ -40,9 +40,22 @@ const shots = process.env.SHOTS || '';
     await tiadaLimpahan('episod'); await shot('episod');
     await page.click('[data-act="selesai"][data-slug="benci-kepada-kebenaran"]');
     await buka('s.tadabbur-al-mukminun');
-    assert.match(await page.locator('.halaman-kepala').innerText(), /1 daripada 1 selesai/, 'Kemajuan siri dikemas kini');
+    assert.match(await page.locator('.halaman-kepala').innerText(), /1 daripada 15 selesai/, 'Kemajuan siri dikemas kini');
     await buka('siri');
-    assert.match(await page.locator('.siri-kad').first().innerText(), /1\/1 selesai/);
+    assert.match(await page.locator('.siri-kad').first().innerText(), /1\/15 selesai/);
+
+    // Setiap episod siri soal-jawab dibuka bersih (Tugasan 3 dan 4)
+    const episod = await page.evaluate(() => SIRI.filter(s => s.jenis === 'soal-jawab').flatMap(s => s.episod));
+    assert.ok(episod.length >= 15, `Sekurang-kurangnya 15 episod (dapat ${episod.length})`);
+    for (const slug of episod) {
+      await buka('e.' + slug);
+      assert.ok(await page.locator('.soalan-ep').count() >= 1, `Episod ${slug} ada soalan`);
+      const t = await page.locator('#kandungan').innerText();
+      for (const larang of [/Assalamualaikum (Subuh|Dhuha)/i, /\bPANEL\b/, /BAKHTIAR/i, /PU AMIN/i, /DAI (FUAD|HAKIM)/i, /MUSIL/, /Al-?Bayan/i, /drive\.google/i, /\bPOSTER\b/i, /Durasi/i]) assert.doesNotMatch(t, larang, `Teks terlarang ${larang} dalam ${slug}`);
+      assert.equal(await page.locator('.ayat .ruj, .ayat .tiada-ruj').count(), await page.locator('.ayat').count(), `Setiap blok ayat/hadis dalam ${slug} ada rujukan atau label`);
+    }
+    await buka('siri');
+    assert.match(await page.locator('.siri-kad').first().innerText(), /15 episod/i);
 
     for (const h of ['utama', 'a.kenapa-percaya-ramalan', 'kopi', 'studio', 'tentang']) { await buka(h); await tiadaLimpahan(h); }
     assert.deepEqual(errors, [], 'Tiada ralat konsol');
