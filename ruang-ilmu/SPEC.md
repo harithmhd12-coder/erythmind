@@ -43,7 +43,7 @@ SIRI = [{ slug, nama, jenis: 'soal-jawab'|'senarai-semak'|'karusel'|'kuliah'|'ak
 EPISOD = [{ slug, siri, no, tajuk, tarikh, julat,
             soalan: [{ s, blok: [ {j:'teks', t} | {j:'ayat', ar, maksud, ruj} | {j:'hadis', ar, maksud, ruj|null} ] }] }]
 SEMAK = { [slug]: { kitab, pengenalan: [p], kumpulan: [{ tajuk, item: [{ t, hlm, dalil?: {j, ar, maksud, ruj} }] }], doa } }  // Kenali Munafik
-KARUSEL = { slug, slaid: [{ tajuk, isi, ruj }] }                            // Kenali Kebenaran
+KARUSEL = { [slug]: { tajuk, slaid: [{ label, tajuk, ar?, maksud?, ruj?, isi?, nama?, butir?, langkah?, alur?, nota?, petik? }] } }  // Kenali Kebenaran
 ```
 - Fungsi penyesuai `episodKeBahan(e)` menukar setiap episod kepada bentuk bahan sedia ada, supaya simpan, selesai, dengar, carian, peta ilmu dan Kad integriti berfungsi tanpa kod pendua. `rujukan` dijana daripada `ruj` ayat/hadis (jenis `primer`), dan `dakwaan` dijana sebagai satu dakwaan `fakta` bagi setiap ayat/hadis yang dirujuk.
 - Kemajuan siri = episod selesai ÷ jumlah episod (guna `S.selesai` sedia ada).
@@ -67,5 +67,5 @@ KARUSEL = { slug, slaid: [{ tajuk, isi, ruj }] }                            // K
 8. Senarai semak Kenali Munafik mengingati tanda selepas muat semula, dan tiada data dihantar keluar.
 9. Karusel Kenali Kebenaran boleh dileret dan dikawal dengan papan kekunci.
 10. Tiada ralat konsol dan tiada limpahan mendatar pada 400px dan 1366px, mod terang dan gelap.
-12. Episod bertarikh selepas hari ini tidak muncul dalam senarai siri, carian atau pautan terus, dan muncul pada tarikhnya.
 11. Semakan integriti Studio lulus untuk semua bahan selain isu "Rujukan belum dinyatakan" yang disengajakan.
+12. Episod bertarikh selepas hari ini tidak muncul dalam senarai siri, carian atau pautan terus, dan muncul pada tarikhnya.

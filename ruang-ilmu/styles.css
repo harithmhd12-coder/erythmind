@@ -553,3 +553,42 @@ a.siri-kad:hover { border-color: var(--dakwat); }
 .tanda-renung { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; font-size: .92rem; cursor: pointer; min-height: 44px; }
 .tanda-renung input { width: 20px; height: 20px; accent-color: var(--merah); }
 .ayat.doa { background: var(--kertas); }
+.karusel { display: grid; gap: 12px; max-width: 620px; }
+.trek { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: 14px; outline-offset: 4px; }
+.trek::-webkit-scrollbar { display: none; }
+.slaid { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; padding: 26px 22px 20px; min-height: 560px; border: 1px solid var(--garis); border-radius: 14px; background: var(--permukaan); position: relative; }
+.slaid h2 { margin: 0; font-size: clamp(1.6rem, 6vw, 2.1rem); line-height: 1.15; }
+.slaid .ar { margin: 0; font-family: "Amiri", "Scheherazade New", "Noto Naskh Arabic", serif; font-size: 1.45rem; line-height: 2; text-align: right; }
+.slaid .maksud { margin: 0; font-family: var(--serif); font-size: 1.08rem; line-height: 1.55; }
+.slaid .ruj { font-family: var(--mono); font-size: .74rem; color: var(--merah); }
+.slaid .isi-slaid { margin: 0; font-family: var(--serif); font-size: 1.12rem; line-height: 1.55; }
+.slaid.kulit { justify-content: center; background: var(--dakwat); color: var(--kertas); border-color: var(--dakwat); }
+.slaid.kulit h2 { font-size: clamp(2.3rem, 10vw, 3.2rem); color: var(--kertas); }
+.slaid.kulit .eyebrow, .slaid.kulit .no-slaid { color: var(--kertas); opacity: .8; }
+.besar-ar { margin: 0; font-family: "Amiri", serif; font-size: 3.4rem; line-height: 1.4; color: var(--merah); text-align: right; }
+.nama-berhala { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; direction: rtl; }
+.nama-berhala li { display: grid; justify-items: center; gap: 2px; padding: 6px 12px; border: 1px solid currentColor; border-radius: 999px; font-family: "Amiri", serif; font-size: 1.25rem; }
+.nama-berhala small { font-family: var(--sans); font-size: .72rem; direction: ltr; }
+.butir { margin: 0; display: grid; gap: 10px; }
+.butir div { display: grid; gap: 2px; border-top: 1px solid var(--garis); padding-top: 8px; }
+.butir dt { font-family: var(--mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--kelabu); }
+.butir dd { margin: 0; font-weight: 600; }
+.langkah { margin: 0; padding: 0; list-style: none; counter-reset: l; display: grid; gap: 10px; }
+.langkah li { counter-increment: l; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; font-family: var(--serif); font-size: 1.05rem; line-height: 1.45; }
+.langkah li::before { content: counter(l); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--merah); color: #fff; font-family: var(--mono); font-size: .8rem; }
+.alur { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .85rem; font-weight: 600; }
+.alur li { padding: 4px 10px; border: 1px solid var(--garis); border-radius: 999px; }
+.alur li + li::before { content: "›"; margin-right: 8px; color: var(--kelabu); }
+.alur li:last-child { border-color: var(--merah); color: var(--merah); }
+.nota-tahqiq { padding: 10px 12px; border-left: 3px solid var(--merah); background: var(--kertas); font-size: .88rem; line-height: 1.5; }
+.petik { margin: 0; font-family: var(--serif); font-style: italic; font-size: 1.25rem; line-height: 1.4; border-top: 1px solid var(--dakwat); padding-top: 12px; }
+.no-slaid { margin-top: auto; align-self: flex-end; font-family: var(--mono); font-size: .75rem; color: var(--kelabu); }
+.kawalan-karusel { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kawalan-karusel .btn-tindak { min-width: 44px; min-height: 44px; justify-content: center; font-size: 1.1rem; }
+.kawalan-karusel .btn-tindak:disabled { opacity: .35; cursor: default; }
+.titik { display: flex; flex-wrap: wrap; justify-content: center; gap: 0; min-width: 0; }
+.titik button { width: 18px; height: 32px; border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center; }
+.titik button::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--garis); }
+.titik button[aria-current="true"]::before { background: var(--merah); width: 10px; height: 10px; }
+.kiraan-slaid { margin: 0; text-align: center; font-family: var(--mono); font-size: .8rem; color: var(--kelabu); }
+@media (prefers-reduced-motion: reduce) { .trek { scroll-behavior: auto; } }

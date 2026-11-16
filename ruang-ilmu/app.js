@@ -1059,7 +1059,63 @@ function paparanSemak(s) {
     <p class="kecil-nota">Sumber: analisis pemilik atas kitab ${esc(d.kitab)}. Nombor halaman merujuk kepada fail PDF kitab. Ayat al-Quran disalin daripada mushaf; hadis daripada Sahih al-Bukhari dan Sahih Muslim.</p>
   </section>`;
 }
-const paparanKarusel = s => `<p class="kosong">Karusel sedang disediakan.</p>`;
+/* Karusel: trek scroll-snap mendatar (leret sentuh asli), butang, titik dan kekunci anak panah. */
+const Karusel = { indeks: {} };
+function slaidKarusel(x, i, n) {
+  const ar = x.ar ? `<p class="ar" lang="ar" dir="rtl">${esc(x.ar)}</p>` : '';
+  return `<div class="slaid${x.kulit ? ' kulit' : ''}" role="group" aria-roledescription="slaid" aria-label="${i + 1} daripada ${n}: ${esc(x.tajuk)}" data-i="${i}">
+    <span class="eyebrow">${esc(x.label)}</span>
+    ${x.besar ? `<p class="besar-ar" lang="ar" dir="rtl">${esc(x.besar)}</p>` : ''}
+    <h2>${esc(x.tajuk)}</h2>
+    ${ar}${x.maksud ? `<p class="maksud">${esc(x.maksud)}</p>` : ''}${x.ruj ? `<span class="ruj">${esc(x.ruj)}</span>` : ''}
+    ${x.nama ? `<ul class="nama-berhala">${x.nama.map(([a, l]) => `<li><span lang="ar" dir="rtl">${esc(a)}</span>${l ? `<small>${esc(l)}</small>` : ''}</li>`).join('')}</ul>` : ''}
+    ${x.butir ? `<dl class="butir">${x.butir.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
+    ${x.langkah ? `<ol class="langkah">${x.langkah.map(t => `<li>${esc(t)}</li>`).join('')}</ol>` : ''}
+    ${x.alur ? `<ol class="alur" aria-label="Urutan">${x.alur.map(t => `<li>${esc(t)}</li>`).join('')}</ol>` : ''}
+    ${x.nota ? `<aside class="nota-tahqiq"><b>${esc(x.nota[0])}</b> ${esc(x.nota[1])}</aside>` : ''}
+    ${(x.isi || []).map(t => `<p class="isi-slaid">${esc(t)}</p>`).join('')}
+    ${x.petik ? `<p class="petik">${esc(x.petik)}</p>` : ''}${x.ruj2 ? `<span class="ruj">${esc(x.ruj2)}</span>` : ''}
+    <span class="no-slaid" aria-hidden="true">${String(i + 1).padStart(2, '0')} / ${n}</span>
+  </div>`;
+}
+function paparanKarusel(s) {
+  const d = KARUSEL[s.slug]; if (!d) return '<p class="kosong">Karusel sedang disediakan.</p>';
+  const n = d.slaid.length; const i = Math.min(Karusel.indeks[s.slug] || 0, n - 1); const sel = 's-' + s.slug;
+  return `<section class="seksyen" style="border-top:0;padding-top:0">
+    <div class="karusel" role="region" aria-roledescription="karusel" aria-label="${esc(d.tajuk)}" data-karusel="${esc(s.slug)}">
+      <div class="trek" tabindex="0" aria-label="Slaid. Leret atau guna kekunci anak panah.">${d.slaid.map((x, j) => slaidKarusel(x, j, n)).join('')}</div>
+      <div class="kawalan-karusel">
+        <button class="btn-tindak" data-act="karusel" data-arah="-1" aria-label="Slaid sebelum"${i === 0 ? ' disabled' : ''}>←</button>
+        <div class="titik" role="group" aria-label="Pilih slaid">${d.slaid.map((x, j) => `<button data-act="karusel" data-ke="${j}" aria-label="Slaid ${j + 1}" aria-current="${j === i}"></button>`).join('')}</div>
+        <button class="btn-tindak" data-act="karusel" data-arah="1" aria-label="Slaid seterusnya"${i === n - 1 ? ' disabled' : ''}>→</button>
+      </div>
+      <p class="kiraan-slaid" aria-live="polite" id="kiraanSlaid">Slaid ${i + 1} daripada ${n}</p>
+    </div>
+    <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;max-width:var(--lajur)">
+      <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem">${selesai(sel) ? 'Karusel ini telah kau selesaikan.' : 'Sudah sampai slaid terakhir?'}</b><span class="kecil-nota">${selesai(sel) ? `Ditanda pada ${tarikh(S.selesai[sel])}.` : 'Tanda selesai untuk mengemas kini kemajuan siri.'}</span></div>
+      <button class="btn ${selesai(sel) ? 'garis' : ''}" data-act="selesai" data-slug="${esc(sel)}">${selesai(sel) ? 'Selesai' : 'Tanda selesai'}</button>
+    </div>
+  </section>`;
+}
+Karusel.ke = (slug, i, lancar = true) => {
+  const k = $(`[data-karusel="${CSS.escape(slug)}"]`); if (!k) return;
+  const trek = $('.trek', k); const n = trek.children.length; i = Math.max(0, Math.min(n - 1, i));
+  trek.scrollTo({ left: i * trek.clientWidth, behavior: lancar && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'auto' });
+  Karusel.tanda(slug, i);
+};
+Karusel.tanda = (slug, i) => {
+  const k = $(`[data-karusel="${CSS.escape(slug)}"]`); if (!k) return;
+  Karusel.indeks[slug] = i; const n = $('.trek', k).children.length; const kira = $('#kiraanSlaid');
+  const teks = `Slaid ${i + 1} daripada ${n}`; if (kira.textContent !== teks) kira.textContent = teks;
+  $$('.titik button', k).forEach((b, j) => b.setAttribute('aria-current', String(j === i)));
+  $('[data-arah="-1"]', k).disabled = i === 0; $('[data-arah="1"]', k).disabled = i === n - 1;
+};
+Karusel.pasang = slug => {
+  const k = $(`[data-karusel="${CSS.escape(slug)}"]`); if (!k) return;
+  const trek = $('.trek', k); let bingkai = 0;
+  trek.addEventListener('scroll', () => { cancelAnimationFrame(bingkai); bingkai = requestAnimationFrame(() => Karusel.tanda(slug, Math.round(trek.scrollLeft / trek.clientWidth))); }, { passive: true });
+  Karusel.ke(slug, Karusel.indeks[slug] || 0, false);
+};
 
 V.tiada = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Tidak dijumpai</span><h1>Halaman ini tiada di rak kami.</h1><p class="lede">Mungkin pautannya sudah berubah. <a class="pautan" href="#teroka">Cari ilmu</a> atau kembali ke <a class="pautan" href="#utama">halaman utama</a>.</p></header></div>`;
 
@@ -1109,6 +1165,7 @@ function selepasRender(r, lama) {
   if (r.v === 'a') pasangBacaan(r.p);
   if (r.v === 'v') { if (Video.slug !== r.p || !samaHalaman) Video.sedia(r.p); Video.lukis(); }
   if (r.v === 'rehat') { Rehat.lukis(); }
+  if (r.v === 's' && KARUSEL[r.p]) Karusel.pasang(r.p);
   if (Pemain.slug) Pemain.lukis();
   kemasPengepala();
 }
@@ -1271,6 +1328,7 @@ A['draf-maju'] = el => {
   d.langkah++; if (d.langkah === 6) { d.terbit = hariIni(); d.kemas = hariIni(); INDEKS = null; toast('Diterbitkan. Bahan kini muncul di Teroka.'); }
   simpan(); render();
 };
+A.karusel = el => { const slug = el.closest('[data-karusel]').dataset.karusel; Karusel.ke(slug, el.dataset.ke != null ? +el.dataset.ke : (Karusel.indeks[slug] || 0) + +el.dataset.arah); };
 A['semak-kosong'] = el => { const sm = el.dataset.slug; delete S.semak[sm]; delete S.selesai['s-' + sm]; simpan(); toast('Tanda dikosongkan'); render(); };
 A['draf-padam'] = el => { S.draf = S.draf.filter(d => d.id !== el.dataset.id); INDEKS = null; simpan(); render(); };
 
@@ -1294,7 +1352,13 @@ document.addEventListener('click', e => {
   const f = A[t.dataset.act]; if (!f) return;
   e.preventDefault(); f(t, e);
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { tutupModal(); $('.popover')?.remove(); } });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { tutupModal(); $('.popover')?.remove(); return; }
+  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.target.closest?.('input, textarea, select, [contenteditable]') && !$('.lapik')) {
+    const k = $('[data-karusel]'); if (!k) return;
+    e.preventDefault(); const slug = k.dataset.karusel; Karusel.ke(slug, (Karusel.indeks[slug] || 0) + (e.key === 'ArrowRight' ? 1 : -1));
+  }
+});
 document.addEventListener('change', e => {
   if (e.target.id === 'pilihRehat') { Rehat.slug = e.target.value; render(); return; }
   const sm = e.target.dataset?.semak;

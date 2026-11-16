@@ -10,7 +10,7 @@
              petikan = petikan kitab tafsir atau syarah (bukan ayat atau hadis).
              Hadis dengan ruj kosong dipaparkan sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.
    SEMAK     { [slugSiri]: { kitab, pengenalan: [p], kumpulan: [{ tajuk, item: [{ t, hlm, dalil?: { j, ar, maksud, ruj } }] }], doa } }
-   KARUSEL   { [slugSiri]: { slaid: [{ tajuk, isi, ruj }] } }
+   KARUSEL   { [slugSiri]: { tajuk, slaid: [{ label, tajuk, besar?, ar?, maksud?, ruj?, isi?: [p], nama?: [[ar, latin]], butir?: [[k, v]], langkah?: [p], alur?: [p], nota?: [tajuk, teks], petik?, ruj2? }] } }
    KULIAH[]  Bahan berbentuk artikel Ruang Ilmu biasa, dengan medan siri. */
 
 const SIRI = [
@@ -524,5 +524,64 @@ const SEMAK = {
     doa: { ar: 'اللهم احفظنا من النفاق وقنا شرور المنافقين وامنحنا البصيرة لمعرفتهم', maksud: 'Ya Allah, peliharalah kami daripada nifaq, lindungilah kami daripada kejahatan orang munafik, dan kurniakanlah kami basirah untuk mengenali mereka.', ruj: 'Doa penutup al-Maydani, Khatimah (hlm. 1415–1416)' }
   }
 };
-const KARUSEL = {};
+/* Kenali Kebenaran: karusel "5 Berhala Kaum Nuh" (12 slaid) daripada reka bentuk pemilik.
+   Slaid 11 tanpa nama akaun dan kapsyen pengunggah video; nama penyedia tidak dipaparkan. */
+const KARUSEL = {
+  'kenali-kebenaran': {
+    tajuk: '5 Berhala Kaum Nuh',
+    slaid: [
+      { label: 'Kisah kaum Nuh a.s.', tajuk: '5 Berhala Kaum Nuh', isi: ['Bagaimana lelaki soleh bertukar menjadi sembahan, sebelum Nabi Nuh a.s. diutus.'],
+        nama: [['وَدٌّ'], ['سُوَاعٌ'], ['يَغُوثُ'], ['يَعُوقُ'], ['نَسْرٌ']], kulit: true },
+      { label: 'Asal manusia', tajuk: 'Asalnya manusia bertauhid',
+        ar: '«وَإِنِّي خَلَقْتُ عِبَادِي حُنَفَاءَ كُلَّهُمْ، وَإِنَّهُمْ أَتَتْهُمُ الشَّيَاطِينُ فَاجْتَالَتْهُمْ عَنْ دِينِهِمْ»',
+        maksud: 'Aku jadikan semua hamba-Ku hanif (lurus bertauhid). Lalu syaitan datang dan memesongkan mereka daripada agama mereka.',
+        ruj: 'Hadis qudsi · Sahih Muslim no. 2865 (‘Iyad bin Himar r.a.)',
+        isi: ['Syirik datang kemudian, sebagai penyimpangan. Ia bukan asal manusia.'], ruj2: 'Salah al-Khalidi, al-Qasas al-Qur’ani, j.1, ms. 161–162' },
+      { label: 'Disebut dalam al-Quran', tajuk: 'Lima nama, lima sembahan',
+        ar: '﴿وَقَالُوا لَا تَذَرُنَّ آلِهَتَكُمْ وَلَا تَذَرُنَّ وَدًّا وَلَا سُوَاعًا وَلَا يَغُوثَ وَيَعُوقَ وَنَسْرًا﴾',
+        maksud: 'Mereka berkata: “Jangan sekali-kali kamu tinggalkan tuhan-tuhan kamu. Jangan tinggalkan Wadd, Suwa‘, Yaghuth, Ya‘uq dan Nasr.”',
+        ruj: 'Surah Nuh 71:23',
+        nama: [['وَدٌّ', 'Wadd'], ['سُوَاعٌ', 'Suwa‘'], ['يَغُوثُ', 'Yaghuth'], ['يَعُوقُ', 'Ya‘uq'], ['نَسْرٌ', 'Nasr']],
+        isi: ['Nama-nama ini sudah ada pada zaman Nuh a.s. Mari kenali satu demi satu.'] },
+      { label: 'Berhala 1 daripada 5', besar: 'وَدٌّ', tajuk: 'Wadd',
+        ar: '«أَمَّا وَدٌّ فَكَانَتْ لِكَلْبٍ بِدَوْمَةِ الْجَنْدَلِ»', maksud: 'Wadd menjadi milik kabilah Kalb di Dumat al-Jandal.',
+        butir: [['Kabilah', 'Kalb'], ['Lokasi', 'Dumat al-Jandal, kota di antara Madinah, Iraq dan Syam']],
+        ruj: 'Sahih al-Bukhari no. 4920 · riwayat Ibn ‘Abbas r.a.' },
+      { label: 'Berhala 2 daripada 5', besar: 'سُوَاعٌ', tajuk: 'Suwa‘',
+        ar: '«وَأَمَّا سُوَاعٌ فَكَانَتْ لِهُذَيْلٍ»', maksud: 'Suwa‘ menjadi milik kabilah Hudhayl.',
+        butir: [['Kabilah', 'Hudhayl'], ['Kesudahan', 'Dihancurkan oleh ‘Amr bin al-‘As r.a. pada Ramadan 8H']],
+        ruj: 'Sahih al-Bukhari no. 4920 · butiran kesudahan: syarah hadis' },
+      { label: 'Berhala 3 daripada 5', besar: 'يَغُوثُ', tajuk: 'Yaghuth',
+        ar: '«وَأَمَّا يَغُوثُ فَكَانَتْ لِمُرَادٍ، ثُمَّ لِبَنِي غُطَيْفٍ بِالْجُرْفِ عِنْدَ سَبَإٍ»', maksud: 'Yaghuth milik Murad, kemudian Bani Ghutayf di al-Jurf berhampiran Saba’.',
+        butir: [['Kabilah', 'Murad, kemudian Bani Ghutayf'], ['Lokasi', 'Al-Jurf, berhampiran Saba’ (Yaman)']],
+        ruj: 'Sahih al-Bukhari no. 4920 · riwayat Ibn ‘Abbas r.a.' },
+      { label: 'Berhala 4 daripada 5', besar: 'يَعُوقُ', tajuk: 'Ya‘uq',
+        ar: '«وَأَمَّا يَعُوقُ فَكَانَتْ لِهَمْدَانَ»', maksud: 'Ya‘uq menjadi milik kabilah Hamdan.',
+        butir: [['Kabilah', 'Hamdan'], ['Lokasi', 'Tidak dinyatakan dalam hadis']],
+        ruj: 'Sahih al-Bukhari no. 4920 · riwayat Ibn ‘Abbas r.a.' },
+      { label: 'Berhala 5 daripada 5', besar: 'نَسْرٌ', tajuk: 'Nasr',
+        ar: '«وَأَمَّا نَسْرٌ فَكَانَتْ لِحِمْيَرَ، لِآلِ ذِي الْكَلَاعِ»', maksud: 'Nasr milik Himyar, iaitu keluarga Dhi al-Kala‘.',
+        butir: [['Kabilah', 'Himyar (keluarga Dhi al-Kala‘)'], ['Lokasi', 'Tidak dinyatakan dalam hadis']],
+        ruj: 'Sahih al-Bukhari no. 4920 · riwayat Ibn ‘Abbas r.a.' },
+      { label: 'Bagaimana ia bermula', tajuk: 'Bermula dengan niat yang nampak baik',
+        ar: '«أَسْمَاءُ رِجَالٍ صَالِحِينَ مِنْ قَوْمِ نُوحٍ، فَلَمَّا هَلَكُوا أَوْحَى الشَّيْطَانُ إِلَى قَوْمِهِمْ: أَنِ انْصِبُوا إِلَى مَجَالِسِهِمُ الَّتِي كَانُوا يَجْلِسُونَ أَنْصَابًا وَسَمُّوهَا بِأَسْمَائِهِمْ، فَفَعَلُوا، فَلَمْ تُعْبَدْ»',
+        ruj: 'Sahih al-Bukhari no. 4920 · Ibn ‘Abbas r.a.',
+        langkah: ['Mereka lelaki soleh dari kaum Nuh. Lalu mereka wafat.', 'Syaitan membisikkan: dirikan tugu di tempat majlis mereka dahulu.', 'Tugu diberi nama mereka. Ketika itu, belum ada sesiapa menyembahnya.'] },
+      { label: 'Titik putus', tajuk: 'Disembah apabila ilmu hilang',
+        ar: '«حَتَّى إِذَا هَلَكَ أُولَئِكَ، وَتَنَسَّخَ الْعِلْمُ، عُبِدَتْ»', maksud: 'Sehingga apabila generasi itu mati dan ilmu terhapus, tugu-tugu itu pun disembah.',
+        ruj: 'Sahih al-Bukhari no. 4920 · Ibn ‘Abbas r.a.',
+        alur: ['Tugu didirikan', 'Nama diabadikan', 'Ilmu terhapus', 'Disembah'],
+        nota: ['Nota tahqiq', 'Riwayat ini mawquf pada Ibn ‘Abbas r.a. Al-Khalidi mengambilnya sebagai penguat (isti‘nas), tidak menjazamkannya. Al-Qasas al-Qur’ani, j.1, ms. 163.'] },
+      { label: 'Isu terkini', tajuk: 'Bentuk berubah. Soalannya sama.',
+        isi: ['Slaid asal memaparkan visual daripada rakaman sebuah konsert yang dikongsi di media sosial.'],
+        langkah: ['Siapa atau apa yang dijulang tinggi?', 'Apa yang diagungkan oleh ribuan penonton?', 'Adakah ilmu untuk membezakan hiburan daripada pengagungan masih ada?'] },
+      { label: 'Nuh a.s. diutus', tajuk: 'Rasul pertama kepada penduduk bumi',
+        ar: '﴿لَقَدْ أَرْسَلْنَا نُوحًا إِلَىٰ قَوْمِهِ فَقَالَ يَا قَوْمِ اعْبُدُوا اللَّهَ مَا لَكُم مِّنْ إِلَٰهٍ غَيْرُهُ﴾',
+        maksud: 'Kami mengutus Nuh kepada kaumnya. Dia berkata: “Wahai kaumku, sembahlah Allah. Tiada tuhan bagi kamu selain-Nya.”',
+        ruj: 'Surah al-A‘raf 7:59',
+        petik: 'Syirik jarang bermula dengan menyembah. Ia bermula dengan mengagungkan secara berlebihan.',
+        ruj2: 'Rujukan: Salah al-Khalidi, al-Qasas al-Qur’ani, j.1, ms. 161–165 · Sahih al-Bukhari no. 4920 · Sahih Muslim no. 2865 · hadis syafaat (al-Bukhari dan Muslim)' }
+    ]
+  }
+};
 const KULIAH = [];

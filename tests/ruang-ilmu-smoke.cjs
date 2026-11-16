@@ -101,6 +101,40 @@ const shots = process.env.SHOTS || '';
     await page.reload(); await page.waitForTimeout(250);
     assert.equal(await page.locator('input[data-semak]:checked').count(), 1, 'Data semak yang rosak ditapis semasa dimuat');
 
+    // Kenali Kebenaran: karusel (Tugasan 7)
+    await buka('s.kenali-kebenaran');
+    const kiraan = () => page.locator('#kiraanSlaid').innerText();
+    const tungguSlaid = n => page.waitForFunction(n => document.querySelector('#kiraanSlaid')?.textContent === `Slaid ${n} daripada 12` && document.querySelector('.trek').scrollLeft === (n - 1) * document.querySelector('.trek').clientWidth, n, { timeout: 4000 }).catch(() => {});
+    const kiriKanan = () => page.evaluate(() => { const t = document.querySelector('.trek'); return Math.round(t.scrollLeft / t.clientWidth); });
+    assert.equal(await page.locator('.slaid').count(), 12, 'Dua belas slaid');
+    assert.equal(await kiraan(), 'Slaid 1 daripada 12');
+    assert.equal(await page.locator('[data-arah="-1"]').isDisabled(), true, 'Butang sebelum dimatikan pada slaid 1');
+    const teksKarusel = await page.locator('.karusel').innerText();
+    for (const larang of [/@\w/, /TikTok/i, /felt demonic/i, /Disediakan oleh/i, /Geser/i]) assert.doesNotMatch(teksKarusel, larang, `Teks terlarang dalam karusel: ${larang}`);
+    assert.match(teksKarusel, /Sahih al-Bukhari no\. 4920/);
+    assert.equal(await page.locator('.slaid .ar[dir="rtl"]').count(), 10, 'Teks Arab RTL');
+    await tiadaLimpahan('karusel'); await shot('karusel');
+    await page.click('[data-arah="1"]'); await tungguSlaid(2);
+    assert.equal(await kiraan(), 'Slaid 2 daripada 12', 'Butang seterusnya');
+    assert.equal(await kiriKanan(), 1);
+    await page.keyboard.press('ArrowRight'); await tungguSlaid(3);
+    assert.equal(await kiraan(), 'Slaid 3 daripada 12', 'Kekunci anak panah kanan');
+    await page.keyboard.press('ArrowLeft'); await tungguSlaid(2);
+    assert.equal(await kiraan(), 'Slaid 2 daripada 12', 'Kekunci anak panah kiri');
+    await page.locator('.trek .slaid').nth(1).locator('h2').scrollIntoViewIfNeeded();
+    const kotakTrek = await page.locator('.trek .slaid').nth(1).locator('h2').boundingBox();
+    await page.mouse.move(kotakTrek.x + 20, kotakTrek.y + kotakTrek.height / 2);
+    await page.mouse.wheel(kotakTrek.width, 0); await tungguSlaid(3);
+    assert.equal(await kiraan(), 'Slaid 3 daripada 12', 'Leret mendatar menukar slaid');
+    await page.click('.titik button:nth-child(12)'); await tungguSlaid(12);
+    assert.equal(await kiraan(), 'Slaid 12 daripada 12', 'Titik membuka slaid terakhir');
+    assert.equal(await page.locator('[data-arah="1"]').isDisabled(), true);
+    await page.click('[data-act="selesai"][data-slug="s-kenali-kebenaran"]'); await page.waitForTimeout(400);
+    assert.equal(await kiraan(), 'Slaid 12 daripada 12', 'Kedudukan slaid kekal selepas tanda selesai');
+    assert.equal(await kiriKanan(), 11);
+    await buka('siri');
+    assert.match(await page.locator('.siri-kad').nth(3).innerText(), /Karusel · 12 slaid[\s\S]*1\/1 selesai/i);
+
     // Integrasi (Tugasan 5)
     await buka('teroka');
     await page.fill('#medanCari', 'benci kebenaran');
