@@ -204,6 +204,33 @@ const shots = process.env.SHOTS || '';
     assert.deepEqual(errors, [], 'Tiada ralat konsol (jam)');
     await ctx.close();
   }
+  // Mod gelap, keadaan kosong (pengguna baharu) dan service worker
+  {
+    const ctx = await browser.newContext({ timezoneId: 'Asia/Kuala_Lumpur', colorScheme: 'dark', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.clock.setFixedTime(new Date('2026-11-27T09:00:00+08:00'));
+    for (const h of ['siri', 's.tadabbur-al-mukminun', 'e.sifat-malu', 's.kenali-munafik', 's.kenali-kebenaran', 'e.buaian-pemikiran', 'profil', 'studio']) {
+      await page.goto(origin + '#' + h); await page.waitForTimeout(250);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `Limpahan mendatar (gelap) pada ${h}`);
+      const [latar, teks] = await page.evaluate(() => [getComputedStyle(document.body).backgroundColor, getComputedStyle(document.querySelector('h1')).color]);
+      assert.notEqual(latar, teks, `Teks kelihatan dalam mod gelap pada ${h}`);
+    }
+    if (shots) await page.screenshot({ path: `${shots}/gelap-siri.png`, fullPage: true });
+    await page.goto(origin + '#siri'); await page.waitForTimeout(250);
+    assert.match(await page.locator('.siri-kad').first().innerText(), /0\/15 selesai/, 'Keadaan kosong: tiada kemajuan');
+    const cache = await page.evaluate(async () => {
+      if (location.protocol !== 'https:') await navigator.serviceWorker.register('sw.js'); // app hanya mendaftar pada https
+      const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, gagal) => setTimeout(() => gagal(new Error('service worker tidak aktif')), 10000))]);
+      const nama = (await caches.keys()).find(k => k.startsWith('ruang-ilmu-'));
+      const c = await caches.open(nama);
+      return { nama, siri: !!(await c.match('./siri.js')), aktif: !!reg.active };
+    });
+    assert.ok(cache.aktif && cache.siri, `Service worker menyimpan siri.js untuk luar talian (${cache.nama})`);
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (gelap)');
+    await ctx.close();
+  }
   await browser.close();
   console.log('Ruang Ilmu: ujian asap lulus');
 })().catch(e => { console.error(e); process.exit(1); });
