@@ -52,7 +52,7 @@ let S = (() => {
 const simpan = () => { try { localStorage.setItem(KUNCI, JSON.stringify(S)); } catch (e) { /* abaikan */ } };
 Object.keys(S.troli).forEach(id => { if (!PROD[id]) delete S.troli[id]; });
 /* Tanda senarai semak: hanya { slugSiri: { kunci: tarikh } } dengan kunci yang wujud dalam SEMAK. */
-S.semak = Object.fromEntries(Object.entries(S.semak && typeof S.semak === 'object' ? S.semak : {}).filter(([k, v]) => SEMAK[k] && v && typeof v === 'object').map(([k, v]) => [k, Object.fromEntries(Object.entries(v).filter(([i, t]) => /^\d+-\d+$/.test(i) && typeof t === 'string'))]));
+S.semak = Object.fromEntries(Object.entries(S.semak && typeof S.semak === 'object' ? S.semak : {}).filter(([k, v]) => Object.hasOwn(SEMAK, k) && v && typeof v === 'object').map(([k, v]) => [k, Object.fromEntries(Object.entries(v).filter(([i, t]) => /^\d+-\d+$/.test(i) && typeof t === 'string'))]));
 S.laporan.forEach(l => { l.id ||= Math.random().toString(36).slice(2, 8); l.status ||= 'baru'; });
 const rekodHari = () => (S.hari[hariIni()] ||= { saat: 0, aktif: false });
 const tandaAktif = () => { rekodHari().aktif = true; simpan(); };
@@ -993,7 +993,7 @@ const kadSiri = s => {
 V.siri = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Siri ilmu</span><h1>Siri</h1><p class="lede">Himpunan soal-jawab, kuliah dan karusel. Ikut satu siri dari mula hingga habis.</p></header>
   <section class="seksyen" style="border-top:0;padding-top:0"><div class="grid-siri">${SIRI.map(kadSiri).join('')}</div></section></div>`;
 V.s = slug => {
-  const s = SIRI_OF[slug]; if (!s || s.jenis === 'akan-datang') return V.tiada();
+  const s = Object.hasOwn(SIRI_OF, slug) && SIRI_OF[slug]; if (!s || s.jenis === 'akan-datang') return V.tiada();
   const k = kemajuanSiri(s);
   const kepala = `<header class="halaman-kepala"><a class="pautan" href="#siri">← Semua siri</a><span class="eyebrow">${esc(labelSiri(s))}</span><h1>${esc(s.nama)}</h1><p class="lede">${esc(s.ringkas)}</p>
     <div class="bar" style="max-width:420px"><i style="width:${k.peratus}%"></i></div><span class="meta"><span id="kemajuanSiri">${k.siap} daripada ${k.jumlah} ${s.jenis === 'senarai-semak' ? 'sudah direnung' : 'selesai'}</span></span>`;
@@ -1166,7 +1166,7 @@ function selepasRender(r, lama) {
   if (r.v === 'a') pasangBacaan(r.p);
   if (r.v === 'v') { if (Video.slug !== r.p || !samaHalaman) Video.sedia(r.p); Video.lukis(); }
   if (r.v === 'rehat') { Rehat.lukis(); }
-  if (r.v === 's' && KARUSEL[r.p]) Karusel.pasang(r.p);
+  if (r.v === 's' && Object.hasOwn(KARUSEL, r.p)) Karusel.pasang(r.p);
   if (Pemain.slug) Pemain.lukis();
   kemasPengepala();
 }
@@ -1363,7 +1363,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('change', e => {
   if (e.target.id === 'pilihRehat') { Rehat.slug = e.target.value; render(); return; }
   const sm = e.target.dataset?.semak;
-  if (sm && SEMAK[sm]) {
+  if (sm && Object.hasOwn(SEMAK, sm)) {
     const k = e.target.dataset.k; const t = (S.semak[sm] ||= {});
     if (e.target.checked) t[k] = hariIni(); else delete t[k];
     const lengkap = Object.keys(t).length === itemSemak(sm).length;

@@ -31,6 +31,7 @@ const shots = process.env.SHOTS || '';
     assert.equal(await page.locator('.kosong-siri a, a.kosong-siri').count(), 0, 'Sip n Speak tidak boleh dibuka');
     assert.equal(await page.locator('[data-nav="siri"][aria-current="page"]').count(), 1);
     await tiadaLimpahan('siri'); await shot('siri');
+    for (const h of ['s.constructor', 's.__proto__', 'e.constructor']) { await buka(h); assert.match(await page.locator('h1').innerText(), /tiada di rak/, `Laluan ${h} ditolak`); }
     await buka('s.sip-n-speak');
     assert.match(await page.locator('h1').innerText(), /tiada di rak/, 'Siri akan datang tiada halaman');
 
