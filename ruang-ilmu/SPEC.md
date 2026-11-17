@@ -93,5 +93,5 @@ KARUSEL = { [slug]: { tajuk, slaid: [{ label, tajuk, ar?, maksud?, ruj?, isi?, n
 ## Kriteria penerimaan
 13. `#s.kuliah-pemikiran` memaparkan 4 kuliah; Kuliah 4 berlabel "Sumber luar" dengan nama penceramah, saluran dan pautan YouTube asal.
 14. Setiap bahagian Kuliah 4 ada pautan minit ke YouTube (`rel="noopener"`, buka tab baharu); tiada iframe dan tiada permintaan ke YouTube semasa halaman dibuka.
-15. Kotak "Dakwaan penceramah yang belum disemak" wujud; tiada dakwaan itu berlabel `fakta`. Semakan integriti Studio lulus.
+15. Dakwaan dalam rakaman telah disemak pemilik (17 Nov 2026) dan dimasukkan ke dalam isi bahagian berkenaan, dinisbahkan kepada penceramah atau moderator. Kad integriti menyenaraikannya sebagai `tafsiran` bersumberkan rakaman; tiada yang berlabel `fakta` tanpa sumber bertulis. Semakan integriti Studio lulus.
 16. Tiada teks soal jawab penonton yang kabur dan tiada ramalan tentang individu sebenar.

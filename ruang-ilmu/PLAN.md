@@ -39,4 +39,4 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 - Dideploy melalui PR #17 (17 Nov 2026). Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
 - Sahkan pautan minit sepadan dengan video YouTube (diandaikan sama panjang dengan fail Drive).
 - Sahkan nama penuh penceramah ("Prof. Farish" seperti disebut dalam rakaman).
-- 11 dakwaan dalam rakaman belum disemak; semak satu demi satu jika mahu dinaikkan taraf.
+- [x] 11 dakwaan dalam rakaman disemak pemilik (17 Nov 2026) dan dimasukkan ke dalam isi; kotak "belum disemak" dibuang (jalan pintas: perubahan kecil diminta terus). Dilabel `tafsiran`; untuk label `fakta`, sumber bertulis setiap dakwaan diperlukan.
