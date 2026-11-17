@@ -69,3 +69,29 @@ KARUSEL = { [slug]: { tajuk, slaid: [{ label, tajuk, ar?, maksud?, ruj?, isi?, n
 10. Tiada ralat konsol dan tiada limpahan mendatar pada 400px dan 1366px, mod terang dan gelap.
 11. Semakan integriti Studio lulus untuk semua bahan selain isu "Rujukan belum dinyatakan" yang disengajakan.
 12. Episod bertarikh selepas hari ini tidak muncul dalam senarai siri, carian atau pautan terus, dan muncul pada tarikhnya.
+
+---
+
+# Tambahan: Kuliah 4 · WUI 1.0 (sumber luar)
+
+## Matlamat
+- Tambah rakaman "WUI 1.0: Kolonial Kapitalis, Neo Liberalisme" (sesi "Projek Israelisasi di Asia Tenggara", penceramah Prof. Farish, dimuat naik oleh saluran YouTube Abdul Razak) sebagai **Kuliah 4** dalam siri Kuliah Pemikiran.
+- Dilabel jelas sebagai **sumber luar**, dengan kredit penceramah, saluran dan pautan asal.
+
+## Bukan matlamat
+- Bukan transkrip verbatim. Rakaman 2 jam 12 minit, transkrip mesin bermutu sederhana, dan kandungan milik pihak lain.
+- Tiada video dibenam (tiada sambungan ke YouTube sehingga pembaca menekan pautan).
+- Soal jawab penonton yang tidak jelas dalam rakaman, dan ramalan tentang individu sebenar (contoh: siapa "akan mati"), tidak dimasukkan.
+
+## Kandungan
+- Nota kuliah tersusun mengikut bahagian rakaman (minit), ditulis semula dengan ringkas dan **dinisbahkan kepada penceramah** ("Menurut penceramah…").
+- Setiap bahagian ada pautan "Tonton bahagian ini" ke YouTube pada minit berkenaan.
+- **Dakwaan penceramah yang belum disemak** (contoh: kaitan Nvidia–Israel, AOPIG, editorial Financial Times 1996 tentang Taliban, statistik penggunaan media sosial) disenaraikan dalam kotak berasingan dan dilabel jenis `dibahas`/`pendapat`, bukan `fakta`.
+- Ulasan penutup moderator (Surah al-Kahfi; dakwaan tentang Snouck Hurgronje dan kerangka fardu ain) dilabel sebagai pandangan moderator.
+- "Bacaan yang disyorkan penceramah": Varoufakis (*Technofeudalism*), Basil Davidson (*The Black Man's Burden*), Susan Strange (*Casino Capitalism*), *Hikayat Abdullah*, Bonhoeffer (teori kebodohan), Syed Hussein Alatas (kolonial kapitalisme), Jomo K. S., George Monbiot.
+
+## Kriteria penerimaan
+13. `#s.kuliah-pemikiran` memaparkan 4 kuliah; Kuliah 4 berlabel "Sumber luar" dengan nama penceramah, saluran dan pautan YouTube asal.
+14. Setiap bahagian Kuliah 4 ada pautan minit ke YouTube (`rel="noopener"`, buka tab baharu); tiada iframe dan tiada permintaan ke YouTube semasa halaman dibuka.
+15. Kotak "Dakwaan penceramah yang belum disemak" wujud; tiada dakwaan itu berlabel `fakta`. Semakan integriti Studio lulus.
+16. Tiada teks soal jawab penonton yang kabur dan tiada ramalan tentang individu sebenar.

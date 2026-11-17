@@ -145,6 +145,7 @@ EP.forEach(e => { const s = SIRI_OF[e.siri]; if (!s) return; if (!s.episod.inclu
 const polosAyat = t => String(t || '').replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+[\s؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿.,:;!?()"'«»…\-]*/g, '').replace(/\s{2,}/g, ' ').trim();
 function episodKeBahan(e) {
   const siri = SIRI_OF[e.siri]; const sumber = []; const dakwaan = [];
+  if (e.luar) { sumber.push({ j: 'primer', t: `Rakaman "${e.luar.tajuk}" (sesi ${e.luar.sesi}), penceramah ${e.luar.penceramah}, saluran YouTube ${e.luar.saluran}: ${e.luar.url}` }); (e.dakwaan || []).forEach(d => dakwaan.push({ t: `${d.oleh === 'moderator' ? 'Moderator' : 'Penceramah'} (belum disemak): ${d.t}`, j: d.j, s: [] })); }
   const indeks = ruj => { let i = sumber.findIndex(x => x.t === ruj); if (i < 0) { sumber.push({ j: 'primer', t: ruj }); i = sumber.length - 1; } return i; };
   e.soalan.forEach(q => q.blok.forEach(b => {
     if (b.j === 'ayat' || b.j === 'hadis' || b.j === 'petikan') {
@@ -158,9 +159,10 @@ function episodKeBahan(e) {
   const r60 = polosAyat(pertama?.t || '').split(/\s+/).slice(0, 60).join(' ');
   return {
     slug: e.slug, tajuk: e.tajuk, dek: `${siri?.nama || 'Siri'} · ${unitSiri(e.siri)[0]} ${e.no}${e.julat ? ` · ${e.julat}` : ''}`,
-    kategori: siri?.kategori || 'agama', tag: e.tag || [], tahap: 'Asas', terbit: e.tarikh, kemas: e.tarikh,
+    kategori: e.kategori || siri?.kategori || 'agama', tag: e.tag || [], tahap: 'Asas', terbit: e.tarikh, kemas: e.tarikh,
     ringkas60: r60, bahagian: e.soalan.map(q => ({ h: polosAyat(q.s), v: '', p: teks(q) })),
-    fakta: [], kuiz: [], refleksi: '', rujukan: sumber, dakwaan, berkaitan: [], episod: e
+    fakta: [], kuiz: [], refleksi: '', rujukan: sumber, dakwaan, berkaitan: [], episod: e,
+    kepentingan: e.luar ? `Rakaman milik saluran YouTube ${e.luar.saluran}. Ruang Ilmu tidak berafiliasi dengan penceramah atau saluran itu dan tiada kepentingan komersial pada bahan ini.` : undefined
   };
 }
 const BAHAN_SIRI = EP.map(episodKeBahan);
@@ -591,10 +593,10 @@ function kadIntegriti(a) {
   <dl class="empat-soalan">
     <div><dt>Siapa sumber asal?</dt><dd>${kira.map(([j, n]) => `${n} ${JENIS_SUMBER[j].toLowerCase()}`).join(', ') || 'Tiada sumber'}. Senarai penuh di bawah, dirujuk terus kepada asalnya.</dd></div>
     <div><dt>Siapa yang untung?</dt><dd>${esc(kepentingan(a))}</dd></div>
-    <div><dt>Adakah tajuk dijawab?</dt><dd>${a.episod ? (SIRI_OF[a.episod.siri]?.jenis === 'kuliah' ? 'Kuliah ini disusun mengikut sebab; setiap sebab disertakan matan kitab berhalaman, dalil dan huraiannya.' : 'Ya. Episod ini disusun sebagai soal-jawab; setiap soalan dijawab terus dengan ayat atau hadis dan huraiannya.') : soalan ? (kiraPerkataan(a.ringkas60) >= 20 ? 'Ya. Jawapan ringkas berada di bahagian Faham dalam 60 saat, sebelum isi penuh.' : 'Belum. Bahan ini sedang disemak.') : 'Tajuk bukan soalan. Ringkasan berada di bahagian Faham dalam 60 saat.'}</dd></div>
+    <div><dt>Adakah tajuk dijawab?</dt><dd>${a.episod ? (a.episod.luar ? 'Nota kuliah sumber luar. Setiap bahagian dipautkan ke minit rakaman asal, dan dakwaan penceramah yang belum disemak disenaraikan berasingan.' : SIRI_OF[a.episod.siri]?.jenis === 'kuliah' ? 'Kuliah ini disusun mengikut sebab; setiap sebab disertakan matan kitab berhalaman, dalil dan huraiannya.' : 'Ya. Episod ini disusun sebagai soal-jawab; setiap soalan dijawab terus dengan ayat atau hadis dan huraiannya.') : soalan ? (kiraPerkataan(a.ringkas60) >= 20 ? 'Ya. Jawapan ringkas berada di bahagian Faham dalam 60 saat, sebelum isi penuh.' : 'Belum. Bahan ini sedang disemak.') : 'Tajuk bukan soalan. Ringkasan berada di bahagian Faham dalam 60 saat.'}</dd></div>
     <div><dt>Apa yang telah berubah?</dt><dd><ol class="sejarah">${sejarahBahan(a).map(h => `<li><span class="meta"><span>${tarikh(h.tarikh)}</span><span>${h.jenis}</span></span>${esc(h.teks)}</li>`).join('')}</ol></dd></div>
   </dl>
-  ${(a.dakwaan || []).length ? `<h4>Dakwaan utama</h4><ol class="dakwaan">${a.dakwaan.map(d => `<li><span class="cip dakwaan-${d.j}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> ${esc(d.t)}${d.s.length ? ` <span class="rujuk">${d.s.map(n => `[${n + 1}]`).join('')}</span>` : ''}</li>`).join('')}</ol><p class="kecil-nota">Nombor dalam kurungan merujuk senarai sumber di bawah. Fakta dan pengiraan wajib bersumber.</p>` : ''}
+  ${a.episod?.luar ? '<p class="kecil-nota">Dakwaan dalam rakaman disenaraikan dalam kotak "Dakwaan dalam rakaman yang belum disemak" bersama pautan minitnya.</p>' : (a.dakwaan || []).length ? `<h4>Dakwaan utama</h4><ol class="dakwaan">${a.dakwaan.map(d => `<li><span class="cip dakwaan-${d.j}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> ${esc(d.t)}${d.s.length ? ` <span class="rujuk">${d.s.map(n => `[${n + 1}]`).join('')}</span>` : ''}</li>`).join('')}</ol><p class="kecil-nota">Nombor dalam kurungan merujuk senarai sumber di bawah. Fakta dan pengiraan wajib bersumber.</p>` : ''}
 </section>`;
 }
 
@@ -1013,6 +1015,16 @@ const blokEpisod = b => {
   const ruj = b.ruj ? `<span class="ruj">${esc(b.ruj)}</span>` : `<span class="cip tiada-ruj">Rujukan belum dinyatakan</span>`;
   return `<figure class="ayat ${b.j}">${label}${b.ar ? `<p class="ar" lang="ar" dir="rtl">${esc(b.ar)}</p>` : ''}<figcaption>${b.maksud ? `<p class="maksud">Maksudnya: “${esc(b.maksud)}”</p>` : ''}${ruj}</figcaption></figure>`;
 };
+const minitRakaman = n => { const j = Math.floor(n / 3600), m = Math.floor(n % 3600 / 60), d = n % 60; return `${j ? `${j}:${String(m).padStart(2, '0')}` : m}:${String(d).padStart(2, '0')}`; };
+/* Pautan minit ke rakaman; hanya URL https diterima. */
+const pautanMinit = (luar, n) => { try { const u = new URL(luar.url); if (u.protocol !== 'https:') return '#'; u.searchParams.set('t', `${Math.max(0, Math.floor(n))}s`); return u.href; } catch (e) { return '#'; } };
+const kreditLuar = l => `<aside class="kredit-luar" aria-label="Sumber luar"><span class="cip luar">Sumber luar</span><p>Sesi <b>${esc(l.sesi)}</b> · penceramah <b>${esc(l.penceramah)}</b> · saluran YouTube <b>${esc(l.saluran)}</b></p><p class="kecil-nota">${esc(l.nota)}</p><a class="pautan" href="${esc(pautanMinit(l, 0).replace(/[?&]t=0s$/, ''))}" target="_blank" rel="noopener noreferrer">Tonton rakaman asal di YouTube ↗</a></aside>`;
+function tambahanLuar(e) {
+  if (!e.luar) return '';
+  return `<section class="kotak dakwaan-luar" aria-label="Dakwaan dalam rakaman yang belum disemak"><span class="eyebrow">Dakwaan dalam rakaman yang belum disemak</span><p class="kecil-nota">Dakwaan ini disebut dalam rakaman tanpa sumber. Ruang Ilmu belum menyemaknya. Jangan kongsi sebagai fakta.</p>
+    <ol class="dakwaan">${(e.dakwaan || []).map(d => `<li><span class="cip dakwaan-${esc(d.j)}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> <b>${d.oleh === 'moderator' ? 'Moderator' : 'Penceramah'}:</b> ${esc(d.t)} <a class="pautan kecil-nota" href="${esc(pautanMinit(e.luar, d.mula))}" target="_blank" rel="noopener noreferrer">minit ${minitRakaman(d.mula)} ↗</a></li>`).join('')}</ol></section>
+  ${(e.bacaan || []).length ? `<section class="kotak" aria-label="Bacaan yang disyorkan penceramah"><span class="eyebrow">Bacaan yang disyorkan penceramah</span><ul class="bacaan-luar">${e.bacaan.map(b => `<li>${esc(b)}</li>`).join('')}</ul></section>` : ''}`;
+}
 function paparanEpisod(a) {
   const e = a.episod; const s = SIRI_OF[e.siri]; const m = minit(a); const [unit, bhg] = unitSiri(e.siri); const unitKecil = unit.toLowerCase();
   const senarai = s.episod; const i = senarai.indexOf(a.slug);
@@ -1023,6 +1035,7 @@ function paparanEpisod(a) {
       <div class="meta"><a href="#s.${s.slug}" style="color:var(--merah);text-decoration:none">${esc(s.nama)}</a><span>${unit} ${e.no} daripada ${senarai.length}</span></div>
       <h1>${esc(a.tajuk)}</h1>
       <div class="meta">${e.julat ? `<span>${esc(e.julat)}</span>` : ''}<span>${e.soalan.length} ${bhg}</span><span>${m.baca} min baca</span>${e.tarikh ? `<span>${tarikh(e.tarikh)}</span>` : ''}</div>
+      ${e.luar ? kreditLuar(e.luar) : ''}
     </header>
     <div class="bar-tindakan" style="position:relative">
       <button class="btn-tindak" data-act="dengar" data-slug="${a.slug}" aria-pressed="${Pemain.slug === a.slug && Pemain.main}">${IKON.dengar} Dengar ${m.dengar} min</button>
@@ -1031,7 +1044,8 @@ function paparanEpisod(a) {
       <button class="btn-tindak" data-act="kongsi" aria-label="Salin pautan">${IKON.kongsi}</button>
       <button class="btn-tindak" data-act="tetapan-baca" aria-label="Tetapan bacaan" aria-expanded="false">${IKON.aa}</button>
     </div>
-    <div id="prosa" class="soal-jawab">${e.soalan.map((q, n) => `<section class="soalan-ep" aria-labelledby="bab-${n}"><span class="no-soal">${esc(q.label || `Soalan ${n + 1}`)}</span><h2 id="bab-${n}" class="soal">${esc(q.s)}</h2>${q.blok.map(blokEpisod).join('')}</section>`).join('')}</div>
+    <div id="prosa" class="soal-jawab">${e.soalan.map((q, n) => `<section class="soalan-ep" aria-labelledby="bab-${n}"><span class="no-soal">${esc(q.label || `Soalan ${n + 1}`)}</span><h2 id="bab-${n}" class="soal">${esc(q.s)}</h2>${e.luar && q.mula != null ? `<a class="pautan kecil-nota tonton" href="${esc(pautanMinit(e.luar, q.mula))}" target="_blank" rel="noopener noreferrer">Tonton bahagian ini (minit ${minitRakaman(q.mula)}) ↗</a>` : ''}${q.blok.map(blokEpisod).join('')}</section>`).join('')}</div>
+    ${tambahanLuar(e)}
     <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center">
       <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem">${selesai(a.slug) ? `${unit} ini telah kau selesaikan.` : 'Sudah faham?'}</b><span class="kecil-nota">${selesai(a.slug) ? `Ditanda pada ${tarikh(S.selesai[a.slug])}.` : 'Tanda selesai untuk mengemas kini kemajuan siri.'}</span></div>
       <button class="btn ${selesai(a.slug) ? 'garis' : ''}" data-act="selesai" data-slug="${a.slug}">${selesai(a.slug) ? 'Selesai' : `Tanda ${unitKecil} selesai`}</button>

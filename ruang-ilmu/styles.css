@@ -553,6 +553,12 @@ a.siri-kad:hover { border-color: var(--dakwat); }
 .tanda-renung { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; font-size: .92rem; cursor: pointer; min-height: 44px; }
 .tanda-renung input { width: 20px; height: 20px; accent-color: var(--merah); }
 .ayat.doa { background: var(--kertas); }
+.kredit-luar { display: grid; gap: 6px; margin-top: 6px; padding: 12px 14px; border: 1px dashed var(--garis); border-radius: 10px; background: var(--permukaan); max-width: var(--lajur); }
+.kredit-luar p { margin: 0; }
+.cip.luar { justify-self: start; border-color: var(--merah); color: var(--merah); }
+.soalan-ep .tonton { justify-self: start; }
+.dakwaan-luar { border-left: 3px solid var(--merah); }
+.bacaan-luar { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-family: var(--serif); }
 .karusel { display: grid; gap: 12px; max-width: 620px; }
 .trek { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: 14px; outline-offset: 4px; }
 .trek::-webkit-scrollbar { display: none; }
