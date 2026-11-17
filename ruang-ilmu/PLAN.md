@@ -34,3 +34,9 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 11. [x] **Paparan sumber luar**: kotak kredit, pautan "Tonton bahagian ini", kotak dakwaan belum disemak. Fail: `app.js`, `styles.css`. Ujian: tiada permintaan rangkaian ke YouTube semasa dibuka; 400px/1366px, gelap.
 12. [x] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-7`).
    Nota: tugasan 10 dan 11 tergabung dalam satu commit (a1ec429) kerana ujian data bergantung pada paparan.
+
+### Susulan Kuliah 4
+- Dideploy melalui PR #17 (17 Nov 2026). Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
+- Sahkan pautan minit sepadan dengan video YouTube (diandaikan sama panjang dengan fail Drive).
+- Sahkan nama penuh penceramah ("Prof. Farish" seperti disebut dalam rakaman).
+- 11 dakwaan dalam rakaman belum disemak; semak satu demi satu jika mahu dinaikkan taraf.
