@@ -24,7 +24,7 @@ const SIRI = [
   { slug: 'kenali-kebenaran', nama: 'Kenali Kebenaran', jenis: 'karusel', kategori: 'agama',
     ringkas: 'Lima berhala kaum Nuh a.s.: bagaimana penghormatan kepada orang soleh bertukar menjadi sembahan.', episod: [] },
   { slug: 'kuliah-pemikiran', nama: 'Kuliah Pemikiran', jenis: 'kuliah', kategori: 'psikologi', unit: ['Kuliah', 'bahagian'],
-    ringkas: "Sebelas sebab mata hati tersasar menurut al-Maydani (Basa'ir li al-Muslim al-Mu'asir, Fasal 4) dalam tiga kuliah, serta kuliah sumber luar tentang kolonial kapitalisme.", episod: [] },
+    ringkas: "Sebelas sebab mata hati tersasar menurut al-Maydani (Basa'ir li al-Muslim al-Mu'asir, Fasal 4) dalam tiga kuliah, kuliah tentang kapitalisme kolonial dan bacaan Mitos Peribumi Malas karya Syed Hussein Alatas.", episod: [] },
   { slug: 'sip-n-speak', nama: 'Sip n Speak', jenis: 'akan-datang', kategori: 'kehidupan',
     ringkas: 'Bual santai bersama kopi. Episod pertama sedang disediakan.', episod: [] }
 ];
@@ -484,7 +484,7 @@ EPISOD.push(
    mula = saat dalam rakaman (untuk pautan minit ke YouTube). */
 EPISOD.push({
   slug: 'kolonial-kapitalis-neoliberalisme', siri: 'kuliah-pemikiran', kategori: 'sejarah', tarikh: '', julat: 'Sumber luar · rakaman 2 jam 12 minit',
-  tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', tag: ['kolonialisme', 'kapitalisme', 'neoliberalisme', 'teknofeudalisme', 'geopolitik', 'Mitos Peribumi Malas'],
+  tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', tag: ['kolonialisme', 'kapitalisme', 'neoliberalisme', 'teknofeudalisme', 'geopolitik'],
   luar: {
     tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', sesi: 'Projek Israelisasi di Asia Tenggara',
     penceramah: 'Prof. Farish', saluran: 'Abdul Razak', url: 'https://www.youtube.com/watch?v=4uPTvYYC9bw',
@@ -553,15 +553,7 @@ EPISOD.push({
       { j: 'teks', t: 'Pandangan moderator: wacana agama hari ini masih memakai kerangka zaman kolonial, sehingga isu kuasa dan penjajahan jarang dibincangkan di surau.' },
       { j: 'teks', t: 'Moderator melihat Surah al-Kahfi sebagai surah untuk berdepan zaman fitnah. Empat kisahnya menyentuh soal harta: Ashabul Kahfi membawa bekal wang, pemilik dua kebun (monopoli harta), Nabi Musa dan Khidir (upah), dan Zulqarnain (cukai). Menurutnya, wang menentukan sama ada kita dijajah atau berdikari.' }
     ]}
-,
-    { s: 'Mitos Peribumi Malas: kerja dan kuasa kolonial', label: 'Bacaan pendamping', blok: [
-      { j: 'teks', t: "Alatas membandingkan gambaran penjajah tentang orang Melayu, Jawa dan Filipina. Menurutnya, label “malas” membantu mewajarkan penguasaan kolonial dan pengerahan tenaga kerja. Apabila cara bekerja masyarakat setempat tidak memenuhi kehendak perusahaan kolonial, pemerhati Eropah mentafsirkannya sebagai kelemahan watak. (Pendahuluan, hlm. xi–xiii, bab 5, hlm. 45.)" },
-      { j: 'teks', t: "Alatas mengaitkan tuduhan malas di Malaya dengan keengganan orang Melayu bekerja di ladang kolonial. Beliau membandingkan pengerahan buruh melalui sistem tanaman paksa di Jawa dan kerja paksa di Filipina dengan penggunaan buruh kontrak dari China dan India di Malaya. Cara buruh diperoleh dan keadaan kerja membantu menjelaskan bagaimana label itu terbentuk. (Bab 6, hlm. 61–62, bab 9, hlm. 104.)" },
-      { j: 'teks', t: "Alatas menelusuri kemerosotan golongan pedagang peribumi di bawah penguasaan Eropah. Beliau juga mengkritik cara tingkah laku segelintir orang digeneralisasikan menjadi “watak” seluruh masyarakat Melayu. Dua contoh ini membantu kita membaca dakwaan tentang kemunduran dengan meneliti perubahan institusi dan bukti yang digunakan. (Bab 11, hlm. 173–174, bab 12, hlm. 185.)" },
-      { j: 'teks', t: "Apabila kuliah beralih kepada penswastaan dan kecekapan, gunakan analisis Alatas sebagai titik mula untuk bertanya siapa menetapkan ukuran kecekapan, dan bagaimana ukuran itu mengambil kira kos kepada pekerja serta masyarakat." }
-    ]}
   ],
-  sumber: ["primer: Syed Hussein Alatas. Mitos Peribumi Malas. Edisi bahasa Malaysia. Kuala Lumpur: Dewan Bahasa dan Pustaka, 1989. ISBN 983-62-0765-1."],
   dakwaan: [
     { t: 'Nvidia mempunyai kaitan dengan Israel, dan pelaburan Nvidia di Malaysia membawa pengaruh itu masuk ke universiti, teknologi dan ekonomi.', j: 'dibahas', mula: 120 },
     { t: 'Lobi normalisasi dengan Israel di Indonesia datang daripada lobi perniagaan; Indonesia antara pengeksport minyak sawit terbesar ke Israel.', j: 'dibahas', mula: 120 },
@@ -577,13 +569,115 @@ EPISOD.push({
   ],
   bacaan: [
     'Yanis Varoufakis, Technofeudalism (dan syarahan dalam talian beliau)',
-    "Syed Hussein Alatas. Mitos Peribumi Malas. Edisi bahasa Malaysia. Kuala Lumpur: Dewan Bahasa dan Pustaka, 1989. ISBN 983-62-0765-1.",
+    'Syed Hussein Alatas, tentang kolonial kapitalisme',
     "Basil Davidson, The Black Man's Burden: Africa and the Curse of the Nation-State",
     'Abdullah Munsyi, Hikayat Abdullah',
     'Susan Strange, Casino Capitalism',
     'Jomo K. S., tulisan tentang ekonomi politik Malaysia sejak 1980-an',
     'Dietrich Bonhoeffer, tentang kebodohan (theory of stupidity)',
     'George Monbiot, tentang pembangunan'
+  ]
+});
+
+/* Kuliah 5: ringkasan bacaan edisi bahasa Malaysia. */
+EPISOD.push({
+  "slug": "perangai-bangsa-melayu",
+  "siri": "kuliah-pemikiran",
+  "kategori": "sejarah",
+  "tarikh": "",
+  "julat": "Ringkasan mengikut bab · Mitos Peribumi Malas (1989)",
+  "tajuk": "Perangai Bangsa Melayu",
+  "tag": [
+    "Syed Hussein Alatas",
+    "Mitos Peribumi Malas",
+    "kolonialisme",
+    "sejarah Melayu",
+    "watak nasional"
+  ],
+  "sumber": [
+    "primer: Syed Hussein Alatas. Mitos Peribumi Malas. Edisi bahasa Malaysia. Kuala Lumpur: Dewan Bahasa dan Pustaka, 1989. ISBN 983-62-0765-1."
+  ],
+  "soalan": [
+    {
+      "s": "Apa yang disiasat Alatas?",
+      "label": "Pendahuluan · hlm. xi–xvii",
+      "blok": [
+        { "j": "teks", "t": "Syed Hussein Alatas meneliti bagaimana gambaran orang Melayu, Jawa dan Filipina sebagai “peribumi malas” terbentuk, siapa yang menyebarkannya, dan apa kegunaannya dalam pemerintahan kolonial. Kajian ini membandingkan catatan sejarah dari abad ke-16 hingga abad ke-20 dengan keadaan sosial dan ekonomi masyarakat yang digambarkan." },
+        { "j": "teks", "t": "Alatas menggunakan sosiologi pengetahuan untuk menghubungkan idea dengan kedudukan orang yang menghasilkannya. Dalam kerangka beliau, ideologi kolonial membantu mewajarkan suatu susunan kuasa dengan menonjolkan pemerhatian yang menyokongnya dan mengetepikan bukti yang mengganggu gambaran itu." }
+      ]
+    },
+    {
+      "s": "Gambaran awal orang Melayu",
+      "label": "Bab 1–2 · hlm. 1–21",
+      "blok": [
+        { "j": "teks", "t": "Alatas membandingkan catatan tentang masyarakat Melayu sebelum dan sekitar zaman Raffles dengan tulisan pegawai British pada zaman penguasaan British. Catatan awal dan sumber Melayu memberi bahan untuk melihat kegiatan ekonomi, kewajipan dan nilai masyarakat dari lebih daripada satu sudut." },
+        { "j": "teks", "t": "Hugh Clifford dan Frank Swettenham menulis ketika masyarakat Melayu sedang mengalami perubahan besar di bawah pemerintahan British. Alatas membaca gambaran mereka dengan mengambil kira siapa yang ditemui pegawai kolonial dan bagaimana kedudukan mereka membentuk tafsiran tentang seluruh masyarakat." }
+      ]
+    },
+    {
+      "s": "Gambaran di Filipina dan Jawa",
+      "label": "Bab 3–4 · hlm. 22–44",
+      "blok": [
+        { "j": "teks", "t": "Di Filipina, Alatas meneliti penilaian penulis Eropah dalam konteks penguasaan Sepanyol. Catatan seperti tulisan Careri dan Jagor menunjukkan bagaimana pemerhati mencantumkan pemerhatian tentang amalan harian dengan kesimpulan luas tentang kebolehan dan kerajinan penduduk." },
+        { "j": "teks", "t": "Di Jawa, tanggapan bahawa orang Jawa malas semakin kuat ketika kuasa Belanda berkembang. Alatas mengaitkan penggunaan gambaran itu dengan pertikaian antara golongan liberal dan konservatif pada zaman sistem tanaman paksa. Perdebatan tentang watak penduduk juga merupakan perdebatan tentang cara mengurus tenaga kerja." }
+      ]
+    },
+    {
+      "s": "Apakah yang dikira sebagai kerja?",
+      "label": "Bab 5 · hlm. 45–60",
+      "blok": [
+        { "j": "teks", "t": "Menurut Alatas, gambaran peribumi malas mendapat kekuatannya ketika takrif kerja kapitalis kolonial menjadi ukuran utama. Kerja yang menyara rumah tangga atau dilakukan untuk pasaran setempat mudah terlepas daripada penilaian pihak yang memerlukan buruh bagi perusahaan mereka." },
+        { "j": "teks", "t": "Keengganan seseorang bekerja dalam suatu perusahaan boleh dipengaruhi oleh pilihan lain, upah dan keadaan kerja. Alatas meminta pembaca membezakan antara pemerhatian bahawa seseorang mengelakkan pekerjaan tertentu dengan kesimpulan tentang tabiat kerjanya dalam semua keadaan." }
+      ]
+    },
+    {
+      "s": "Bagaimana buruh diperoleh?",
+      "label": "Bab 6 · hlm. 61–78",
+      "blok": [
+        { "j": "teks", "t": "Alatas membandingkan sistem tanaman paksa di Jawa, kerja paksa di Filipina dan penggunaan buruh kontrak dari China serta India di Malaya. Kaedah pengerahan ini timbul dalam susunan kuasa dan pasaran buruh yang berbeza." },
+        { "j": "teks", "t": "Di Malaya, pekerja kontrak yang dipuji kerana rajin boleh tetap terikat pada keadaan kerja yang menindas. Perbandingan itu menunjukkan bahawa penilaian tentang siapa yang rajin atau malas perlu dibaca bersama kepentingan majikan, kebebasan pekerja untuk memilih dan cara keuntungan perusahaan diperoleh." }
+      ]
+    },
+    {
+      "s": "Jawapan José Rizal",
+      "label": "Bab 7 · hlm. 79–96",
+      "blok": [
+        { "j": "teks", "t": "Alatas membincangkan esei José Rizal mengenai kemalasan yang diterbitkan secara bersiri dalam La Solidaridad pada 1890. Rizal meneliti bagaimana keadaan di bawah pemerintahan Sepanyol, termasuk paksaan dan halangan terhadap kegiatan ekonomi, boleh melemahkan dorongan untuk berusaha." },
+        { "j": "teks", "t": "Rangka sejarah Rizal mengalihkan pertanyaan daripada sifat yang kononnya diwarisi kepada keadaan yang boleh berubah. Pertanyaan itu juga membuka ruang untuk melihat kegiatan masyarakat Filipina sebelum dan semasa penjajahan." }
+      ]
+    },
+    {
+      "s": "Daripada pemerhatian kepada stereotaip",
+      "label": "Bab 8–9 · bermula hlm. 97",
+      "blok": [
+        { "j": "teks", "t": "Alatas mempersoalkan kaedah pemerhati yang mengubah kesan sepintas lalu dan pengalaman dengan kelompok tertentu menjadi gambaran watak nasional. Kesimpulan tentang seluruh masyarakat memerlukan bukti yang lebih luas daripada anekdot atau pemerhatian terhadap segelintir orang." },
+        { "j": "teks", "t": "Dalam perbincangan tentang masyarakat Melayu, Alatas mengaitkan tuduhan malas dengan keengganan bekerja di ladang kolonial. Untuk menilai kerajinan, pembaca perlu melihat pekerjaan yang dilakukan dalam pelbagai keadaan serta memahami kedudukan sosial dan peluang mereka yang diperhatikan. (Bab 9, hlm. 104.)" }
+      ]
+    },
+    {
+      "s": "Bagaimana label itu hidup selepas penjajahan?",
+      "label": "Bab 10–11 · hlm. 140–184",
+      "blok": [
+        { "j": "teks", "t": "Alatas meneliti kembali penjelasan tentang kemunduran Melayu dalam Revolusi Mental, terbitan 1971. Beliau mengkritik cara perbahasan itu menyandarkan masalah sosial dan ekonomi pada sifat umum orang Melayu, walaupun keadaan sejarah dan pengalaman orang yang dibincangkan berbeza-beza." },
+        { "j": "teks", "t": "Alatas menunjukkan masalah membuat kesimpulan tentang sesuatu bangsa daripada tingkah laku sebahagian anggotanya. Tindak tanduk suatu kumpulan dalam keadaan khusus perlu dijelaskan dengan meneliti keadaan dan peranan kumpulan tersebut. Generalisasi tentang watak seluruh bangsa memerlukan bukti lain. (Bab 11, hlm. 173–174.)" }
+      ]
+    },
+    {
+      "s": "Ke mana perginya pedagang peribumi?",
+      "label": "Bab 12 · hlm. 185–208",
+      "blok": [
+        { "j": "teks", "t": "Alatas menunjukkan bahawa masyarakat Melayu, Jawa dan Filipina mempunyai golongan pedagang. Dalam contoh Filipina, beliau membaca catatan Pedro Chirino tentang perdagangan setempat yang berkembang dan meneliti bagaimana penguasaan Sepanyol menyempitkan ruang perdagangan penduduk." },
+        { "j": "teks", "t": "Nasib pedagang peribumi memberi cara lain untuk menafsirkan perubahan ekonomi. Apabila kuasa kolonial mengubah siapa yang boleh berdagang dan bagaimana perdagangan dijalankan, kesan perubahan itu boleh berpanjangan merentas generasi." }
+      ]
+    },
+    {
+      "s": "Cara menilai dakwaan tentang perangai bangsa",
+      "label": "Penutup · bermula hlm. 209",
+      "blok": [
+        { "j": "teks", "t": "Alatas mengakui bahawa sebahagian pemerhatian kolonial boleh menggambarkan individu atau kelompok yang benar-benar ditemui, khususnya golongan yang rapat dengan pentadbiran kolonial. Hujahnya ialah pemerhatian itu perlu diuji sebelum diperluas kepada seluruh masyarakat." },
+        { "j": "teks", "t": "Apabila berdepan dakwaan tentang “perangai bangsa”, tanyakan siapa yang membuat dakwaan itu, siapa yang sebenarnya diperhatikan, dan keadaan sejarah atau ekonomi apa yang mempengaruhi tingkah laku tersebut." }
+      ]
+    }
   ]
 });
 
