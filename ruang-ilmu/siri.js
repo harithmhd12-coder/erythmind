@@ -579,13 +579,13 @@ EPISOD.push({
   ]
 });
 
-/* Kuliah 5: ringkasan bacaan edisi bahasa Malaysia. */
+/* Kuliah 5: bacaan edisi bahasa Malaysia. */
 EPISOD.push({
   "slug": "perangai-bangsa-melayu",
   "siri": "kuliah-pemikiran",
   "kategori": "sejarah",
   "tarikh": "",
-  "julat": "Ringkasan mengikut bab · Mitos Peribumi Malas (1989)",
+  "julat": "Mitos Peribumi Malas · edisi bahasa Malaysia (1989)",
   "tajuk": "Perangai Bangsa Melayu",
   "tag": [
     "Syed Hussein Alatas",
@@ -602,88 +602,8 @@ EPISOD.push({
     "tafsiran: Alatas mengaitkan tuduhan malas di Malaya dengan keengganan bekerja di ladang kolonial. [1]",
     "tafsiran: Alatas mengkritik kesimpulan tentang watak seluruh masyarakat yang dibuat daripada pemerhatian terhadap segelintir orang. [1]"
   ],
-  "soalan": [
-    {
-      "s": "Apa yang disiasat Alatas?",
-      "label": "Pendahuluan · hlm. xi–xvii",
-      "blok": [
-        { "j": "teks", "t": "Syed Hussein Alatas meneliti bagaimana gambaran orang Melayu, Jawa dan Filipina sebagai “peribumi malas” terbentuk, siapa yang menyebarkannya, dan apa kegunaannya dalam pemerintahan kolonial. Kajian ini membandingkan catatan sejarah dari abad ke-16 hingga abad ke-20 dengan keadaan sosial dan ekonomi masyarakat yang digambarkan." },
-        { "j": "teks", "t": "Alatas menggunakan sosiologi pengetahuan untuk menghubungkan idea dengan kedudukan orang yang menghasilkannya. Dalam kerangka beliau, ideologi kolonial membantu mewajarkan suatu susunan kuasa dengan menonjolkan pemerhatian yang menyokongnya dan mengetepikan bukti yang mengganggu gambaran itu." }
-      ]
-    },
-    {
-      "s": "Gambaran awal orang Melayu",
-      "label": "Bab 1–2 · hlm. 1–21",
-      "blok": [
-        { "j": "teks", "t": "Alatas membandingkan catatan tentang masyarakat Melayu sebelum dan sekitar zaman Raffles dengan tulisan pegawai British pada zaman penguasaan British. Catatan awal dan sumber Melayu memberi bahan untuk melihat kegiatan ekonomi, kewajipan dan nilai masyarakat dari lebih daripada satu sudut." },
-        { "j": "teks", "t": "Hugh Clifford dan Frank Swettenham menulis ketika masyarakat Melayu sedang mengalami perubahan besar di bawah pemerintahan British. Alatas membaca gambaran mereka dengan mengambil kira siapa yang ditemui pegawai kolonial dan bagaimana kedudukan mereka membentuk tafsiran tentang seluruh masyarakat." }
-      ]
-    },
-    {
-      "s": "Gambaran di Filipina dan Jawa",
-      "label": "Bab 3–4 · hlm. 22–44",
-      "blok": [
-        { "j": "teks", "t": "Di Filipina, Alatas meneliti penilaian penulis Eropah dalam konteks penguasaan Sepanyol. Catatan seperti tulisan Careri dan Jagor menunjukkan bagaimana pemerhati mencantumkan pemerhatian tentang amalan harian dengan kesimpulan luas tentang kebolehan dan kerajinan penduduk." },
-        { "j": "teks", "t": "Di Jawa, tanggapan bahawa orang Jawa malas semakin kuat ketika kuasa Belanda berkembang. Alatas mengaitkan penggunaan gambaran itu dengan pertikaian antara golongan liberal dan konservatif pada zaman sistem tanaman paksa. Perdebatan tentang watak penduduk juga merupakan perdebatan tentang cara mengurus tenaga kerja." }
-      ]
-    },
-    {
-      "s": "Apakah yang dikira sebagai kerja?",
-      "label": "Bab 5 · hlm. 45–60",
-      "blok": [
-        { "j": "teks", "t": "Menurut Alatas, gambaran peribumi malas mendapat kekuatannya ketika takrif kerja kapitalis kolonial menjadi ukuran utama. Kerja yang menyara rumah tangga atau dilakukan untuk pasaran setempat mudah terlepas daripada penilaian pihak yang memerlukan buruh bagi perusahaan mereka." },
-        { "j": "teks", "t": "Keengganan seseorang bekerja dalam suatu perusahaan boleh dipengaruhi oleh pilihan lain, upah dan keadaan kerja. Alatas meminta pembaca membezakan antara pemerhatian bahawa seseorang mengelakkan pekerjaan tertentu dengan kesimpulan tentang tabiat kerjanya dalam semua keadaan." }
-      ]
-    },
-    {
-      "s": "Bagaimana buruh diperoleh?",
-      "label": "Bab 6 · hlm. 61–78",
-      "blok": [
-        { "j": "teks", "t": "Alatas membandingkan sistem tanaman paksa di Jawa, kerja paksa di Filipina dan penggunaan buruh kontrak dari China serta India di Malaya. Kaedah pengerahan ini timbul dalam susunan kuasa dan pasaran buruh yang berbeza." },
-        { "j": "teks", "t": "Di Malaya, pekerja kontrak yang dipuji kerana rajin boleh tetap terikat pada keadaan kerja yang menindas. Perbandingan itu menunjukkan bahawa penilaian tentang siapa yang rajin atau malas perlu dibaca bersama kepentingan majikan, kebebasan pekerja untuk memilih dan cara keuntungan perusahaan diperoleh." }
-      ]
-    },
-    {
-      "s": "Jawapan José Rizal",
-      "label": "Bab 7 · hlm. 79–96",
-      "blok": [
-        { "j": "teks", "t": "Alatas membincangkan esei José Rizal mengenai kemalasan yang diterbitkan secara bersiri dalam La Solidaridad pada 1890. Rizal meneliti bagaimana keadaan di bawah pemerintahan Sepanyol, termasuk paksaan dan halangan terhadap kegiatan ekonomi, boleh melemahkan dorongan untuk berusaha." },
-        { "j": "teks", "t": "Rangka sejarah Rizal mengalihkan pertanyaan daripada sifat yang kononnya diwarisi kepada keadaan yang boleh berubah. Pertanyaan itu juga membuka ruang untuk melihat kegiatan masyarakat Filipina sebelum dan semasa penjajahan." }
-      ]
-    },
-    {
-      "s": "Daripada pemerhatian kepada stereotaip",
-      "label": "Bab 8–9 · bermula hlm. 97",
-      "blok": [
-        { "j": "teks", "t": "Alatas mempersoalkan kaedah pemerhati yang mengubah kesan sepintas lalu dan pengalaman dengan kelompok tertentu menjadi gambaran watak nasional. Kesimpulan tentang seluruh masyarakat memerlukan bukti yang lebih luas daripada anekdot atau pemerhatian terhadap segelintir orang." },
-        { "j": "teks", "t": "Dalam perbincangan tentang masyarakat Melayu, Alatas mengaitkan tuduhan malas dengan keengganan bekerja di ladang kolonial. Untuk menilai kerajinan, pembaca perlu melihat pekerjaan yang dilakukan dalam pelbagai keadaan serta memahami kedudukan sosial dan peluang mereka yang diperhatikan. (Bab 9, hlm. 104.)" }
-      ]
-    },
-    {
-      "s": "Bagaimana label itu hidup selepas penjajahan?",
-      "label": "Bab 10–11 · hlm. 140–184",
-      "blok": [
-        { "j": "teks", "t": "Alatas meneliti kembali penjelasan tentang kemunduran Melayu dalam Revolusi Mental, terbitan 1971. Beliau mengkritik cara perbahasan itu menyandarkan masalah sosial dan ekonomi pada sifat umum orang Melayu, walaupun keadaan sejarah dan pengalaman orang yang dibincangkan berbeza-beza." },
-        { "j": "teks", "t": "Alatas menunjukkan masalah membuat kesimpulan tentang sesuatu bangsa daripada tingkah laku sebahagian anggotanya. Tindak tanduk suatu kumpulan dalam keadaan khusus perlu dijelaskan dengan meneliti keadaan dan peranan kumpulan tersebut. Generalisasi tentang watak seluruh bangsa memerlukan bukti lain. (Bab 11, hlm. 173–174.)" }
-      ]
-    },
-    {
-      "s": "Ke mana perginya pedagang peribumi?",
-      "label": "Bab 12 · hlm. 185–208",
-      "blok": [
-        { "j": "teks", "t": "Alatas menunjukkan bahawa masyarakat Melayu, Jawa dan Filipina mempunyai golongan pedagang. Dalam contoh Filipina, beliau membaca catatan Pedro Chirino tentang perdagangan setempat yang berkembang dan meneliti bagaimana penguasaan Sepanyol menyempitkan ruang perdagangan penduduk." },
-        { "j": "teks", "t": "Nasib pedagang peribumi memberi cara lain untuk menafsirkan perubahan ekonomi. Apabila kuasa kolonial mengubah siapa yang boleh berdagang dan bagaimana perdagangan dijalankan, kesan perubahan itu boleh berpanjangan merentas generasi." }
-      ]
-    },
-    {
-      "s": "Cara menilai dakwaan tentang perangai bangsa",
-      "label": "Penutup · bermula hlm. 209",
-      "blok": [
-        { "j": "teks", "t": "Alatas mengakui bahawa sebahagian pemerhatian kolonial boleh menggambarkan individu atau kelompok yang benar-benar ditemui, khususnya golongan yang rapat dengan pentadbiran kolonial. Hujahnya ialah pemerhatian itu perlu diuji sebelum diperluas kepada seluruh masyarakat." },
-        { "j": "teks", "t": "Apabila berdepan dakwaan tentang “perangai bangsa”, tanyakan siapa yang membuat dakwaan itu, siapa yang sebenarnya diperhatikan, dan keadaan sejarah atau ekonomi apa yang mempengaruhi tingkah laku tersebut." }
-      ]
-    }
-  ]
+  "isiBuku": true,
+  "soalan": BACAAN_ALATAS
 });
 
 /* Kenali Munafik: senarai semak muhasabah, disusun daripada analisis pemilik atas kitab

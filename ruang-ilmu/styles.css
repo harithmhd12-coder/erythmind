@@ -598,3 +598,12 @@ a.siri-kad:hover { border-color: var(--dakwat); }
 .titik button[aria-current="true"]::before { background: var(--merah); width: 10px; height: 10px; }
 .kiraan-slaid { margin: 0; text-align: center; font-family: var(--mono); font-size: .8rem; color: var(--kelabu); }
 @media (prefers-reduced-motion: reduce) { .trek { scroll-behavior: auto; } }
+
+/* Bacaan dari edisi bercetak */
+.isi-buku summary { cursor: pointer; font-weight: 600; }
+.isi-buku ol { margin-block: 14px 0; padding-inline-start: 24px; }
+.isi-buku li + li { margin-top: 8px; }
+@media (min-width: 1100px) { .isi-buku { display: none; } }
+.prosa-buku .soal { scroll-margin-top: 90px; }
+.prosa-buku .huraian { white-space: pre-line; overflow-wrap: anywhere; }
+.halaman-buku { justify-self: start; margin-block-start: 8px; }

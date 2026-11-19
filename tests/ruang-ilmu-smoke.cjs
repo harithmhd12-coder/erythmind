@@ -161,6 +161,16 @@ const shots = process.env.SHOTS || '';
     assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 5 daripada 5/i);
     assert.match(await page.locator('.soalan-ep').first().innerText(), /Syed Hussein Alatas/);
     assert.match(await page.locator('#sumber').innerText(), /Dewan Bahasa dan Pustaka, 1989/);
+    assert.equal(await page.locator('.soalan-ep').count(), 18, 'Halaman awal, 12 bab, penutup, bibliografi dan indeks');
+    const halamanBuku = page.locator('.halaman-buku');
+    assert.equal(await halamanBuku.count(), 330, 'Setiap halaman bertulis ada pautan ke imbasan asal');
+    assert.match(await halamanBuku.last().getAttribute('href'), /\/page\/n332\/mode\/1up$/);
+    if (nama === 'tel') {
+      await page.locator('.isi-buku summary').click();
+      const indeks = page.locator('.isi-buku a', { hasText: /^Indeks$/ });
+      await indeks.click();
+      await page.locator('.soalan-ep h2', { hasText: /^Indeks$/ }).waitFor({ state: 'visible' });
+    }
     await tiadaLimpahan('perangai-bangsa-melayu');
 
     // Kuliah 4: sumber luar WUI 1.0 (Tugasan 10–11)
@@ -260,9 +270,9 @@ const shots = process.env.SHOTS || '';
       const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, gagal) => setTimeout(() => gagal(new Error('service worker tidak aktif')), 10000))]);
       const nama = (await caches.keys()).find(k => k.startsWith('ruang-ilmu-'));
       const c = await caches.open(nama);
-      return { nama, siri: !!(await c.match('./siri.js')), aktif: !!reg.active };
+      return { nama, siri: !!(await c.match('./siri.js')), alatas: !!(await c.match('./alatas.js')), aktif: !!reg.active };
     });
-    assert.ok(cache.aktif && cache.siri, `Service worker menyimpan siri.js untuk luar talian (${cache.nama})`);
+    assert.ok(cache.aktif && cache.siri && cache.alatas, `Service worker menyimpan kandungan siri untuk luar talian (${cache.nama})`);
     assert.deepEqual(errors, [], 'Tiada ralat konsol (gelap)');
     await ctx.close();
   }
