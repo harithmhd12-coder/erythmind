@@ -146,6 +146,7 @@ const polosAyat = t => String(t || '').replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]+[\s؀
 function episodKeBahan(e) {
   const siri = SIRI_OF[e.siri]; const sumber = []; const dakwaan = [];
   if (e.luar) { sumber.push({ j: 'primer', t: `Rakaman "${e.luar.tajuk}" (sesi ${e.luar.sesi}), penceramah ${e.luar.penceramah}, saluran YouTube ${e.luar.saluran}: ${e.luar.url}` }); (e.dakwaan || []).forEach(d => dakwaan.push({ t: `${d.oleh === 'moderator' ? 'Moderator' : 'Penceramah'} (belum disemak): ${d.t}`, j: d.j, s: [] })); }
+  sumber.push(...(e.sumber || []).map(bacaSumber));
   const indeks = ruj => { let i = sumber.findIndex(x => x.t === ruj); if (i < 0) { sumber.push({ j: 'primer', t: ruj }); i = sumber.length - 1; } return i; };
   e.soalan.forEach(q => q.blok.forEach(b => {
     if (b.j === 'ayat' || b.j === 'hadis' || b.j === 'petikan') {

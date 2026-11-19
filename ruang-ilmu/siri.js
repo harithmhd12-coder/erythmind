@@ -484,7 +484,7 @@ EPISOD.push(
    mula = saat dalam rakaman (untuk pautan minit ke YouTube). */
 EPISOD.push({
   slug: 'kolonial-kapitalis-neoliberalisme', siri: 'kuliah-pemikiran', kategori: 'sejarah', tarikh: '', julat: 'Sumber luar · rakaman 2 jam 12 minit',
-  tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', tag: ['kolonialisme', 'kapitalisme', 'neoliberalisme', 'teknofeudalisme', 'geopolitik'],
+  tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', tag: ['kolonialisme', 'kapitalisme', 'neoliberalisme', 'teknofeudalisme', 'geopolitik', 'Mitos Peribumi Malas'],
   luar: {
     tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', sesi: 'Projek Israelisasi di Asia Tenggara',
     penceramah: 'Prof. Farish', saluran: 'Abdul Razak', url: 'https://www.youtube.com/watch?v=4uPTvYYC9bw',
@@ -553,7 +553,15 @@ EPISOD.push({
       { j: 'teks', t: 'Pandangan moderator: wacana agama hari ini masih memakai kerangka zaman kolonial, sehingga isu kuasa dan penjajahan jarang dibincangkan di surau.' },
       { j: 'teks', t: 'Moderator melihat Surah al-Kahfi sebagai surah untuk berdepan zaman fitnah. Empat kisahnya menyentuh soal harta: Ashabul Kahfi membawa bekal wang, pemilik dua kebun (monopoli harta), Nabi Musa dan Khidir (upah), dan Zulqarnain (cukai). Menurutnya, wang menentukan sama ada kita dijajah atau berdikari.' }
     ]}
+,
+    { s: 'Mitos Peribumi Malas: kerja dan kuasa kolonial', label: 'Bacaan pendamping', blok: [
+      { j: 'teks', t: "Alatas membandingkan gambaran penjajah tentang orang Melayu, Jawa dan Filipina. Menurutnya, label “malas” membantu mewajarkan penguasaan kolonial dan pengerahan tenaga kerja. Apabila cara bekerja masyarakat setempat tidak memenuhi kehendak perusahaan kolonial, pemerhati Eropah mentafsirkannya sebagai kelemahan watak. (Pendahuluan, hlm. xi–xiii, bab 5, hlm. 45.)" },
+      { j: 'teks', t: "Alatas mengaitkan tuduhan malas di Malaya dengan keengganan orang Melayu bekerja di ladang kolonial. Beliau membandingkan pengerahan buruh melalui sistem tanaman paksa di Jawa dan kerja paksa di Filipina dengan penggunaan buruh kontrak dari China dan India di Malaya. Cara buruh diperoleh dan keadaan kerja membantu menjelaskan bagaimana label itu terbentuk. (Bab 6, hlm. 61–62, bab 9, hlm. 104.)" },
+      { j: 'teks', t: "Alatas menelusuri kemerosotan golongan pedagang peribumi di bawah penguasaan Eropah. Beliau juga mengkritik cara tingkah laku segelintir orang digeneralisasikan menjadi “watak” seluruh masyarakat Melayu. Dua contoh ini membantu kita membaca dakwaan tentang kemunduran dengan meneliti perubahan institusi dan bukti yang digunakan. (Bab 11, hlm. 173–174, bab 12, hlm. 185.)" },
+      { j: 'teks', t: "Apabila kuliah beralih kepada penswastaan dan kecekapan, gunakan analisis Alatas sebagai titik mula untuk bertanya siapa menetapkan ukuran kecekapan, dan bagaimana ukuran itu mengambil kira kos kepada pekerja serta masyarakat." }
+    ]}
   ],
+  sumber: ["primer: Syed Hussein Alatas. Mitos Peribumi Malas. Edisi bahasa Malaysia. Kuala Lumpur: Dewan Bahasa dan Pustaka, 1989. ISBN 983-62-0765-1."],
   dakwaan: [
     { t: 'Nvidia mempunyai kaitan dengan Israel, dan pelaburan Nvidia di Malaysia membawa pengaruh itu masuk ke universiti, teknologi dan ekonomi.', j: 'dibahas', mula: 120 },
     { t: 'Lobi normalisasi dengan Israel di Indonesia datang daripada lobi perniagaan; Indonesia antara pengeksport minyak sawit terbesar ke Israel.', j: 'dibahas', mula: 120 },
@@ -569,7 +577,7 @@ EPISOD.push({
   ],
   bacaan: [
     'Yanis Varoufakis, Technofeudalism (dan syarahan dalam talian beliau)',
-    'Syed Hussein Alatas, tentang kolonial kapitalisme',
+    "Syed Hussein Alatas. Mitos Peribumi Malas. Edisi bahasa Malaysia. Kuala Lumpur: Dewan Bahasa dan Pustaka, 1989. ISBN 983-62-0765-1.",
     "Basil Davidson, The Black Man's Burden: Africa and the Curse of the Nation-State",
     'Abdullah Munsyi, Hikayat Abdullah',
     'Susan Strange, Casino Capitalism',
