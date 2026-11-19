@@ -618,6 +618,8 @@ EPISOD.push({
   "soalan": BACAAN_ALATAS
 });
 
+EPISOD.push(BACAAN_TEKNOFEUDALISME);
+
 /* Kenali Munafik: senarai semak muhasabah, disusun daripada analisis pemilik atas kitab
    Zahirat al-Nifaq wa Khaba'ith al-Munafiqin fi al-Tarikh (al-Maydani). "hlm." = halaman PDF kitab.
    Hanya Qism 1–2 (takrif, sifat dan nas) digunakan. Bahagian sejarah dan pertubuhan (Qism 3–4) tidak dimasukkan. */
