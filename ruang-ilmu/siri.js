@@ -597,6 +597,11 @@ EPISOD.push({
   "sumber": [
     "primer: Syed Hussein Alatas. Mitos Peribumi Malas. Edisi bahasa Malaysia. Kuala Lumpur: Dewan Bahasa dan Pustaka, 1989. ISBN 983-62-0765-1."
   ],
+  "dakwaan": [
+    "tafsiran: Menurut Alatas, gambaran peribumi malas membantu mewajarkan penguasaan kolonial dan pengerahan tenaga kerja. [1]",
+    "tafsiran: Alatas mengaitkan tuduhan malas di Malaya dengan keengganan bekerja di ladang kolonial. [1]",
+    "tafsiran: Alatas mengkritik kesimpulan tentang watak seluruh masyarakat yang dibuat daripada pemerhatian terhadap segelintir orang. [1]"
+  ],
   "soalan": [
     {
       "s": "Apa yang disiasat Alatas?",
