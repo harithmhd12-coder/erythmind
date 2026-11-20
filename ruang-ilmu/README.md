@@ -29,6 +29,8 @@ python3 -m http.server 8000
 # buka http://localhost:8000
 ```
 
+Laras bahasa mengikut `GAYA.md`. Ujian `tests/ruang-ilmu-laras.cjs` menolak pola yang tidak baku dan memastikan matan Arab, terjemahan ayat/hadis dan rujukan tidak berubah (cap jari dalam `tests/ruang-ilmu-cap-jari.json`).
+
 Ujian asap (dari root repo, sambil menghidangkan repo pada port 8000): `node tests/ruang-ilmu-smoke.cjs`. `TEST_ORIGIN=https://harithmhd12-coder.github.io/erythmind` menguji laman sebenar.
 
 Di GitHub Pages (repo ini dihidangkan dari `main`, folder root), app ini berada di `https://harithmhd12-coder.github.io/erythmind/ruang-ilmu/`.
@@ -45,6 +47,7 @@ styles.css            token warna (terang + gelap), tipografi, susun atur
 data.js               skema bahan, kategori, 15 bahan, laluan, taktik & benteng, e-buku, produk Sip 'n Go
 siri.js               siri ilmu pemilik: SIRI, EPISOD (soal-jawab dan kuliah), SEMAK (senarai semak), KARUSEL
 SPEC.md, PLAN.md      spesifikasi dan pelan kerja ciri Siri
+GAYA.md               panduan gaya bahasa (gaya Dewan Sastera, DBP); disemak automatik oleh ujian laras
 app.js                router, paparan, pemain audio/video, kedai, profil, studio
 manifest.webmanifest  app boleh dipasang (ikon, pintasan Dengar / Rehat / Kedai)
 sw.js                 luar talian: rangkaian dahulu, salinan simpanan bila tiada internet
