@@ -24,36 +24,36 @@ const KATEGORI = [
 const KANDUNGAN = [
   {
     slug: 'kenapa-percaya-ramalan',
-    tajuk: 'Kenapa manusia mudah mempercayai ramalan?',
+    tajuk: 'Mengapakah manusia mudah mempercayai ramalan?',
     dek: 'Satu eksperimen bilik kuliah tahun 1949 menunjukkan betapa mudahnya kita melihat diri sendiri dalam ayat yang ditulis untuk semua orang.',
     kategori: 'psikologi', tag: ['bias kognitif', 'kesan Barnum', 'pemikiran kritis'], tahap: 'Asas',
     terbit: '2026-09-08', kemas: '2026-10-14', pilihan: true,
-    ringkas60: 'Ayat ramalan biasanya cukup umum untuk sesuai dengan hampir semua orang, tetapi cukup peribadi bunyinya sehingga kita rasa ia ditulis untuk kita. Ahli psikologi memanggilnya kesan Barnum atau kesan Forer. Kita mengingati ramalan yang tepat dan melupakan yang meleset, jadi keyakinan terus bertambah.',
+    ringkas60: 'Ayat ramalan biasanya cukup umum untuk sesuai dengan hampir semua orang, tetapi cukup peribadi bunyinya sehingga kita merasakan ia ditulis khusus untuk kita. Ahli psikologi memanggilnya kesan Barnum atau kesan Forer. Kita mengingati ramalan yang tepat dan melupakan ramalan yang meleset; oleh itu, keyakinan kita terus bertambah.',
     bahagian: [
       { h: 'Eksperimen Forer', v: '4.26 / 5', p: [
         'Pada tahun 1948, ahli psikologi Bertram Forer memberikan ujian personaliti kepada pelajarnya. Seminggu kemudian, setiap pelajar menerima "analisis peribadi". Hakikatnya, semua pelajar menerima teks yang sama, dan sebahagian besarnya diambil daripada buku horoskop.',
-        'Pelajar diminta menilai ketepatan analisis itu dari 0 hingga 5. Purata penilaian ialah ==4.26==. Hampir semua orang merasakan teks yang sama itu menggambarkan diri mereka dengan baik. Kajian ini diterbitkan pada tahun 1949.'
+        'Pelajar diminta menilai ketepatan analisis itu pada skala 0 hingga 5. Purata penilaian ialah ==4.26==. Hampir semua orang merasakan teks yang sama itu menggambarkan diri mereka dengan baik. Kajian ini diterbitkan pada tahun 1949.'
       ]},
       { h: 'Ayat yang muat untuk semua orang', v: '"Kadang-kadang"', p: [
         'Cuba baca ayat ini: "Kau ada potensi yang belum digunakan sepenuhnya. Kadang-kadang kau peramah, kadang-kadang kau lebih suka bersendirian." Ayat seperti ini benar untuk hampir semua manusia kerana ia merangkumi kedua-dua hujung.',
         'Pada tahun 1956, ahli psikologi Paul Meehl menamakan fenomena ini ==kesan Barnum==, sempena pemain sarkas P. T. Barnum yang terkenal kerana menyediakan "sesuatu untuk semua orang".'
       ]},
       { h: 'Ingatan yang memilih', v: 'Kena / Meleset', p: [
-        'Kesan Barnum dikuatkan oleh cara ingatan bekerja. Ramalan yang menjadi terasa luar biasa, jadi kita mengingatinya. Ramalan yang meleset terasa biasa, jadi kita melupakannya. Lama-kelamaan, rekod dalam kepala kita kelihatan jauh lebih tepat daripada rekod sebenar.',
-        'Ini berkait rapat dengan bias pengesahan: kita cenderung mencari bukti yang menyokong apa yang sudah kita percaya.'
+        'Kesan Barnum dikuatkan oleh cara ingatan bekerja. Ramalan yang menjadi terasa luar biasa, lalu kita mengingatinya. Ramalan yang meleset terasa biasa, lalu kita melupakannya. Lama-kelamaan, rekod dalam kepala kita kelihatan jauh lebih tepat daripada rekod sebenar.',
+        'Fenomena ini berkait rapat dengan bias pengesahan: kita cenderung mencari bukti yang menyokong apa yang sudah kita percaya.'
       ]},
-      { h: 'Ujian ringkas untuk kau guna', v: '3 soalan', p: [
-        'Apabila membaca ramalan, ujian personaliti atau analisis "tepat sekali" tentang diri kau, tanya tiga soalan. Adakah ayat ini juga benar untuk kawan aku? Adakah ia boleh dibuktikan salah? Berapa kali ramalan seperti ini pernah meleset?',
+      { h: 'Ujian ringkas untuk kau gunakan', v: '3 soalan', p: [
+        'Apabila membaca ramalan, ujian personaliti atau analisis "tepat sekali" tentang diri kau, tanyakan tiga soalan. Adakah ayat ini juga benar untuk kawan aku? Adakah ia boleh dibuktikan salah? Berapa kali ramalan seperti ini pernah meleset?',
         'Jika ayat itu tidak boleh salah, ia juga tidak memberitahu apa-apa yang baharu.'
       ]}
     ],
     fakta: ['Pelajar Forer menilai teks horoskop yang sama sebagai 4.26 daripada 5 untuk ketepatan.', 'Istilah "kesan Barnum" dicipta oleh Paul Meehl pada tahun 1956.', 'Ayat yang tidak boleh dibuktikan salah tidak memberikan maklumat baharu.'],
     kuiz: [
       { s: 'Apakah yang sebenarnya diterima oleh semua pelajar Forer?', p: ['Analisis yang berbeza mengikut ujian masing-masing', 'Teks yang sama, sebahagian besarnya daripada buku horoskop', 'Keputusan ujian IQ'], j: 1, t: 'Semua pelajar menerima teks yang sama, tetapi kebanyakan mereka menilainya sangat tepat.' },
-      { s: 'Kenapa ayat "kadang-kadang kau peramah, kadang-kadang kau suka bersendirian" terasa tepat?', p: ['Ia merangkumi kedua-dua hujung, jadi benar untuk hampir semua orang', 'Ia berdasarkan data peribadi', 'Ia ditulis oleh pakar'], j: 0, t: 'Ayat yang merangkumi semua kemungkinan hampir mustahil untuk salah.' },
+      { s: 'Mengapakah ayat "kadang-kadang kau peramah, kadang-kadang kau suka bersendirian" terasa tepat?', p: ['Ia merangkumi kedua-dua hujung, maka benar untuk hampir semua orang', 'Ia berdasarkan data peribadi', 'Ia ditulis oleh pakar'], j: 0, t: 'Ayat yang merangkumi semua kemungkinan hampir mustahil untuk salah.' },
       { s: 'Apakah peranan ingatan dalam kepercayaan kepada ramalan?', p: ['Kita mengingati semua ramalan dengan sama rata', 'Kita mengingati yang kena dan melupakan yang meleset', 'Ingatan tidak berkaitan'], j: 1, t: 'Ingatan yang memilih membuatkan rekod ramalan kelihatan lebih tepat daripada sebenarnya.' }
     ],
-    refleksi: 'Bilakah kali terakhir kau rasa sesuatu "sangat tepat tentang diri aku"? Adakah ia juga tepat untuk orang lain?',
+    refleksi: 'Bilakah kali terakhir kau merasakan sesuatu "sangat tepat tentang diri aku"? Adakah ia juga tepat untuk orang lain?',
     rujukan: [
       { j: 'primer', t: 'Forer, B. R. (1949). The fallacy of personal validation. Journal of Abnormal and Social Psychology, 44(1), 118–123.' },
       { j: 'primer', t: 'Meehl, P. E. (1956). Wanted — a good cookbook. American Psychologist, 11(6), 263–272.' },
@@ -69,7 +69,7 @@ const KANDUNGAN = [
   },
   {
     slug: 'bias-pengesahan',
-    tajuk: 'Bias pengesahan: kenapa kita hanya mencari bukti yang setuju',
+    tajuk: 'Bias pengesahan: mengapa kita hanya mencari bukti yang menyokong kita',
     dek: 'Teka-teki tiga nombor oleh Peter Wason menunjukkan kita lebih suka membuktikan diri betul daripada menguji sama ada kita salah.',
     kategori: 'psikologi', tag: ['bias kognitif', 'membuat keputusan'], tahap: 'Asas',
     terbit: '2026-09-15', kemas: '2026-10-10',
@@ -77,10 +77,10 @@ const KANDUNGAN = [
     bahagian: [
       { h: 'Teka-teki 2-4-6', v: '2 · 4 · 6', p: [
         'Pada tahun 1960, Peter Wason memberitahu peserta bahawa urutan 2, 4, 6 mematuhi satu peraturan rahsia. Mereka boleh mencadangkan urutan lain, dan penyelidik akan menjawab "patuh" atau "tidak patuh".',
-        'Kebanyakan peserta meneka "tambah dua" dan menguji 8, 10, 12 atau 20, 22, 24. Semuanya patuh, jadi mereka yakin. Peraturan sebenar jauh lebih mudah: ==mana-mana tiga nombor yang semakin besar==.'
+        'Kebanyakan peserta meneka "tambah dua" dan menguji 8, 10, 12 atau 20, 22, 24. Semuanya patuh, lalu mereka yakin. Peraturan sebenar jauh lebih mudah: ==mana-mana tiga nombor yang semakin besar==.'
       ]},
-      { h: 'Kenapa kita terlepas', v: '✓ ✓ ✓', p: [
-        'Peserta jarang menguji urutan yang dijangka gagal, seperti 1, 2, 3 atau 6, 4, 2. Padahal ujian seperti itulah yang paling banyak memberi maklumat.',
+      { h: 'Mengapa kita terlepas', v: '✓ ✓ ✓', p: [
+        'Peserta jarang menguji urutan yang dijangka gagal, seperti 1, 2, 3 atau 6, 4, 2. Padahal ujian seperti itulah yang paling banyak memberikan maklumat.',
         'Dalam kehidupan, corak yang sama berlaku apabila kita membaca berita yang menyokong pendirian kita, atau bertanya soalan yang jawapannya sudah kita jangka.'
       ]},
       { h: 'Cara melawan', v: 'Buktikan aku salah', p: [
@@ -90,7 +90,7 @@ const KANDUNGAN = [
     ],
     fakta: ['Peraturan sebenar ujian Wason ialah "tiga nombor yang semakin besar".', 'Ujian yang dijangka gagal biasanya memberi lebih banyak maklumat.', 'Tulis dahulu apa yang akan membuatkan kau berubah fikiran.'],
     kuiz: [
-      { s: 'Apakah peraturan sebenar dalam ujian 2-4-6?', p: ['Tambah dua setiap kali', 'Nombor genap sahaja', 'Mana-mana tiga nombor yang semakin besar'], j: 2, t: 'Peraturannya sangat luas, sebab itu tekaan "tambah dua" sentiasa kelihatan betul.' },
+      { s: 'Apakah peraturan sebenar dalam ujian 2-4-6?', p: ['Tambah dua setiap kali', 'Nombor genap sahaja', 'Mana-mana tiga nombor yang semakin besar'], j: 2, t: 'Peraturannya sangat luas; oleh sebab itu, tekaan "tambah dua" sentiasa kelihatan betul.' },
       { s: 'Ujian manakah yang paling banyak memberi maklumat?', p: ['8, 10, 12', '1, 2, 3', '20, 22, 24'], j: 1, t: '1, 2, 3 menguji sama ada "tambah dua" benar-benar perlu.' },
       { s: 'Apakah satu cara melawan bias pengesahan?', p: ['Membaca lebih banyak sumber yang bersetuju', 'Menulis apa yang akan membuatkan kau berubah fikiran, kemudian mencarinya', 'Membuat keputusan dengan cepat'], j: 1, t: 'Mencari bukti yang menentang memaksa kita menguji, bukan sekadar mengesahkan.' }
     ],
@@ -108,19 +108,19 @@ const KANDUNGAN = [
   },
   {
     slug: 'kenapa-bertangguh',
-    tajuk: 'Kenapa aku selalu bertangguh?',
+    tajuk: 'Mengapakah aku selalu bertangguh?',
     dek: 'Bertangguh jarang berpunca daripada malas. Ia lebih kerap berpunca daripada otak yang menghargai keselesaan sekarang lebih daripada ganjaran nanti.',
     kategori: 'psikologi', tag: ['tabiat', 'produktiviti', 'emosi'], tahap: 'Asas',
     terbit: '2026-09-22', kemas: '2026-10-12', pilihan: true,
-    ringkas60: 'Kita bertangguh kerana ganjaran tugas terasa jauh, manakala rasa tidak selesa terasa dekat. Ahli psikologi memanggilnya bias masa kini. Bertangguh juga cara mengelak emosi seperti bosan, takut gagal atau keliru. Langkah yang terbukti membantu: pecahkan tugas, tetapkan pelan "jika-maka", dan mulakan untuk dua minit sahaja.',
+    ringkas60: 'Kita bertangguh kerana ganjaran tugas terasa jauh, manakala perasaan tidak selesa terasa dekat. Ahli psikologi memanggilnya bias masa kini. Bertangguh juga merupakan cara mengelakkan emosi seperti bosan, takut gagal atau keliru. Langkah yang terbukti membantu: pecahkan tugas, tetapkan pelan "jika-maka", dan mulakan untuk dua minit sahaja.',
     bahagian: [
       { h: 'Masa kini menang', v: 'Sekarang > Nanti', p: [
         'Otak manusia memberi nilai lebih kepada ganjaran yang dekat. Menonton satu video sekarang terasa lebih bernilai daripada markah yang baik tiga minggu lagi, walaupun kita tahu yang kedua lebih penting.',
         'Dalam kajian meta oleh Piers Steel (2007), bertangguh paling kuat dikaitkan dengan ==tugas yang tidak menyeronokkan, ganjaran yang jauh dan sifat mudah terganggu==.'
       ]},
       { h: 'Bertangguh ialah pengurusan emosi', v: 'Elak rasa', p: [
-        'Apabila tugas membuatkan kita rasa bosan, keliru atau takut gagal, menangguhnya memberi kelegaan serta-merta. Kelegaan itu ialah ganjaran kecil yang mengukuhkan tabiat bertangguh.',
-        'Sebab itu nasihat "berdisiplinlah" jarang berkesan. Lebih berguna untuk bertanya: rasa apa yang aku cuba elak sekarang?'
+        'Apabila tugas membuatkan kita berasa bosan, keliru atau takut gagal, menangguhnya memberi kelegaan serta-merta. Kelegaan itu ialah ganjaran kecil yang mengukuhkan tabiat bertangguh.',
+        'Oleh sebab itu, nasihat "berdisiplinlah" jarang berkesan. Lebih berguna untuk bertanya: perasaan apakah yang aku cuba elakkan sekarang?'
       ]},
       { h: 'Tiga langkah yang membantu', v: 'Jika … maka …', p: [
         'Pertama, pecahkan tugas sehingga langkah pertama jelas dan kecil, seperti "buka fail dan tulis tajuk". Kedua, buat pelan jika-maka: "Jika selesai makan tengah hari, maka aku buka laporan itu." Kajian Peter Gollwitzer menunjukkan pelan seperti ini meningkatkan kemungkinan bertindak.',
@@ -130,10 +130,10 @@ const KANDUNGAN = [
     fakta: ['Bertangguh berkait kuat dengan tugas tidak menyeronokkan dan ganjaran yang jauh.', 'Menangguh memberi kelegaan emosi serta-merta, lalu tabiat itu diperkukuh.', 'Pelan "jika-maka" meningkatkan kemungkinan bertindak.'],
     kuiz: [
       { s: 'Apakah maksud bias masa kini?', p: ['Kita lebih menghargai ganjaran dekat berbanding ganjaran jauh', 'Kita lebih suka berita terkini', 'Kita melupakan masa lalu'], j: 0, t: 'Ganjaran sekarang terasa lebih besar walaupun nilai sebenarnya lebih kecil.' },
-      { s: 'Kenapa bertangguh boleh menjadi tabiat?', p: ['Kerana kita malas sejak lahir', 'Kerana ia memberi kelegaan emosi serta-merta', 'Kerana tugas terlalu mudah'], j: 1, t: 'Kelegaan itu bertindak sebagai ganjaran.' },
+      { s: 'Mengapakah bertangguh boleh menjadi tabiat?', p: ['Kerana kita malas sejak lahir', 'Kerana ia memberi kelegaan emosi serta-merta', 'Kerana tugas terlalu mudah'], j: 1, t: 'Kelegaan itu bertindak sebagai ganjaran.' },
       { s: 'Contoh pelan jika-maka yang baik ialah…', p: ['"Aku akan lebih rajin."', '"Jika selesai solat Asar, maka aku buka nota Bab 3."', '"Minggu depan aku mula."'], j: 1, t: 'Pelan yang baik menyebut pencetus yang jelas dan tindakan yang spesifik.' }
     ],
-    refleksi: 'Apakah satu tugas yang kau tangguh sekarang? Apakah langkah dua minit pertamanya?',
+    refleksi: 'Apakah satu tugas yang kau tangguhkan sekarang? Apakah langkah dua minit pertamanya?',
     rujukan: [
       { j: 'ulasan', t: 'Steel, P. (2007). The nature of procrastination: A meta-analytic and theoretical review. Psychological Bulletin, 133(1), 65–94.' },
       { j: 'ulasan', t: 'Gollwitzer, P. M. (1999). Implementation intentions: Strong effects of simple plans. American Psychologist, 54(7), 493–503.' },
@@ -153,7 +153,7 @@ const KANDUNGAN = [
     dek: 'Pada tahun 1885, seorang ahli psikologi Jerman menghafal ribuan suku kata tanpa makna untuk menjawab satu soalan: berapa cepat kita lupa?',
     kategori: 'kreatif', tag: ['belajar', 'ingatan', 'produktiviti'], tahap: 'Asas',
     terbit: '2026-09-29', kemas: '2026-10-05',
-    ringkas60: 'Hermann Ebbinghaus mendapati ingatan merosot paling cepat dalam beberapa jam dan hari pertama. Mengulang kaji pada selang yang semakin panjang, misalnya selepas 1 hari, 3 hari, 1 minggu dan 1 bulan, membuatkan ingatan bertahan lebih lama berbanding mengulang banyak kali dalam satu sesi. Menguji diri lebih berkesan daripada membaca semula.',
+    ringkas60: 'Hermann Ebbinghaus mendapati ingatan merosot paling cepat dalam beberapa jam dan hari pertama. Mengulang kaji pada selang yang semakin panjang, contohnya selepas 1 hari, 3 hari, 1 minggu dan 1 bulan, membuatkan ingatan bertahan lebih lama berbanding mengulang banyak kali dalam satu sesi. Menguji diri lebih berkesan daripada membaca semula.',
     bahagian: [
       { h: 'Lengkung lupa', v: '1885', p: [
         'Hermann Ebbinghaus menguji dirinya sendiri dengan senarai suku kata tanpa makna seperti "DAX" dan "BOK". Dia mengukur berapa banyak usaha yang dijimatkan apabila mempelajari semula senarai yang sama selepas masa tertentu.',
@@ -164,17 +164,17 @@ const KANDUNGAN = [
         'Jadual mudah untuk dicuba: ulang kaji selepas 1 hari, 3 hari, 7 hari dan 30 hari. Setiap kali ingatan hampir pudar, usaha mengingat semula menguatkannya.'
       ]},
       { h: 'Uji, jangan baca semula', v: '?', p: [
-        'Membaca semula nota terasa produktif kerana bahan itu nampak biasa. Tetapi rasa biasa tidak sama dengan boleh mengingat. Menutup buku dan cuba menulis semula idea utama, atau menjawab kuiz, memaksa otak mengeluarkan maklumat.',
-        'Sebab itu setiap artikel di Ruang Ilmu ada tiga soalan kuiz. ==Kuiz itu bukan peperiksaan; ia alat mengingat.=='
+        'Membaca semula nota terasa produktif kerana bahan itu nampak biasa. Namun begitu, rasa biasa tidak sama dengan keupayaan mengingat. Menutup buku dan cuba menulis semula idea utama, atau menjawab kuiz, memaksa otak mengeluarkan maklumat.',
+        'Oleh sebab itu, setiap artikel di Ruang Ilmu disertakan tiga soalan kuiz. ==Kuiz itu bukan peperiksaan; ia alat mengingat.=='
       ]}
     ],
     fakta: ['Ingatan merosot paling cepat sejurus selepas belajar.', 'Ulang kaji pada 1, 3, 7 dan 30 hari ialah jadual mudah untuk bermula.', 'Menguji diri lebih berkesan daripada membaca semula.'],
     kuiz: [
       { s: 'Bilakah ingatan merosot paling cepat menurut lengkung lupa?', p: ['Sejurus selepas belajar', 'Selepas setahun', 'Kadarnya sama sepanjang masa'], j: 0, t: 'Penurunan paling curam berlaku dalam tempoh awal.' },
       { s: 'Apakah kesan jarak?', p: ['Belajar dalam bilik yang luas', 'Ulang kaji yang dijarakkan lebih berkesan daripada yang dilonggokkan', 'Belajar jauh dari rumah'], j: 1, t: 'Selang antara sesi membuatkan ingatan lebih tahan.' },
-      { s: 'Kenapa membaca semula kurang berkesan?', p: ['Rasa biasa disangka boleh mengingat', 'Ia terlalu memenatkan', 'Nota selalu salah'], j: 0, t: 'Mengeluarkan maklumat dari ingatan lebih menguatkannya.' }
+      { s: 'Mengapakah membaca semula kurang berkesan?', p: ['Rasa biasa disangka boleh mengingat', 'Ia terlalu memenatkan', 'Nota selalu salah'], j: 0, t: 'Mengeluarkan maklumat daripada ingatan lebih menguatkannya.' }
     ],
-    refleksi: 'Pilih satu perkara yang kau pelajari minggu ini. Bila kau akan mengujinya semula?',
+    refleksi: 'Pilih satu perkara yang kau pelajari minggu ini. Bilakah kau akan mengujinya semula?',
     rujukan: [
       { j: 'primer', t: 'Ebbinghaus, H. (1885/1913). Memory: A Contribution to Experimental Psychology. Teachers College, Columbia University.' },
       { j: 'ulasan', t: 'Cepeda, N. J., et al. (2006). Distributed practice in verbal recall tasks: A review and quantitative synthesis. Psychological Bulletin, 132(3), 354–380.' },
@@ -202,17 +202,17 @@ const KANDUNGAN = [
       ]},
       { h: 'Ayat memaksa pilihan', v: '¶', p: [
         'Fikiran boleh memegang beberapa idea yang bercanggah tanpa kita sedar. Ayat tidak boleh. Untuk menulis, kita perlu memilih perkataan, susunan dan hubungan sebab-akibat.',
-        'Penulis esei Paul Graham pernah menyatakan bahawa menulis tentang sesuatu, walaupun perkara yang kita rasa kita tahu, biasanya menunjukkan kita tidak tahu sebaik yang disangka.'
+        'Penulis esei Paul Graham pernah menyatakan bahawa menulis tentang sesuatu, walaupun perkara yang kita sangka kita tahu, biasanya menunjukkan kita tidak tahu sebaik yang disangka.'
       ]},
       { h: 'Amalan satu perenggan', v: '5 minit', p: [
-        'Selepas membaca, tutup artikel dan tulis satu perenggan: apa idea utama, kenapa ia benar, dan di mana ia boleh digunakan. Gunakan ruang Nota peribadi di bawah setiap artikel.',
+        'Selepas membaca, tutup artikel dan tulis satu perenggan: apakah idea utamanya, mengapa ia benar dan bilakah ia boleh digunakan. Gunakan ruang Nota peribadi di bawah setiap artikel.',
         'Jangan risau tentang gaya. Matlamatnya ialah kejelasan. ==Tulisan yang jelas lahir daripada fikiran yang jelas, dan sebaliknya.=='
       ]}
     ],
     fakta: ['Penilaian kefahaman jatuh selepas peserta cuba menerangkannya langkah demi langkah.', 'Ayat memaksa kita memilih susunan dan hubungan sebab-akibat.', 'Satu perenggan selepas membaca sudah cukup untuk bermula.'],
     kuiz: [
       { s: 'Apakah ilusi kedalaman penjelasan?', p: ['Kita menyangka kita faham lebih daripada sebenarnya', 'Penjelasan yang terlalu panjang', 'Lukisan yang mengelirukan'], j: 0, t: 'Ilusi itu terdedah apabila kita perlu menerangkan langkah demi langkah.' },
-      { s: 'Kenapa menulis membantu berfikir?', p: ['Ia memaksa kita memilih perkataan dan susunan', 'Ia lebih cepat daripada bercakap', 'Ia menggantikan membaca'], j: 0, t: 'Ayat tidak boleh memegang idea yang bercanggah tanpa disedari.' },
+      { s: 'Mengapakah menulis membantu kita berfikir?', p: ['Ia memaksa kita memilih perkataan dan susunan', 'Ia lebih cepat daripada bercakap', 'Ia menggantikan membaca'], j: 0, t: 'Ayat tidak boleh memegang idea yang bercanggah tanpa disedari.' },
       { s: 'Apakah matlamat amalan satu perenggan?', p: ['Gaya bahasa yang indah', 'Kejelasan idea utama', 'Bilangan perkataan yang banyak'], j: 1, t: 'Kejelasan dahulu, gaya kemudian.' }
     ],
     refleksi: 'Tulis satu perenggan tentang artikel terakhir yang kau baca di sini, tanpa melihatnya semula.',
@@ -237,7 +237,7 @@ const KANDUNGAN = [
     bahagian: [
       { h: 'Kota yang dibina untuk ilmu', v: '762 M', p: [
         'Baghdad diasaskan oleh Khalifah al-Mansur pada tahun 762 sebagai ibu kota baharu Abbasiyah. Kedudukannya di laluan perdagangan membawa pedagang, manuskrip dan sarjana dari pelbagai tamadun.',
-        'Kertas, yang teknik pembuatannya tiba dari Asia Tengah, menjadikan penyalinan buku lebih murah berbanding kulit dan papirus. Ini membantu ledakan penulisan.'
+        'Kertas, yang teknik pembuatannya tiba dari Asia Tengah, menjadikan penyalinan buku lebih murah berbanding kulit dan papirus. Perkembangan ini membantu ledakan penulisan.'
       ]},
       { h: 'Gerakan terjemahan', v: 'Yunani → Arab', p: [
         'Di bawah al-Ma\'mun, karya Aristotle, Galen, Euclid dan Ptolemy diterjemah ke bahasa Arab. Penterjemah seperti Hunayn ibn Ishaq terkenal kerana membandingkan beberapa manuskrip sebelum menterjemah, satu kaedah yang sangat teliti untuk zamannya.',
@@ -249,7 +249,7 @@ const KANDUNGAN = [
       ]},
       { h: 'Apa yang kita tahu, apa yang dibahas', v: '1258', p: [
         'Sejarawan masih membahaskan bentuk sebenar Baitul Hikmah: sama ada ia perpustakaan istana, akademi atau rangkaian sarjana. Sumber awal tidak memberi gambaran yang lengkap.',
-        'Yang jelas, pada tahun 1258 tentera Mongol menawan dan memusnahkan Baghdad. Banyak manuskrip hilang. Tetapi ilmu yang telah disalin sudah tersebar ke Kaherah, Cordoba dan kota-kota lain.'
+        'Yang jelas, pada tahun 1258 tentera Mongol menawan dan memusnahkan Baghdad. Banyak manuskrip hilang. Namun begitu, ilmu yang telah disalin sudah tersebar ke Kaherah, Cordoba dan kota-kota lain.'
       ]}
     ],
     fakta: ['Baghdad diasaskan pada tahun 762 oleh Khalifah al-Mansur.', 'Perkataan "algebra" berasal daripada al-jabr dalam kitab al-Khwarizmi.', 'Bentuk sebenar Baitul Hikmah masih dibahas oleh sejarawan.'],
@@ -278,7 +278,7 @@ const KANDUNGAN = [
     dek: 'Seribu tahun lalu, seorang sarjana di Kaherah menguji idea tentang penglihatan dengan bilik gelap, lubang kecil dan eksperimen yang boleh diulang.',
     kategori: 'sains', tag: ['optik', 'kaedah saintifik', 'tamadun Islam'], tahap: 'Pertengahan',
     terbit: '2026-09-17', kemas: '2026-10-03',
-    ringkas60: 'Ibn al-Haytham (sekitar 965–1040) menulis Kitab al-Manazir, karya besar tentang optik. Dia berhujah bahawa kita melihat kerana cahaya dari objek masuk ke mata, bukan kerana mata memancarkan sinar. Dia menekankan eksperimen yang boleh diulang dan sikap ragu terhadap autoriti, sebab itu dia sering disebut antara perintis kaedah saintifik.',
+    ringkas60: 'Ibn al-Haytham (sekitar 965–1040) menulis Kitab al-Manazir, karya besar tentang optik. Dia berhujah bahawa kita melihat kerana cahaya dari objek masuk ke mata, bukan kerana mata memancarkan sinar. Dia menekankan eksperimen yang boleh diulang dan sikap ragu terhadap autoriti; oleh sebab itu, dia sering disebut antara perintis kaedah saintifik.',
     bahagian: [
       { h: 'Dua teori penglihatan', v: 'Mata → / → Mata', p: [
         'Sebelum Ibn al-Haytham, ramai sarjana mengikuti teori bahawa mata memancarkan sinar ke arah objek. Teori lain berkata sesuatu dari objek masuk ke mata, tetapi butirannya kabur.',
@@ -297,7 +297,7 @@ const KANDUNGAN = [
     kuiz: [
       { s: 'Menurut Ibn al-Haytham, bagaimana kita melihat?', p: ['Mata memancarkan sinar', 'Cahaya dari objek masuk ke mata', 'Otak mencipta imej tanpa cahaya'], j: 1, t: 'Dia menyokong teori cahaya masuk ke mata dengan geometri dan eksperimen.' },
       { s: 'Apakah yang ditunjukkan oleh camera obscura?', p: ['Cahaya bergerak dalam garis lurus', 'Cahaya tidak boleh dipantulkan', 'Warna terhasil daripada bunyi'], j: 0, t: 'Imej terbalik terbentuk kerana cahaya bergerak lurus melalui lubang.' },
-      { s: 'Kenapa dia dikaitkan dengan kaedah saintifik?', p: ['Dia menekankan eksperimen dan menyoal autoriti', 'Dia mencipta teleskop', 'Dia menolak matematik'], j: 0, t: 'Sikap menguji, bukan sekadar menerima, ialah teras kaedah saintifik.' }
+      { s: 'Mengapakah dia dikaitkan dengan kaedah saintifik?', p: ['Dia menekankan eksperimen dan menyoal autoriti', 'Dia mencipta teleskop', 'Dia menolak matematik'], j: 0, t: 'Sikap menguji, bukan sekadar menerima, ialah teras kaedah saintifik.' }
     ],
     refleksi: 'Apakah satu perkara yang kau percaya hanya kerana orang lain berkata begitu? Bagaimana kau boleh mengujinya?',
     rujukan: [
@@ -313,11 +313,11 @@ const KANDUNGAN = [
   },
   {
     slug: 'langit-biru',
-    tajuk: 'Kenapa langit biru, dan kenapa senja jingga?',
+    tajuk: 'Mengapakah langit berwarna biru dan senja berwarna jingga?',
     dek: 'Jawapannya terletak pada saiz molekul udara dan panjang gelombang cahaya.',
     kategori: 'sains', tag: ['fizik', 'cahaya', 'fenomena harian'], tahap: 'Asas',
     terbit: '2026-09-24', kemas: '2026-09-24',
-    ringkas60: 'Cahaya matahari mengandungi semua warna. Molekul udara menyerakkan cahaya bergelombang pendek, seperti biru, jauh lebih banyak daripada cahaya bergelombang panjang seperti merah. Ini dipanggil penyerakan Rayleigh. Ketika senja, cahaya melalui lapisan udara yang lebih tebal, jadi kebanyakan biru telah terserak dan yang sampai kepada kita ialah jingga dan merah.',
+    ringkas60: 'Cahaya matahari mengandungi semua warna. Molekul udara menyerakkan cahaya bergelombang pendek, seperti biru, jauh lebih banyak daripada cahaya bergelombang panjang seperti merah. Fenomena ini dipanggil penyerakan Rayleigh. Ketika senja, cahaya melalui lapisan udara yang lebih tebal; oleh itu, kebanyakan cahaya biru telah terserak dan yang sampai kepada kita ialah jingga dan merah.',
     bahagian: [
       { h: 'Cahaya putih ialah campuran', v: 'Merah → Ungu', p: [
         'Cahaya matahari kelihatan putih, tetapi ia gabungan semua warna pelangi. Setiap warna mempunyai panjang gelombang tersendiri. Merah sekitar 700 nanometer, biru sekitar 450 nanometer.',
@@ -325,18 +325,18 @@ const KANDUNGAN = [
       ]},
       { h: 'Penyerakan Rayleigh', v: '1/λ⁴', p: [
         'Fizikawan Lord Rayleigh menunjukkan bahawa jumlah cahaya yang diserakkan oleh zarah yang sangat kecil berkadar songsang dengan ==kuasa empat panjang gelombang==. Maksudnya, biru diserakkan kira-kira lima hingga enam kali lebih banyak daripada merah.',
-        'Cahaya biru yang terserak ini datang kepada kita dari setiap arah di langit. Sebab itu seluruh langit kelihatan biru, bukan hanya kawasan sekitar matahari.'
+        'Cahaya biru yang terserak ini datang kepada kita dari setiap arah di langit. Oleh sebab itu, seluruh langit kelihatan biru, bukan hanya kawasan sekitar matahari.'
       ]},
-      { h: 'Kenapa bukan ungu?', v: '?', p: [
+      { h: 'Mengapa bukan ungu?', v: '?', p: [
         'Ungu diserakkan lebih banyak daripada biru, tetapi matahari memancarkan kurang cahaya ungu, sebahagiannya diserap tinggi di atmosfera, dan mata manusia kurang sensitif kepadanya.',
-        'Ketika matahari terbit dan terbenam, cahaya merentasi lapisan udara yang jauh lebih tebal. Kebanyakan cahaya biru telah terserak sebelum sampai, jadi yang tinggal ialah ==jingga dan merah==.'
+        'Ketika matahari terbit dan terbenam, cahaya merentasi lapisan udara yang jauh lebih tebal. Kebanyakan cahaya biru telah terserak sebelum sampai; oleh itu, yang tinggal ialah ==jingga dan merah==.'
       ]}
     ],
-    fakta: ['Biru (~450 nm) diserakkan kira-kira 5–6 kali lebih banyak daripada merah (~700 nm).', 'Cahaya terserak datang dari setiap arah, jadi seluruh langit kelihatan biru.', 'Senja jingga kerana cahaya merentasi lapisan udara yang lebih tebal.'],
+    fakta: ['Biru (~450 nm) diserakkan kira-kira 5–6 kali lebih banyak daripada merah (~700 nm).', 'Cahaya terserak datang dari setiap arah; oleh itu, seluruh langit kelihatan biru.', 'Senja jingga kerana cahaya merentasi lapisan udara yang lebih tebal.'],
     kuiz: [
       { s: 'Warna manakah diserakkan paling banyak oleh molekul udara?', p: ['Merah', 'Biru', 'Kuning'], j: 1, t: 'Gelombang pendek diserakkan jauh lebih banyak.' },
-      { s: 'Kenapa langit tidak kelihatan ungu?', p: ['Ungu tidak wujud dalam cahaya matahari', 'Matahari memancarkan kurang ungu dan mata kurang sensitif kepadanya', 'Ungu dipantulkan oleh laut'], j: 1, t: 'Gabungan pancaran matahari, penyerapan dan sensitiviti mata.' },
-      { s: 'Kenapa senja berwarna jingga?', p: ['Matahari menjadi lebih sejuk', 'Cahaya merentasi lebih banyak udara, jadi biru telah terserak', 'Awan berwarna jingga'], j: 1, t: 'Laluan lebih panjang menapis keluar biru.' }
+      { s: 'Mengapakah langit tidak kelihatan ungu?', p: ['Ungu tidak wujud dalam cahaya matahari', 'Matahari memancarkan kurang ungu dan mata kurang sensitif kepadanya', 'Ungu dipantulkan oleh laut'], j: 1, t: 'Gabungan pancaran matahari, penyerapan dan sensitiviti mata.' },
+      { s: 'Mengapakah senja berwarna jingga?', p: ['Matahari menjadi lebih sejuk', 'Cahaya merentasi lebih banyak udara, lalu cahaya biru telah terserak', 'Awan berwarna jingga'], j: 1, t: 'Laluan lebih panjang menapis keluar biru.' }
     ],
     refleksi: 'Apakah fenomena harian lain yang kau lihat setiap hari tetapi belum tahu sebabnya?',
     rujukan: [
@@ -398,7 +398,7 @@ const KANDUNGAN = [
   {
     slug: 'hadis-niat',
     tajuk: '"Sesungguhnya setiap amalan bergantung pada niat"',
-    dek: 'Kenapa Imam al-Bukhari meletakkan hadis ini di permulaan Sahihnya, dan apa maknanya dalam kehidupan harian.',
+    dek: 'Mengapakah Imam al-Bukhari meletakkan hadis ini pada permulaan Sahihnya, dan apakah maknanya dalam kehidupan harian?',
     kategori: 'agama', tag: ['hadis', 'niat', 'turath'], tahap: 'Asas',
     terbit: '2026-10-02', kemas: '2026-10-09',
     ringkas60: 'Hadis niat diriwayatkan oleh Umar ibn al-Khattab dan direkodkan oleh al-Bukhari dan Muslim. Al-Bukhari meletakkannya sebagai hadis pertama dalam Sahihnya. Ia mengajar bahawa nilai sesuatu amalan bergantung pada niat di sebaliknya. Para ulama menganggapnya antara hadis yang menjadi paksi ajaran Islam.',
@@ -407,13 +407,13 @@ const KANDUNGAN = [
         'Hadis ini diriwayatkan oleh Umar ibn al-Khattab. Maksudnya: "Sesungguhnya setiap amalan bergantung pada niat, dan setiap orang mendapat apa yang dia niatkan." Ia direkodkan oleh al-Bukhari dan Muslim.',
         'Hadis ini datang dengan contoh hijrah: sesiapa yang berhijrah kerana Allah dan Rasul-Nya, hijrahnya kerana Allah dan Rasul-Nya. Sesiapa yang berhijrah kerana dunia, dia mendapat apa yang dia tuju.'
       ]},
-      { h: 'Kenapa di permulaan kitab', v: 'Hadis No. 1', p: [
+      { h: 'Mengapa pada permulaan kitab', v: 'Hadis No. 1', p: [
         'Imam al-Bukhari membuka Sahihnya dengan hadis ini. Ramai ulama melihatnya sebagai peringatan kepada penulis dan pembaca supaya membetulkan niat sebelum menuntut ilmu.',
         'Ibn Rajab al-Hanbali dalam Jami\' al-\'Ulum wa al-Hikam menukilkan pandangan sebahagian ulama, termasuk Imam al-Syafi\'i dan Imam Ahmad, bahawa hadis ini ==merangkumi sebahagian besar ilmu==.'
       ]},
       { h: 'Niat dalam kehidupan harian', v: 'Amal biasa → ibadah', p: [
         'Para ulama menghuraikan bahawa perbuatan harian seperti bekerja, makan atau berehat boleh bernilai ibadah apabila diniatkan dengan baik dan dilakukan dengan cara yang dibenarkan.',
-        'Ini juga mengajar kejujuran terhadap diri. Sebelum memulakan sesuatu, tanya: untuk apa aku melakukan ini?'
+        'Hadis ini juga mengajar kejujuran terhadap diri. Sebelum memulakan sesuatu, tanyalah: untuk apa aku melakukan ini?'
       ]}
     ],
     fakta: ['Hadis niat ialah hadis pertama dalam Sahih al-Bukhari.', 'Ia diriwayatkan oleh Umar ibn al-Khattab.', 'Amalan harian boleh bernilai ibadah dengan niat yang baik.'],
@@ -449,7 +449,7 @@ const KANDUNGAN = [
       ]},
       { h: 'Mokha dan kedai kopi', v: 'al-Makha', p: [
         'Pelabuhan Mokha di Yaman menjadi pintu eksport kopi ke dunia. Nama "mocha" hari ini berasal daripadanya.',
-        'Kedai kopi muncul di Makkah dan Kaherah, dan pada tahun 1550-an di Istanbul. Ia menjadi tempat orang bersembang, bermain catur, mendengar puisi dan berbincang tentang berita. Sebab itu kedai kopi kadang-kadang dicurigai oleh pihak berkuasa.'
+        'Kedai kopi muncul di Makkah dan Kaherah, dan pada tahun 1550-an di Istanbul. Ia menjadi tempat orang bersembang, bermain catur, mendengar puisi dan berbincang tentang berita. Oleh sebab itu, kedai kopi kadangkala dicurigai oleh pihak berkuasa.'
       ]},
       { h: 'Ke Eropah dan ke Nusantara', v: 'Abad ke-17', p: [
         'Pedagang membawa kopi ke Venice dan London pada abad ke-17. Rumah kopi London dikenali sebagai "penny universities" kerana dengan harga secawan kopi, seseorang boleh mendengar perbincangan intelektual.',
@@ -460,7 +460,7 @@ const KANDUNGAN = [
     kuiz: [
       { s: 'Di manakah bukti terawal yang kukuh tentang minuman kopi?', p: ['Biara sufi di Yaman', 'Istana di Paris', 'Ladang di Brazil'], j: 0, t: 'Pertengahan abad ke-15, dalam kalangan ahli sufi Yaman.' },
       { s: 'Nama "mocha" berasal daripada…', p: ['Sejenis coklat', 'Pelabuhan Mokha di Yaman', 'Nama seorang pedagang'], j: 1, t: 'Mokha ialah pelabuhan eksport kopi yang utama.' },
-      { s: 'Kenapa rumah kopi London digelar "penny universities"?', p: ['Kopi dijual kepada pelajar universiti sahaja', 'Dengan harga secawan kopi, seseorang boleh mendengar perbincangan intelektual', 'Ia dibina oleh universiti'], j: 1, t: 'Kedai kopi menjadi ruang pertukaran idea.' }
+      { s: 'Mengapakah rumah kopi London digelar "penny universities"?', p: ['Kopi dijual kepada pelajar universiti sahaja', 'Dengan harga secawan kopi, seseorang boleh mendengar perbincangan intelektual', 'Ia dibina oleh universiti'], j: 1, t: 'Kedai kopi menjadi ruang pertukaran idea.' }
     ],
     refleksi: 'Di manakah "ruang ilmu" kau sendiri: tempat kau paling banyak berbincang dan belajar?',
     rujukan: [
@@ -489,7 +489,7 @@ const KANDUNGAN = [
       ]},
       { h: 'Masam, manis, pahit', v: 'Ekstraksi', p: [
         'Sebatian dalam kopi larut pada kadar berbeza. Asid buah larut dahulu, kemudian gula dan sebatian perisa, dan akhir sekali sebatian yang lebih pahit.',
-        'Espresso yang kurang diekstrak terasa masam dan nipis. Yang terlebih diekstrak terasa pahit dan kering. Matlamat barista ialah titik tengah di mana ==kemanisan dan keasidan seimbang==.'
+        'Espresso yang kurang diekstrak terasa masam dan nipis. Yang terlebih diekstrak terasa pahit dan kering. Matlamat barista ialah titik tengah, iaitu ketika ==kemanisan dan keasidan seimbang==.'
       ]},
       { h: 'Rahsia crema', v: 'CO₂', p: [
         'Biji kopi yang baru dipanggang masih menyimpan karbon dioksida. Di bawah tekanan, gas ini larut dalam minyak dan air, kemudian membentuk buih halus apabila tekanan dilepaskan. Itulah crema.',
@@ -516,7 +516,7 @@ const KANDUNGAN = [
   },
   {
     slug: 'kafein-dan-tidur',
-    tajuk: 'Kafein dan tidur: bila cawan terakhir sepatutnya?',
+    tajuk: 'Kafein dan tidur: bilakah waktu cawan terakhir yang sepatutnya?',
     dek: 'Kafein tidak memberi tenaga. Ia menyembunyikan rasa penat, dan kesannya bertahan lebih lama daripada yang kita sangka.',
     kategori: 'sains', tag: ['kopi', 'kesihatan', 'tidur'], tahap: 'Asas', kopi: true,
     terbit: '2026-10-13', kemas: '2026-10-16', pilihan: true,
@@ -557,7 +557,7 @@ const KANDUNGAN = [
   },
   {
     slug: 'kuasa-pertumbuhan-berganda',
-    tajuk: 'Kuasa pertumbuhan berganda: kenapa bermula awal lebih penting',
+    tajuk: 'Kuasa pertumbuhan berganda: mengapa bermula awal lebih penting',
     dek: 'RM100 sebulan selama 30 tahun bukan RM36,000. Dengan pulangan 5% setahun, ia menghampiri RM83,000.',
     kategori: 'kehidupan', tag: ['kewangan', 'simpanan', 'masa'], tahap: 'Asas',
     terbit: '2026-10-16', kemas: '2026-10-18',
@@ -608,7 +608,7 @@ const KANDUNGAN = [
       ]},
       { h: 'Naik tangga', v: 'Kecil → besar', p: [
         'Taktik paling terkenal dalam buku itu ialah "trading up the chain". Cerita dimulakan di blog kecil yang mudah menerima tip. Laman yang lebih besar memetik blog itu, kemudian akhbar memetik laman besar itu. Pada setiap anak tangga, sumber asal semakin jauh dan semakin sedikit orang yang menyemaknya.',
-        'Holiday memanggil ini ilusi sumber dalam "ekonomi pautan": setiap laman memautkan laman sebelumnya, jadi cerita kelihatan disahkan oleh banyak pihak walaupun semuanya bersandar pada satu tip yang sama.'
+        'Holiday memanggil fenomena ini ilusi sumber dalam "ekonomi pautan": setiap laman memautkan laman sebelumnya, lalu cerita kelihatan disahkan oleh banyak pihak walaupun semuanya bersandar pada satu tip yang sama.'
       ]},
       { h: 'Apa yang tersebar, bukan apa yang benar', v: 'Marah > sedih', p: [
         'Holiday memetik kajian Jonah Berger dan Katherine Milkman (2012) terhadap artikel New York Times. Artikel yang membangkitkan emosi berintensiti tinggi seperti kagum, marah dan cemas lebih kerap dikongsi. Artikel yang membuatkan pembaca sedih kurang dikongsi.',
@@ -625,7 +625,7 @@ const KANDUNGAN = [
     ],
     fakta: ['Cerita boleh "naik tangga" dari blog kecil ke berita nasional tanpa sumber asalnya disemak.', 'Kandungan yang membangkitkan kagum, marah dan cemas lebih kerap dikongsi berbanding kandungan yang menyedihkan.', 'Pembetulan jarang sampai kepada pembaca versi asal.'],
     kuiz: [
-      { s: 'Apakah maksud "trading up the chain"?', p: ['Cerita dari blog kecil dipetik oleh laman yang semakin besar', 'Menjual saham syarikat media', 'Menulis artikel bersiri'], j: 0, t: 'Setiap anak tangga memetik yang sebelumnya, jadi sumber asal jarang disemak.' },
+      { s: 'Apakah maksud "trading up the chain"?', p: ['Cerita dari blog kecil dipetik oleh laman yang semakin besar', 'Menjual saham syarikat media', 'Menulis artikel bersiri'], j: 0, t: 'Setiap anak tangga memetik yang sebelumnya; oleh itu, sumber asal jarang disemak.' },
       { s: 'Menurut kajian Berger dan Milkman, artikel jenis apa yang paling jarang dikongsi?', p: ['Yang membangkitkan rasa kagum', 'Yang membangkitkan kemarahan', 'Yang membuatkan pembaca sedih'], j: 2, t: 'Emosi berintensiti rendah seperti sedih kurang mendorong perkongsian.' },
       { s: 'Apakah penyelesaian yang dicadangkan Holiday?', p: ['Lebih banyak iklan', 'Model langganan yang bergantung pada kepercayaan pembaca', 'Tajuk yang lebih pendek'], j: 1, t: 'Pembaca yang membayar memberi ganjaran kepada kepercayaan, bukan klik.' }
     ],
@@ -646,24 +646,24 @@ const KANDUNGAN = [
 
 const LALUAN = [
   { slug: 'berfikir-jelas', nama: 'Berfikir dengan jelas', ringkas: 'Kenali perangkap minda yang paling biasa dan cara mengelaknya.', kurator: 'Meja Editorial', item: ['kenapa-percaya-ramalan', 'bias-pengesahan', 'menulis-untuk-berfikir', 'kenapa-bertangguh'] },
-  { slug: 'tamadun-ilmu', nama: 'Tamadun ilmu', ringkas: 'Dari adab penuntut ilmu ke bilik gelap Ibn al-Haytham.', kurator: 'Meja Editorial', item: ['hadis-niat', 'adab-menuntut-ilmu', 'baitul-hikmah', 'ibn-al-haytham'] },
-  { slug: 'biji-ke-cawan', nama: 'Kopi: dari biji ke cawan', ringkas: 'Sejarah, sains dan kesan kopi pada tidur. Sesuai dibaca bersama secawan.', kurator: 'Meja Editorial × Sip \'n Go', item: ['sejarah-kopi', 'sains-espresso', 'kafein-dan-tidur'] },
+  { slug: 'tamadun-ilmu', nama: 'Tamadun ilmu', ringkas: 'Daripada adab penuntut ilmu hingga bilik gelap Ibn al-Haytham.', kurator: 'Meja Editorial', item: ['hadis-niat', 'adab-menuntut-ilmu', 'baitul-hikmah', 'ibn-al-haytham'] },
+  { slug: 'biji-ke-cawan', nama: 'Kopi: dari biji ke cawan', ringkas: 'Sejarah, sains dan kesan kopi terhadap tidur. Sesuai dibaca bersama secawan kopi.', kurator: 'Meja Editorial × Sip \'n Go', item: ['sejarah-kopi', 'sains-espresso', 'kafein-dan-tidur'] },
   { slug: 'celik-media', nama: 'Celik media', ringkas: 'Kenali cara maklumat dimanipulasi, dan cara membaca dengan skeptikal yang sihat.', kurator: 'Meja Editorial', item: ['taktik-manipulasi-media', 'kenapa-percaya-ramalan', 'bias-pengesahan', 'menulis-untuk-berfikir'] },
-  { slug: 'belajar-cara-belajar', nama: 'Belajar cara belajar', ringkas: 'Teknik yang disokong kajian untuk mengingat lebih lama dan bertangguh kurang.', kurator: 'Meja Editorial', item: ['pengulangan-berjarak', 'kenapa-bertangguh', 'menulis-untuk-berfikir', 'kuasa-pertumbuhan-berganda'] }
+  { slug: 'belajar-cara-belajar', nama: 'Belajar cara belajar', ringkas: 'Teknik yang disokong kajian untuk mengingat lebih lama dan mengurangkan tabiat bertangguh.', kurator: 'Meja Editorial', item: ['pengulangan-berjarak', 'kenapa-bertangguh', 'menulis-untuk-berfikir', 'kuasa-pertumbuhan-berganda'] }
 ];
 
 /* Sembilan taktik dalam "Trust Me, I'm Lying" (Ryan Holiday) dan benteng yang dibina dalam Ruang Ilmu.
    Dipaparkan di halaman Tentang dan digunakan oleh semakan Studio. */
 const TAKTIK = [
-  { n: 1, taktik: 'Penulis kurang dibayar, jadi bantu bayar bil mereka', bahaya: 'Kandungan siap dari pihak berkepentingan diterbitkan sebagai berita.', benteng: 'Rakan komersial tidak boleh menulis, menyemak atau mengubah isi. Setiap padanan Sip \'n Go dilabel dengan pendedahan kepentingan.' },
+  { n: 1, taktik: 'Penulis kurang dibayar, maka bantulah membayar bil mereka', bahaya: 'Kandungan siap daripada pihak berkepentingan diterbitkan sebagai berita.', benteng: 'Rakan komersial tidak boleh menulis, menyemak atau mengubah isi. Setiap padanan Sip \'n Go dilabel dengan pendedahan kepentingan.' },
   { n: 2, taktik: 'Beritahu apa yang mereka mahu dengar', bahaya: 'Cerita dipilih kerana sesuai dengan naratif, bukan kerana benar.', benteng: 'Setiap dakwaan utama dilabel fakta, tafsiran, dibahas atau pendapat, dan dipautkan kepada sumbernya.' },
-  { n: 3, taktik: 'Beri apa yang tersebar, bukan apa yang baik', bahaya: 'Kemarahan dan kebimbangan dipilih kerana mudah dikongsi.', benteng: 'Tiada senarai "paling popular". Cadangan berdasarkan minat dan laluan, bukan tontonan. Kami memilih rasa ingin tahu dan kagum, bukan kemarahan.' },
+  { n: 3, taktik: 'Beri apa yang tersebar, bukan apa yang baik', bahaya: 'Kemarahan dan kebimbangan dipilih kerana mudah dikongsi.', benteng: 'Tiada senarai "paling popular". Cadangan dibuat berdasarkan minat dan laluan, bukan tontonan. Kami memilih rasa ingin tahu dan kagum, bukan kemarahan.' },
   { n: 4, taktik: 'Bantu mereka memperdaya pembaca', bahaya: 'Tajuk berbentuk soalan yang tidak pernah dijawab.', benteng: 'Tajuk berbentuk soalan wajib dijawab dalam "Faham dalam 60 saat". Studio menyemak tajuk sebelum terbit.' },
-  { n: 5, taktik: 'Jual sesuatu yang boleh dijual sekali lalu', bahaya: 'Setiap artikel bersaing untuk klik sekali, jadi sensasi menang.', benteng: 'Model langganan: Surat Ilmu mingguan dan keahlian. Ukuran kejayaan ialah pembaca kembali, bukan klik.' },
+  { n: 5, taktik: 'Jual sesuatu yang boleh dijual sekali lalu', bahaya: 'Setiap artikel bersaing untuk klik sekali lalu; oleh itu, sensasi menang.', benteng: 'Model langganan: Surat Ilmu mingguan dan keahlian. Ukuran kejayaan ialah pembaca kembali, bukan klik.' },
   { n: 6, taktik: 'Jadikan semuanya tentang tajuk', bahaya: 'Tajuk menjanjikan lebih daripada isi.', benteng: 'Semakan umpan klik: tiada huruf besar penuh, tiada "!!", tiada frasa seperti "anda tak akan percaya".' },
-  { n: 7, taktik: 'Bunuh dengan kebaikan pageview', bahaya: 'Penerbit dibayar mengikut tontonan, jadi tontonan menjadi matlamat.', benteng: 'Studio tidak memaparkan pageview sebagai ukuran utama. Yang diukur: kadar lengkap, kuiz tepat, disimpan dan pembaca kembali.' },
+  { n: 7, taktik: 'Bunuh dengan kebaikan pageview', bahaya: 'Penerbit dibayar mengikut tontonan; oleh itu, tontonan menjadi matlamat.', benteng: 'Studio tidak memaparkan pageview sebagai ukuran utama. Yang diukur: kadar lengkap, kuiz tepat, disimpan dan pembaca kembali.' },
   { n: 8, taktik: 'Gunakan teknologi melawan dirinya', bahaya: 'Komen palsu, suntingan dan isyarat trending dimanipulasi.', benteng: 'Tiada komen terbuka atau carta trending. Maklum balas pembaca masuk ke Studio sebagai laporan yang disemak manusia.' },
-  { n: 9, taktik: 'Reka sahaja (semua orang buat)', bahaya: 'Dakwaan tanpa sumber disebarkan, kemudian dipetik semula.', benteng: 'Dakwaan fakta dan pengiraan tanpa sumber disekat oleh semakan integriti data. Sumber dibezakan antara primer, ulasan dan rasmi.' }
+  { n: 9, taktik: 'Reka sahaja (semua orang melakukannya)', bahaya: 'Dakwaan tanpa sumber disebarkan, kemudian dipetik semula.', benteng: 'Dakwaan fakta dan pengiraan tanpa sumber disekat oleh semakan integriti data. Sumber dibezakan antara primer, ulasan dan rasmi.' }
 ];
 const BENTENG_LAIN = [
   { n: 'Ekonomi pautan', benteng: 'Sumber dirujuk terus kepada asalnya, dengan jenis sumber dinyatakan. Kad fakta dikongsi bersama sumbernya.' },
@@ -674,7 +674,7 @@ const BENTENG_LAIN = [
 const EBUKU = [
   { slug: 'eb-berfikir-jelas', tajuk: 'Buku Kecil Berfikir Jelas', ringkas: 'Nota tersusun 12 bias kognitif dengan contoh harian dan latihan.', halaman: 48, harga: 'RM19', plus: true },
   { slug: 'eb-kopi', tajuk: 'Panduan Rehat Kopi 15 Minit', ringkas: 'Panduan bergambar untuk membina ritual membaca bersama kopi.', halaman: 24, harga: 'Percuma untuk pelanggan surat', plus: false },
-  { slug: 'eb-turath', tajuk: 'Pengenalan Kitab Turath untuk Pembaca Baharu', ringkas: 'Kenali 10 kitab klasik dan cara mula membacanya dengan berpandu.', halaman: 64, harga: 'RM25', plus: true }
+  { slug: 'eb-turath', tajuk: 'Pengenalan Kitab Turath untuk Pembaca Baharu', ringkas: 'Kenali 10 kitab klasik dan cara memulakan pembacaannya dengan berpandu.', halaman: 64, harga: 'RM25', plus: true }
 ];
 
 /* Sip 'n Go Coffee & Bakery. Menu, harga dan bahan diambil daripada laman rasmi Sip 'n Go.
