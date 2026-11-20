@@ -48,5 +48,5 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 14. [x] **Teks UI**: navigasi, butang, mesej, halaman Utama, Baca, Lihat, Dengar, Teroka, Siri, Kopi, Keahlian, Profil, Tentang, Studio. Fail: `app.js`, `index.html`, `manifest.webmanifest`. Ujian: semua ujian lulus; tangkapan skrin 400px.
 15. [x] **Bahan Ruang Ilmu**: 15 bahan, laluan, taktik dan benteng, e-buku, teks Sip 'n Go (ulasan pelanggan dan teks Kad Ilmu kekal verbatim kerana petikan sebenar jenama). Fail: `data.js`. Ujian: laras dan semakan integriti Studio lulus.
 16. [x] **Tadabbur Surah al-Mukminun** (15 episod, laras penuh). Fail: `siri.js`. Ujian: laras dan cap jari lulus.
-17. [ ] **Akhlak dan Adab, Kuliah 1–4, Kenali Munafik, Kenali Kebenaran**. Fail: `siri.js`. Ujian: laras dan cap jari lulus.
+17. [x] **Akhlak dan Adab, Kuliah 1–4, Kenali Munafik, Kenali Kebenaran**. Fail: `siri.js`. Ujian: laras dan cap jari lulus.
 18. [ ] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-10`).

@@ -17,7 +17,13 @@ const POLA_TERLARANG = [
   [/\bsyubhah\b/i, 'syubhah → syubhat'],
   [/[a-z,;] Al-Quran\b/, 'Al-Quran di tengah ayat → al-Quran'],
   [/\b(?:Nabi|Rasul) \S+ AS\b/, 'AS → a.s.'],
-  [/\bdi era\b/i, 'di era → dalam era']
+  [/\bdi era\b/i, 'di era → dalam era'],
+  [/\bkenapa\b/i, 'kenapa → mengapa(kah)'],
+  [/(?:^|[\s(])(?:RA|R\.A\.)(?=[\s:,.)]|$)/, 'RA → r.a.'],
+  [/\bhadith\b/i, 'hadith → hadis'],
+  [/\bsekaligus\b/i, 'sekaligus → sekali gus'],
+  [/\btaqwa\b/i, 'taqwa → takwa'],
+  [/\bcitarasa\b/i, 'citarasa → cita rasa']
 ];
 
 /* Dijalankan dalam pelayar: kumpul blok dilindungi dan teks data yang boleh disunting. */
