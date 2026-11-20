@@ -138,13 +138,13 @@ const shots = process.env.SHOTS || '';
 
     // Kuliah Pemikiran (Tugasan 8)
     await buka('s.kuliah-pemikiran');
-    assert.equal(await page.locator('.senarai-baris li').count(), 4, 'Empat kuliah');
+    assert.equal(await page.locator('.senarai-baris li').count(), 5, 'Lima kuliah');
     assert.match(await page.locator('.halaman-kepala').innerText(), /Mula kuliah 1/i);
     const kuliah = await page.evaluate(() => SIRI.find(s => s.slug === 'kuliah-pemikiran').episod);
     let jumlahSebab = 0;
     for (const [i, slug] of kuliah.slice(0, 3).entries()) {
       await buka('e.' + slug);
-      assert.match(await page.locator('.artikel-kepala').innerText(), new RegExp(`Kuliah ${i + 1} daripada 4`, 'i'));
+      assert.match(await page.locator('.artikel-kepala').innerText(), new RegExp(`Kuliah ${i + 1} daripada 5`, 'i'));
       jumlahSebab += await page.locator('.no-soal', { hasText: /^Sebab \d+$/ }).count();
       assert.ok(await page.locator('.ayat.petikan .ar[dir="rtl"]').count() >= 1, `Matan kitab dalam ${slug}`);
       assert.equal(await page.locator('.ayat .ruj, .ayat .tiada-ruj').count(), await page.locator('.ayat').count(), `Rujukan setiap blok dalam ${slug}`);
@@ -156,6 +156,23 @@ const shots = process.env.SHOTS || '';
 
     await tiadaLimpahan('kuliah'); await shot('kuliah');
 
+    await buka('e.perangai-bangsa-melayu');
+    assert.equal(await page.locator('h1').innerText(), 'Perangai Bangsa Melayu');
+    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 5 daripada 5/i);
+    assert.match(await page.locator('.soalan-ep').first().innerText(), /Syed Hussein Alatas/);
+    assert.match(await page.locator('#sumber').innerText(), /Dewan Bahasa dan Pustaka, 1989/);
+    assert.equal(await page.locator('.soalan-ep').count(), 18, 'Halaman awal, 12 bab, penutup, bibliografi dan indeks');
+    const halamanBuku = page.locator('.halaman-buku');
+    assert.equal(await halamanBuku.count(), 330, 'Setiap halaman bertulis ada pautan ke imbasan asal');
+    assert.match(await halamanBuku.last().getAttribute('href'), /\/page\/n332\/mode\/1up$/);
+    if (nama === 'tel') {
+      await page.locator('.isi-buku summary').click();
+      const indeks = page.locator('.isi-buku a', { hasText: /^Indeks$/ });
+      await indeks.click();
+      await page.locator('.soalan-ep h2', { hasText: /^Indeks$/ }).waitFor({ state: 'visible' });
+    }
+    await tiadaLimpahan('perangai-bangsa-melayu');
+
     // Kuliah 4: sumber luar WUI 1.0 (Tugasan 10–11)
     const mintaLuar = []; const catatLuar = r => { if (/youtube|ytimg|googlevideo/.test(r.url())) mintaLuar.push(r.url()); };
     page.on('request', catatLuar);
@@ -163,7 +180,7 @@ const shots = process.env.SHOTS || '';
     page.off('request', catatLuar);
     assert.deepEqual(mintaLuar, [], 'Tiada permintaan ke YouTube semasa halaman dibuka');
     assert.equal(await page.locator('iframe').count(), 0, 'Tiada video dibenam');
-    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 4 daripada 4/i);
+    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 4 daripada 5/i);
     const kredit = await page.locator('.kredit-luar').innerText();
     assert.match(kredit, /Sumber luar/i); assert.match(kredit, /Prof\. Farish/); assert.match(kredit, /Abdul Razak/);
     assert.equal(await page.locator('.kredit-luar a').getAttribute('href'), 'https://www.youtube.com/watch?v=4uPTvYYC9bw');
@@ -261,9 +278,9 @@ const shots = process.env.SHOTS || '';
       const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, gagal) => setTimeout(() => gagal(new Error('service worker tidak aktif')), 10000))]);
       const nama = (await caches.keys()).find(k => k.startsWith('ruang-ilmu-'));
       const c = await caches.open(nama);
-      return { nama, siri: !!(await c.match('./siri.js')), aktif: !!reg.active };
+      return { nama, siri: !!(await c.match('./siri.js')), alatas: !!(await c.match('./alatas.js')), aktif: !!reg.active };
     });
-    assert.ok(cache.aktif && cache.siri, `Service worker menyimpan siri.js untuk luar talian (${cache.nama})`);
+    assert.ok(cache.aktif && cache.siri && cache.alatas, `Service worker menyimpan kandungan siri untuk luar talian (${cache.nama})`);
     assert.deepEqual(errors, [], 'Tiada ralat konsol (gelap)');
     await ctx.close();
   }

@@ -25,7 +25,7 @@ const SIRI = [
   { slug: 'kenali-kebenaran', nama: 'Kenali Kebenaran', jenis: 'karusel', kategori: 'agama',
     ringkas: 'Lima berhala kaum Nuh a.s.: bagaimana penghormatan kepada orang soleh bertukar menjadi sembahan.', episod: [] },
   { slug: 'kuliah-pemikiran', nama: 'Kuliah Pemikiran', jenis: 'kuliah', kategori: 'psikologi', unit: ['Kuliah', 'bahagian'],
-    ringkas: "Sebelas sebab mata hati tersasar menurut al-Maydani (Basa'ir li al-Muslim al-Mu'asir, Fasal 4) dalam tiga kuliah, serta kuliah sumber luar tentang kolonial kapitalisme.", episod: [] },
+    ringkas: "Sebelas sebab mata hati tersasar menurut al-Maydani (Basa'ir li al-Muslim al-Mu'asir, Fasal 4) dalam tiga kuliah, kuliah tentang kapitalisme kolonial dan bacaan Mitos Peribumi Malas karya Syed Hussein Alatas.", episod: [] },
   { slug: 'sip-n-speak', nama: 'Sip n Speak', jenis: 'akan-datang', kategori: 'kehidupan',
     ringkas: 'Bual santai bersama kopi. Episod pertama sedang disediakan.', episod: [] }
 ];
@@ -589,6 +589,33 @@ EPISOD.push({
     'Dietrich Bonhoeffer, tentang kebodohan (theory of stupidity)',
     'George Monbiot, tentang pembangunan'
   ]
+});
+
+/* Kuliah 5: bacaan edisi bahasa Malaysia. */
+EPISOD.push({
+  "slug": "perangai-bangsa-melayu",
+  "siri": "kuliah-pemikiran",
+  "kategori": "sejarah",
+  "tarikh": "",
+  "julat": "Mitos Peribumi Malas · edisi bahasa Malaysia (1989)",
+  "tajuk": "Perangai Bangsa Melayu",
+  "tag": [
+    "Syed Hussein Alatas",
+    "Mitos Peribumi Malas",
+    "kolonialisme",
+    "sejarah Melayu",
+    "watak nasional"
+  ],
+  "sumber": [
+    "primer: Syed Hussein Alatas. Mitos Peribumi Malas. Edisi bahasa Malaysia. Kuala Lumpur: Dewan Bahasa dan Pustaka, 1989. ISBN 983-62-0765-1."
+  ],
+  "dakwaan": [
+    "tafsiran: Menurut Alatas, gambaran peribumi malas membantu mewajarkan penguasaan kolonial dan pengerahan tenaga kerja. [1]",
+    "tafsiran: Alatas mengaitkan tuduhan malas di Malaya dengan keengganan bekerja di ladang kolonial. [1]",
+    "tafsiran: Alatas mengkritik kesimpulan tentang watak seluruh masyarakat yang dibuat daripada pemerhatian terhadap segelintir orang. [1]"
+  ],
+  "isiBuku": true,
+  "soalan": BACAAN_ALATAS
 });
 
 /* Kenali Munafik: senarai semak muhasabah, disusun daripada analisis pemilik atas kitab
