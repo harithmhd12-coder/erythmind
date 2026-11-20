@@ -95,3 +95,29 @@ KARUSEL = { [slug]: { tajuk, slaid: [{ label, tajuk, ar?, maksud?, ruj?, isi?, n
 14. Setiap bahagian Kuliah 4 ada pautan minit ke YouTube (`rel="noopener"`, buka tab baharu); tiada iframe dan tiada permintaan ke YouTube semasa halaman dibuka.
 15. Dakwaan dalam rakaman telah disemak pemilik (17 Nov 2026) dan dimasukkan ke dalam isi bahagian berkenaan, dinisbahkan kepada penceramah atau moderator. Kad integriti menyenaraikannya sebagai `tafsiran` bersumberkan rakaman; tiada yang berlabel `fakta` tanpa sumber bertulis. Semakan integriti Studio lulus.
 16. Tiada teks soal jawab penonton yang kabur dan tiada ramalan tentang individu sebenar.
+
+---
+
+# Tambahan: Pemurnian laras bahasa (gaya *Dewan Sastera*, DBP)
+
+## Matlamat
+- Murnikan laras bahasa Ruang Ilmu mengikut gaya majalah *Dewan Sastera* (DBP, September 2023): bahasa baku, ayat lengkap dan tertib, penanda wacana yang jelas, ejaan dan istilah DBP.
+
+## Keputusan pemilik
+- Kata ganti **"kau" dikekalkan**.
+- Istilah Inggeris UI (Coffee Break, Studio, XP, Explorer, Knowledge Plus) **dikekalkan**.
+- Skop: teks UI, bahan Ruang Ilmu (`data.js`), nota siri, senarai semak, karusel, Kuliah 1–4, dan **skrip SMU/Dhuha dengan laras penuh** (menggantikan keputusan "hampir verbatim" untuk ayat; isi dan makna kekal).
+- `alatas.js` (Kuliah 5) tidak disentuh.
+
+## Peraturan
+- Ejaan dan istilah DBP: *telah pun*, *al-Quran* di tengah ayat, *a.s.*, *r.a.*, *syubhat*, *mengapakah*.
+- Kata pemeri: *ialah* sebelum frasa nama; *adalah* sebelum frasa adjektif atau sendi nama; tiada *adalah merupakan* atau *adalah dengan*.
+- Kata sendi tepat (*daripada/dari*, *kepada/pada*, *dalam era*); *di mana* tidak dipakai sebagai kata hubung relatif.
+- Kata pinjaman Inggeris dalam isi diganti padanan Melayu (*online* → *dalam talian*), kecuali nama, jenama dan istilah UI yang dikekalkan.
+- Senarai tanpa koma sebelum *dan/atau* terakhir.
+- **Tidak diubah:** matan Arab, terjemahan ayat dan hadis, rujukan, nama, nombor, tarikh, slug dan petikan kitab.
+
+## Kriteria penerimaan
+17. Ujian laras automatik: tiada pola terlarang (*telahpun*, *adalah merupakan*, *adalah dengan*, *karena*, *online*, *syubhah*, *Al-Quran* di tengah ayat, *AS* sebagai singkatan) dalam teks yang dipaparkan daripada `app.js`, `data.js` dan `siri.js`.
+18. Matan Arab, terjemahan ayat/hadis dan rujukan sama seperti sebelum suntingan (ujian membandingkan cap jari setiap blok `ayat`/`hadis`/`petikan`).
+19. Semua ujian sedia ada lulus; carian "benci kebenaran" dan "sifat malu" masih menemui episod.

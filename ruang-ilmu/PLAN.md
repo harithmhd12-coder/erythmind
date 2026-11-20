@@ -42,3 +42,11 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 - [x] 11 dakwaan dalam rakaman disemak pemilik (17 Nov 2026) dan dimasukkan ke dalam isi; kotak "belum disemak" dibuang (jalan pintas: perubahan kecil diminta terus). Dilabel `tafsiran`; untuk label `fakta`, sumber bertulis setiap dakwaan diperlukan.
 - Ujian belum meliputi laluan kotak "belum disemak" (episod sumber luar tanpa `disemak`); tambah ujian apabila sumber luar baharu dimasukkan.
 - Dakwaan Kuliah 4 yang disemak dideploy melalui PR #18 (20 Nov 2026), bersama gabungan Kuliah 5 Alatas daripada `main`; cache `ruang-ilmu-9`. Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
+
+## Tambahan: Pemurnian laras bahasa (menunggu "ya" pemilik)
+13. [ ] **Panduan dan ujian laras**: `ruang-ilmu/GAYA.md` (peraturan), ujian pola terlarang, dan cap jari matan/terjemahan/rujukan sebelum suntingan. Fail: `GAYA.md`, `tests/ruang-ilmu-smoke.cjs`, `tests/ruang-ilmu-cap-jari.json`. Ujian: gagal pada teks sekarang untuk pola terlarang; cap jari lulus.
+14. [ ] **Teks UI**: navigasi, butang, mesej, halaman Utama, Baca, Lihat, Dengar, Teroka, Siri, Kopi, Keahlian, Profil, Tentang, Studio. Fail: `app.js`, `index.html`, `manifest.webmanifest`. Ujian: semua ujian lulus; tangkapan skrin 400px.
+15. [ ] **Bahan Ruang Ilmu**: 15 bahan, laluan, taktik dan benteng, e-buku, teks Sip 'n Go. Fail: `data.js`. Ujian: laras dan semakan integriti Studio lulus.
+16. [ ] **Tadabbur Surah al-Mukminun** (15 episod, laras penuh). Fail: `siri.js`. Ujian: laras dan cap jari lulus.
+17. [ ] **Akhlak dan Adab, Kuliah 1–4, Kenali Munafik, Kenali Kebenaran**. Fail: `siri.js`. Ujian: laras dan cap jari lulus.
+18. [ ] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-10`).
