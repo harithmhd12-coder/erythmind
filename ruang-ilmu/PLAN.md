@@ -45,7 +45,7 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 
 ## Tambahan: Pemurnian laras bahasa (diluluskan pemilik)
 13. [x] **Panduan dan ujian laras**: `ruang-ilmu/GAYA.md` (peraturan), ujian pola terlarang, dan cap jari matan/terjemahan/rujukan sebelum suntingan. Fail: `GAYA.md`, `tests/ruang-ilmu-smoke.cjs`, `tests/ruang-ilmu-cap-jari.json`, `tests/ruang-ilmu-laras.cjs`. Ujian: gagal pada teks sekarang untuk pola terlarang; cap jari lulus.
-14. [ ] **Teks UI**: navigasi, butang, mesej, halaman Utama, Baca, Lihat, Dengar, Teroka, Siri, Kopi, Keahlian, Profil, Tentang, Studio. Fail: `app.js`, `index.html`, `manifest.webmanifest`. Ujian: semua ujian lulus; tangkapan skrin 400px.
+14. [x] **Teks UI**: navigasi, butang, mesej, halaman Utama, Baca, Lihat, Dengar, Teroka, Siri, Kopi, Keahlian, Profil, Tentang, Studio. Fail: `app.js`, `index.html`, `manifest.webmanifest`. Ujian: semua ujian lulus; tangkapan skrin 400px.
 15. [ ] **Bahan Ruang Ilmu**: 15 bahan, laluan, taktik dan benteng, e-buku, teks Sip 'n Go. Fail: `data.js`. Ujian: laras dan semakan integriti Studio lulus.
 16. [ ] **Tadabbur Surah al-Mukminun** (15 episod, laras penuh). Fail: `siri.js`. Ujian: laras dan cap jari lulus.
 17. [ ] **Akhlak dan Adab, Kuliah 1–4, Kenali Munafik, Kenali Kebenaran**. Fail: `siri.js`. Ujian: laras dan cap jari lulus.

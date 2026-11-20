@@ -273,6 +273,12 @@ const shots = process.env.SHOTS || '';
     const BELUM_DISUNTING = ['sifat-malu', 'kehormatan-diri', 'sombong-menolak-kebenaran', 'mengulangi-alasan-orang-terdahulu', 'benci-kepada-kebenaran'];
     const isu = laras.semakTeks(teks.filter(([k]) => !BELUM_DISUNTING.includes(k)));
     assert.deepEqual(isu, [], 'Laras bahasa ikut GAYA.md');
+    // Teks UI pada halaman utama aplikasi (tanpa blok ayat/hadis yang dilindungi)
+    for (const h of ['utama', 'baca', 'lihat', 'dengar', 'teroka', 'siri', 'laluan', 'kopi', 'ahli', 'profil', 'tentang', 'studio', 'troli', 'rehat']) {
+      await page.goto(origin + '#' + h); await page.waitForTimeout(200);
+      const t = await page.evaluate(() => { const b = document.body.cloneNode(true); b.querySelectorAll('.ayat, .ar, script, style').forEach(e => e.remove()); return b.innerText; });
+      assert.deepEqual(laras.semakTeks(t.split('\n').map(x => [h, x])), [], `Laras UI pada #${h}`);
+    }
     await ctx.close();
   }
 

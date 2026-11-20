@@ -242,7 +242,7 @@ const kepalaSeksyen = (eyebrow, tajuk, teks, pautan) => `<div class="seksyen-kep
 const borangSurat = id => S.surat
   ? `<p class="kecil-nota">Kau sudah melanggan Surat Ilmu sebagai <b>${esc(S.surat.emel)}</b>. Surat seterusnya tiba pagi Ahad.</p>`
   : `<form class="borang-surat" data-borang="surat"><label class="sr" for="${id}">Emel kau</label><input id="${id}" type="email" required placeholder="nama@emel.com" autocomplete="email"><button class="btn merah" type="submit">Langgan percuma</button></form>
-     <p class="kecil-nota"><label><input type="checkbox" id="${id}-setuju" required> Aku setuju menerima Surat Ilmu mingguan. Boleh berhenti bila-bila masa.</label></p>`;
+     <p class="kecil-nota"><label><input type="checkbox" id="${id}-setuju" required> Aku bersetuju menerima Surat Ilmu mingguan dan boleh berhenti pada bila-bila masa.</label></p>`;
 
 function cadangan(n = 3, kecuali = []) {
   const minat = {};
@@ -455,7 +455,7 @@ V.utama = () => {
     <section class="hero">
       <div class="hero-teks">
         <span class="eyebrow">Surat Ilmu · setiap pagi Ahad</span>
-        <h1 class="h-besar">Ilmu yang tahan zaman, <em>dihidang ketika rehat.</em></h1>
+        <h1 class="h-besar">Ilmu yang tahan zaman, <em>dihidangkan ketika rehat.</em></h1>
         <p class="lede">Baca, lihat dan dengar ilmu yang disemak sumbernya: agama, psikologi, sejarah dan sains. Lima minit sehari, tanpa iklan yang mengganggu bacaan.</p>
         <div id="surat-borang">${borangSurat('emelHero')}</div>
         <div class="format-strip"><span><b>Baca</b>artikel 2–15 min</span><span><b>Lihat</b>video penerangan</span><span><b>Dengar</b>audio sambil bergerak</span></div>
@@ -547,13 +547,13 @@ V.dengar = () => {
     { n: 'Sebelum tidur', d: 'Topik yang tenang. Pasang pemasa tidur pada pemain.', x: s.filter(a => ['agama', 'sejarah'].includes(a.kategori)) },
     { n: 'Belajar', d: 'Teknik dan pemikiran untuk belajar lebih baik.', x: s.filter(a => ['psikologi', 'kreatif'].includes(a.kategori)) }
   ];
-  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Dengar</span><h1>Dengar sambil bergerak</h1><p class="lede">Setiap artikel boleh didengar. Pemain menyambung dari tempat terakhir, ada kawalan kelajuan dan pemasa tidur.</p>
+  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Dengar</span><h1>Dengar sambil bergerak</h1><p class="lede">Setiap artikel boleh didengar. Pemain menyambung bacaan dari tempat terakhir dan dilengkapi kawalan kelajuan serta pemasa tidur.</p>
   <p class="kecil-nota">${sokongSuara ? 'Prototaip ini menggunakan suara sintetik peranti kau. Versi pelancaran akan menggunakan rakaman narator manusia.' : 'Pelayar ini tidak menyokong bacaan suara. Cuba Chrome atau Safari terkini.'}</p></header>
   ${kumpulan.map(k => `<section class="seksyen">${kepalaSeksyen('Koleksi audio', k.n, k.d)}<ul class="senarai-baris">${k.x.map(barisDengar).join('')}</ul></section>`).join('')}</div>`;
 };
 
 V.teroka = (kat) => {
-  const soalan = ['Kenapa aku selalu bertangguh?', 'Bagaimana sesuatu kepercayaan terbentuk?', 'Bila patut berhenti minum kopi?', 'Kenapa langit biru?', 'Cara belajar supaya tidak lupa'];
+  const soalan = ['Mengapakah aku selalu bertangguh?', 'Bagaimanakah sesuatu kepercayaan terbentuk?', 'Bilakah masa yang sesuai untuk berhenti minum kopi?', 'Mengapakah langit berwarna biru?', 'Cara belajar supaya tidak mudah lupa'];
   return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Teroka</span><h1>Tanya apa yang kau ingin tahu</h1></header>
   <form class="carian-besar" data-borang="cari" role="search"><label class="sr" for="medanCari">Cari ilmu</label><input id="medanCari" type="search" placeholder="Cari topik atau tanya soalan…" value="${esc(CARI.q)}" autocomplete="off"><button class="btn" type="submit">Cari</button></form>
   <div style="display:grid;gap:14px;padding-block:18px">
@@ -574,7 +574,7 @@ function hasilCari(kat) {
     (x.length ? `<div class="grid-artikel tiga">${x.map(a => kadArtikel(a)).join('')}</div>` : `<p class="kosong">Belum ada bahan yang sepadan. Cuba perkataan lain, atau <button class="pautan" data-act="cadang-topik">cadangkan topik ini</button> kepada pasukan editorial.</p>`);
 }
 
-V.laluan = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Laluan ilmu</span><h1>Koleksi yang disusun mengikut urutan</h1><p class="lede">Ikut satu laluan dari mula hingga habis, atau keluar bila-bila masa. Kemajuan kau tidak hilang jika kau berehat.</p></header>
+V.laluan = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Laluan ilmu</span><h1>Koleksi yang disusun mengikut urutan</h1><p class="lede">Ikut satu laluan dari mula hingga habis, atau berhenti pada bila-bila masa. Kemajuan kau tidak hilang jika kau berehat.</p></header>
   <section class="seksyen"><div class="grid-laluan">${LALUAN.map(kadLaluan).join('')}</div></section></div>`;
 
 V.l = slug => {
@@ -687,7 +687,7 @@ const pilihMenu = (b, c) => b === 'kopi' ? (c === 'ringan' ? 'classic' : c === '
 function kotakKuizMenu(hasil) {
   if (hasil) { const p = PROD[hasil]; return `<div class="kuiz-hasil">${kotakBotol(p)}<div style="display:grid;gap:10px;align-content:center;min-width:0"><span class="eyebrow">Cadangan kami</span><h3 style="font-size:1.7rem">${esc(p.nama)}</h3><span class="harga">${rm(p.harga)}</span><p style="color:var(--kelabu)">${esc(p.nota)}</p><div class="butang-format"><button class="btn kecil" data-act="tambah-satu" data-id="${p.id}">Tambah ke troli</button><button class="btn kecil garis" data-act="kuiz-menu" data-v="">Cuba lagi</button></div></div></div>`; }
   if (!KUIZ_MENU.asas) return `<p class="meta"><span>Soalan 1 daripada 2</span></p><h3 class="soalan-menu">Anda teringin yang mana?</h3><div class="pilihan-menu">${KATEGORI_MENU.map(k => `<button data-act="kuiz-menu" data-v="${k.id}">${k.n}</button>`).join('')}</div>`;
-  return `<p class="meta"><span>Soalan 2 daripada 2</span></p><h3 class="soalan-menu">Macam mana rasa yang anda suka?</h3><div class="pilihan-menu"><button data-act="kuiz-rasa" data-v="ringan">Ringan dan tak terlalu manis</button><button data-act="kuiz-rasa" data-v="manis">Manis dan berkrim</button><button data-act="kuiz-rasa" data-v="pekat">Pekat dan kaw</button></div>`;
+  return `<p class="meta"><span>Soalan 2 daripada 2</span></p><h3 class="soalan-menu">Macam mana rasa yang anda suka?</h3><div class="pilihan-menu"><button data-act="kuiz-rasa" data-v="ringan">Ringan dan tidak terlalu manis</button><button data-act="kuiz-rasa" data-v="manis">Manis dan berkrim</button><button data-act="kuiz-rasa" data-v="pekat">Pekat dan kaw</button></div>`;
 }
 
 V.kopi = () => {
@@ -704,19 +704,19 @@ V.kopi = () => {
   </div></section>
   <div class="bekas">
     <section class="seksyen"><div class="tiga-nilai">${SNG.nilai.map(n => `<div class="blok-teks"><h3>${esc(n.h)}</h3><p>${esc(n.p)}</p></div>`).join('')}</div></section>
-    <section class="seksyen" id="menu">${kepalaSeksyen('Menu', '6 minuman, dari RM9', 'Tekan Tambah pada botol pilihan, kemudian checkout di WhatsApp. Order anda terus sampai ke chat kami.')}
+    <section class="seksyen" id="menu">${kepalaSeksyen('Menu', '6 minuman, dari RM9', 'Tekan Tambah pada botol pilihan, kemudian checkout di WhatsApp. Order anda akan terus sampai kepada kami.')}
       ${[['kopi', 'Kopi'], ['matcha-coklat', 'Matcha & Coklat']].map(([k, n]) => `<h3 class="sub-menu">${n}</h3><div class="grid-produk">${PRODUK.filter(p => k === 'kopi' ? p.kategori === 'kopi' : p.kategori !== 'kopi').map(kadProduk).join('')}</div>`).join('')}</section>
-    <section class="seksyen" id="cari-menu">${kepalaSeksyen('Cari menu anda', 'Tak tahu nak pilih yang mana?', 'Jawab dua soalan. Kami cadangkan botol yang sesuai dengan anda.')}<div class="kotak kuiz-menu" id="kuizMenu">${kotakKuizMenu()}</div></section>
-    <section class="seksyen">${kepalaSeksyen('Kad Ilmu · ' + KAD_ILMU.set.split('·')[0].trim(), 'Setiap botol bawa satu ilmu.', `${KAD_ILMU.set.split('·')[1].trim()}. Kumpul kad A, B, C dan D untuk set penuh. Order 3 kopi, dapat 3 ilmu yang berbeza.`)}
+    <section class="seksyen" id="cari-menu">${kepalaSeksyen('Cari menu anda', 'Tidak tahu hendak memilih yang mana?', 'Jawab dua soalan, dan kami akan mencadangkan botol yang sesuai dengan anda.')}<div class="kotak kuiz-menu" id="kuizMenu">${kotakKuizMenu()}</div></section>
+    <section class="seksyen">${kepalaSeksyen('Kad Ilmu · ' + KAD_ILMU.set.split('·')[0].trim(), 'Setiap botol membawa satu ilmu.', `${KAD_ILMU.set.split('·')[1].trim()}. Kumpul kad A, B, C dan D untuk set penuh. Order 3 kopi, dapat 3 ilmu yang berbeza.`)}
       <div class="grid-kad-ilmu">${KAD_ILMU.kad.map(k => `<article class="kad-ilmu"><div class="kad-ilmu-atas"><span>1 KOPI SEHARI, 1 ILMU BARU</span><b>${k.huruf}</b></div><p class="kad-ilmu-teks">${esc(k.teks)}</p><p class="kad-ilmu-dalil">${esc(k.dalil)}</p><span class="meta"><span>${esc(KAD_ILMU.set)}</span><span>${k.kod}</span></span></article>`).join('')}</div>
       <p class="kecil-nota" style="padding-top:14px">Mahu lebih? Teroka bidang <a class="pautan" href="#teroka.agama">Agama &amp; Kerohanian</a> di Ruang Ilmu.</p></section>
     <section class="seksyen">${kepalaSeksyen('Coffee + Knowledge', 'Padanan botol dan bacaan', 'Setiap botol dipadankan dengan satu bacaan Ruang Ilmu.')}
       <ul class="senarai-baris">${PRODUK.map(p => { const a = cari(p.pasangan); return `<li><div class="baris baris-padan">${kotakBotol(p)}<div class="tajuk-baris"><a href="#p.${p.id}">${esc(p.nama)}</a><span class="meta"><span>dengan</span><a href="#a.${a.slug}" style="color:var(--merah)">${esc(a.tajuk)}</a></span><span class="kecil-nota">${esc(p.sebab)}</span></div><span class="harga meta">${rm(p.harga)}</span></div></li>`; }).join('')}</ul></section>
-    <section class="seksyen">${kepalaSeksyen('Peta biji', '3 negara dalam 1 botol.', `Classic Latte dan Caramel Latte guna biji Ethiopia, Colombia dan Brazil. Semuanya berakhir di ${esc(SNG.lokasi)}.`)}
+    <section class="seksyen">${kepalaSeksyen('Peta biji', '3 negara dalam 1 botol.', `Classic Latte dan Caramel Latte menggunakan biji kopi Ethiopia, Colombia dan Brazil. Semuanya berakhir di ${esc(SNG.lokasi)}.`)}
       <div class="peta-biji">${SNG.biji.map((b, i) => `<div><span class="meta"><span>0${i + 1}</span></span><h3>${esc(b.negara)}</h3><p>${esc(b.untuk)}</p></div>`).join('')}<div class="akhir-biji"><span class="meta"><span>Destinasi</span></span><h3>${esc(SNG.lokasi.split(',')[0])}</h3><p>${esc(SNG.lokasi.split(',').slice(1).join(',').trim())}</p></div></div></section>
     <section class="seksyen">${kepalaSeksyen('Coffee as a subject', 'Ilmu tentang kopi', 'Sejarah, sains dan kesan kopi, ditulis dengan standard editorial Ruang Ilmu.')}<div class="grid-artikel tiga">${subjek.map(a => kadArtikel(a)).join('')}</div></section>
     <section class="seksyen">${kepalaSeksyen('Kata pelanggan', 'Dibancuh dengan teliti.', '')}<div class="grid-ulasan">${SNG.ulasan.map(u => `<blockquote class="ulasan"><p>“${esc(u.q)}”</p><cite>${esc(u.siapa)}</cite></blockquote>`).join('')}</div></section>
-    <section class="seksyen">${kepalaSeksyen('Komuniti', 'Kongsi momen ngopi anda, tag kami.', `${esc(SNG.ig)} ${esc(SNG.hashtag)}`)}
+    <section class="seksyen">${kepalaSeksyen('Komuniti', 'Kongsi saat minum kopi anda dan tag kami.', `${esc(SNG.ig)} ${esc(SNG.hashtag)}`)}
       <div class="grid-komuniti"><figure class="foto-sng"><img src="${MEDIA}kopi-buku.webp" alt="Botol Classic Latte dan Strawberry Matcha di atas meja dalam kapal terbang, di sebelah sebuah buku" loading="lazy" width="750" height="1000"></figure><figure class="foto-sng"><img src="${MEDIA}komuniti.webp" alt="Empat tangan memegang botol Rich Mocha dan Caramel Latte Sip 'n Go bersama" loading="lazy" width="1050" height="1400"></figure>
       <div class="blok-teks" style="align-content:start"><h3>Lawati kami</h3><p><b>Lokasi:</b> ${esc(SNG.lokasi)}</p><p><a class="pautan" href="${SNG.peta}" target="_blank" rel="noopener">Buka di Google Maps →</a></p><p><b>Order:</b> tambah botol ke troli, kemudian checkout di WhatsApp.</p><p><a class="pautan" href="${SNG.instagram}" target="_blank" rel="noopener">Ikut ${esc(SNG.ig)} di Instagram →</a></p></div></div></section>
     <section class="seksyen">${kepalaSeksyen('Coffee Break Club', 'Kelab untuk peminum kopi yang suka membaca', 'Botol bulanan, kandungan khas dan acara bersama penulis. Harga sedang diuji.', `<a class="btn garis" href="#ahli">Sertai senarai menunggu</a>`)}</section>
@@ -754,7 +754,7 @@ function jumlahTroli() {
   return { baris, sub };
 }
 const mesejOrder = (baris, nama, nota) => {
-  let m = "Hai Sip 'n Go! Saya nak order:\n";
+  let m = "Hai Sip 'n Go! Saya ingin membuat order:\n";
   baris.forEach((b, i) => { m += `${i + 1}. ${b.p.nama} x${b.n} = RM ${(b.p.harga * b.n).toFixed(2)}\n`; });
   m += `\nJumlah: RM ${baris.reduce((t, b) => t + b.p.harga * b.n, 0).toFixed(2)}\nNama: ${nama || '-'}`;
   if (nota) m += `\nCatatan: ${nota}`;
@@ -819,8 +819,8 @@ V.ahli = () => `<div class="bekas"><header class="halaman-kepala"><span class="e
   <section class="seksyen"><div class="dua-kolum-teks">
     <div class="blok-teks"><h3>Adakah kandungan percuma akan kekal percuma?</h3><p>Ya. Artikel, audio dan video asas kekal percuma. Keahlian menambah koleksi, bukan mengunci yang sedia ada.</p></div>
     <div class="blok-teks"><h3>Perlukah aku membeli kopi?</h3><p>Tidak. Sip 'n Go ialah teman rehat yang pilihan. Kau boleh menyembunyikan semua promosi kopi dalam tetapan profil.</p></div>
-    <div class="blok-teks"><h3>Ke mana wang keahlian pergi?</h3><p>Kepada penulis, penyemak dan narator yang menghasilkan kandungan, serta kos pengehosan media.</p></div>
-    <div class="blok-teks"><h3>Boleh berhenti bila-bila masa?</h3><p>Boleh. Kemajuan, nota dan simpanan kau kekal dalam akaun Explorer.</p></div>
+    <div class="blok-teks"><h3>Ke mana wang keahlian pergi?</h3><p>Kepada penulis, penyemak dan narator yang menghasilkan kandungan, serta untuk kos pengehosan media.</p></div>
+    <div class="blok-teks"><h3>Bolehkah aku berhenti pada bila-bila masa?</h3><p>Boleh. Kemajuan, nota dan simpanan kau kekal dalam akaun Explorer.</p></div>
   </div></section></div>`;
 
 function petaIlmu() {
@@ -868,8 +868,8 @@ V.profil = () => {
     <div class="tetapan-baris"><div><b>Tema</b><small>Ikut sistem, terang atau gelap.</small></div><div class="segmen" role="group" aria-label="Tema">${[['sistem', 'Sistem'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Saiz teks bacaan</b></div><div class="segmen" role="group" aria-label="Saiz teks">${['S', 'M', 'L', 'XL'].map((n, i) => `<button data-act="fon" data-v="${i}" aria-pressed="${S.tetapan.fon === i}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Kekerapan peringatan</b><small>Kau yang tentukan. Tiada peringatan bertubi-tubi.</small></div><div class="segmen" role="group" aria-label="Notifikasi">${[['tiada', 'Tiada'], ['mingguan', 'Mingguan'], ['harian', 'Harian']].map(([v, n]) => `<button data-act="notifikasi" data-v="${v}" aria-pressed="${S.tetapan.notifikasi === v}">${n}</button>`).join('')}</div></div>
-    <div class="tetapan-baris"><div><b>Paparkan siri hari</b><small>Matikan jika siri membuatkan kau rasa tertekan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.siri}" data-act="suis" data-k="siri" aria-label="Paparkan siri hari"></button></div>
-    <div class="tetapan-baris"><div><b>Sembunyikan promosi kopi</b><small>Buang jalur Sip 'n Go dan cadangan kopi dari halaman bacaan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.sorokKopi}" data-act="suis" data-k="sorokKopi" aria-label="Sembunyikan promosi kopi"></button></div>
+    <div class="tetapan-baris"><div><b>Paparkan siri hari</b><small>Matikan jika siri hari membuatkan kau berasa tertekan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.siri}" data-act="suis" data-k="siri" aria-label="Paparkan siri hari"></button></div>
+    <div class="tetapan-baris"><div><b>Sembunyikan promosi kopi</b><small>Buang jalur Sip 'n Go dan cadangan kopi daripada halaman bacaan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.sorokKopi}" data-act="suis" data-k="sorokKopi" aria-label="Sembunyikan promosi kopi"></button></div>
     <div class="tetapan-baris"><div><b>Pasang sebagai app</b><small>Buka Ruang Ilmu dari skrin utama telefon atau komputer.</small></div><button class="btn kecil garis" data-act="pasang">Pasang app</button></div>
     <div class="tetapan-baris"><div><b>Padam data dalam peranti ini</b><small>Kemajuan, nota, troli dan pesanan akan dipadam.</small></div><button class="btn kecil garis" data-act="padam-data">Padam data</button></div>
     ${S.akaun ? `<div class="tetapan-baris"><div><b>Log keluar</b></div><button class="btn kecil garis" data-act="keluar">Log keluar</button></div>` : ''}
@@ -879,9 +879,9 @@ V.profil = () => {
 V.tentang = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Tentang Ruang Ilmu</span><h1>Orang datang kerana kandungan, kembali kerana pengalaman, dan membeli kerana kepercayaan.</h1><p class="lede">Ruang Ilmu ialah platform untuk membaca, melihat, mendengar dan meneroka ilmu dalam pengalaman yang santai, menarik, mudah diakses dan boleh dipercayai. Sip 'n Go Coffee ialah teman rehatnya.</p></header>
   <section class="seksyen"><div class="dua-kolum-teks">
     <div class="blok-teks"><h3>Misi</h3><ul><li>Menjadikan ilmu lebih mudah difahami oleh orang awam.</li><li>Membolehkan pengguna belajar mengikut masa, minat dan gaya mereka.</li><li>Menghubungkan ilmu daripada pelbagai bidang.</li><li>Membina tabiat pembelajaran sepanjang hayat.</li><li>Menyokong pencipta kandungan dan perniagaan kopi dalam ekosistem yang sama.</li></ul></div>
-    <div class="blok-teks"><h3>Prinsip produk</h3><ul><li>Ilmu dahulu: kandungan berkualiti ialah sebab utama pengguna datang.</li><li>Pelbagai format: satu topik dalam teks, visual dan audio.</li><li>Penerokaan berhubung melalui laluan dan cadangan yang relevan.</li><li>Gamifikasi sihat: tiada hukuman apabila berehat.</li><li>Perniagaan yang jelas: kandungan percuma, produk digital dan kopi dibezakan.</li></ul></div>
+    <div class="blok-teks"><h3>Prinsip produk</h3><ul><li>Ilmu dahulu: kandungan berkualiti ialah sebab utama pengguna datang.</li><li>Pelbagai format: satu topik dalam teks, visual dan audio.</li><li>Penerokaan yang berhubung melalui laluan dan cadangan yang relevan.</li><li>Gamifikasi sihat: tiada hukuman apabila berehat.</li><li>Perniagaan yang jelas: kandungan percuma, produk digital dan kopi dibezakan.</li></ul></div>
   </div></section>
-  <section class="seksyen" id="taktik">${kepalaSeksyen('Kenapa kami tidak mengejar pageview', 'Sembilan taktik manipulasi media, dan benteng kami', 'Dalam Trust Me, I\'m Lying, Ryan Holiday mendedahkan bagaimana penerbit yang dibayar mengikut tontonan mudah dimanipulasi. Ruang Ilmu dibina supaya setiap taktik itu tidak berkesan di sini.', '<a class="pautan" href="#a.taktik-manipulasi-media">Baca ringkasan buku</a>')}
+  <section class="seksyen" id="taktik">${kepalaSeksyen('Mengapa kami tidak mengejar pageview', 'Sembilan taktik manipulasi media, dan benteng kami', 'Dalam Trust Me, I\'m Lying, Ryan Holiday mendedahkan bagaimana penerbit yang dibayar mengikut tontonan mudah dimanipulasi. Ruang Ilmu dibina supaya setiap taktik itu tidak berkesan di sini.', '<a class="pautan" href="#a.taktik-manipulasi-media">Baca ringkasan buku</a>')}
   <div class="jadual-bekas"><table class="jadual taktik"><thead><tr><th>Taktik</th><th>Bahaya</th><th>Benteng Ruang Ilmu</th></tr></thead><tbody>${TAKTIK.map(t => `<tr><td><b>#${t.n}</b> ${esc(t.taktik)}</td><td>${esc(t.bahaya)}</td><td>${esc(t.benteng)}</td></tr>`).join('')}${BENTENG_LAIN.map(t => `<tr><td><b>${esc(t.n)}</b></td><td>Dibincangkan dalam bab yang sama.</td><td>${esc(t.benteng)}</td></tr>`).join('')}</tbody></table></div>
   <p style="padding-top:16px"><a class="btn garis" href="#l.celik-media">Ikut laluan Celik media</a></p></section>
   <section class="seksyen" id="standard">${kepalaSeksyen('Standard editorial', 'Bagaimana setiap bahan dihasilkan', '')}
@@ -932,14 +932,14 @@ V.studio = () => {
   const jum = k => bahan.reduce((t, a) => t + ukuran(a.slug)[k], 0);
   const kuizSemua = S.peristiwa.filter(e => e.j === 'kuiz');
   const hariAktif = Object.values(S.hari).filter(h => h.aktif).length;
-  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Studio editorial · prototaip CMS</span><h1>Dari soalan pembaca ke bahan yang disemak</h1><p class="lede">Setiap bahan melalui tujuh langkah. Butang terbit hanya aktif apabila metadata, sumber dan dakwaan lulus semakan. Draf disimpan dalam peranti ini.</p><div class="butang-format"><button class="btn" data-act="draf-baru">Draf baharu</button><a class="btn garis" href="#tentang" data-act="ke-tentang-taktik">Kenapa begini?</a></div></header>
+  return `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Studio editorial · prototaip CMS</span><h1>Daripada soalan pembaca kepada bahan yang disemak</h1><p class="lede">Setiap bahan melalui tujuh langkah. Butang terbit hanya aktif apabila metadata, sumber dan dakwaan lulus semakan. Draf disimpan dalam peranti ini.</p><div class="butang-format"><button class="btn" data-act="draf-baru">Draf baharu</button><a class="btn garis" href="#tentang" data-act="ke-tentang-taktik">Mengapa begini?</a></div></header>
 
   <section class="seksyen">${kepalaSeksyen('Semakan integriti data', isu.length ? `${isu.length} isu perlu dibetulkan` : 'Semua bahan lulus semakan', 'Dijalankan setiap kali Studio dibuka: jenis sumber, dakwaan fakta tanpa sumber, rujukan yang tiada, tajuk umpan klik dan pautan yang putus.')}
     ${isu.length ? `<ul class="senarai-isu">${isu.map(([t, m]) => `<li><b>${esc(t)}</b> · ${esc(m)}</li>`).join('')}</ul>` : `<p class="lulus">✓ ${bahan.length} bahan, ${bahan.reduce((t, a) => t + (a.dakwaan || []).length, 0)} dakwaan, ${bahan.reduce((t, a) => t + a.rujukan.length, 0)} sumber, ${LALUAN.length} laluan dan ${PRODUK.length} produk disemak.</p>`}</section>
 
   ${(() => { const h = EP.flatMap(e => e.soalan.flatMap((q, n) => q.blok.filter(b => (b.j === 'hadis' || b.j === 'petikan') && !b.ruj).map(b => ({ e, n, b })))); return `<section class="seksyen">${kepalaSeksyen('Rujukan untuk disemak', h.length ? `${h.length} ${h.every(x => x.b.j === 'hadis') ? 'hadis' : 'hadis/petikan'} tanpa rujukan` : 'Semua hadis bersumber', 'Hadis dalam skrip asal yang belum dinyatakan rujukannya. Dipaparkan kepada pembaca sebagai "Rujukan belum dinyatakan". Tiada rujukan direka.')}${h.length ? `<ul class="senarai-baris">${h.map(({ e, n, b }) => `<li><div class="baris" style="grid-template-columns:1fr"><div class="tajuk-baris"><a href="#e.${e.slug}">${esc(e.tajuk)} · Soalan ${n + 1}</a><span class="kecil-nota" lang="ar" dir="rtl" style="font-family:Amiri,serif;font-size:1.05rem;text-align:right">${esc(b.ar)}</span><span class="kecil-nota">${esc(b.maksud || '')}</span></div></div></li>`).join('')}</ul>` : ''}</section>`; })()}
 
-  <section class="seksyen">${kepalaSeksyen('Ukuran yang kami pilih', 'Kefahaman, bukan pageview', 'Data peranti ini sahaja. Kami sengaja tidak menjadikan jumlah tontonan sebagai ukuran utama, kerana penerbit yang mengejar tontonan akan mengejar sensasi.')}
+  <section class="seksyen">${kepalaSeksyen('Ukuran yang kami pilih', 'Kefahaman, bukan pageview', 'Data daripada peranti ini sahaja. Kami sengaja tidak menjadikan jumlah tontonan sebagai ukuran utama, kerana penerbit yang mengejar tontonan akan mengejar sensasi.')}
     <div class="statistik"><div><b>${jum('buka') ? Math.round(jum('selesai') / jum('buka') * 100) + '%' : '–'}</b><span>kadar lengkap (selesai ÷ dibuka)</span></div><div><b>${kuizSemua.length ? Math.round(kuizSemua.filter(e => e.betul).length / kuizSemua.length * 100) + '%' : '–'}</b><span>jawapan kuiz tepat</span></div><div><b>${hariAktif}</b><span>hari pembaca kembali aktif</span></div><div><b>${Object.values(S.format).filter(f => Object.keys(f).length > 1).length}</b><span>bahan dinikmati dalam lebih satu format</span></div><div><b>${jum('simpan')}</b><span>disimpan untuk dibaca semula</span></div></div>
     <div class="jadual-bekas" style="margin-top:20px"><table class="jadual ukuran"><thead><tr><th>Bahan</th><th>Dibuka</th><th>Dibaca ≥80%</th><th>Selesai</th><th>Kuiz tepat</th><th>Disimpan</th><th>Dikongsi</th></tr></thead><tbody>${bahan.map(a => { const u = ukuran(a.slug); return `<tr><td><a class="pautan" href="#a.${a.slug}" style="font-weight:400">${esc(a.tajuk)}</a></td><td>${u.buka}</td><td>${u.baca80}</td><td>${u.selesai}</td><td>${u.kuizTepat == null ? '–' : u.kuizTepat + '%'}</td><td>${u.simpan}</td><td>${u.kongsi}</td></tr>`; }).join('')}</tbody></table></div></section>
 
@@ -1105,7 +1105,7 @@ function paparanKarusel(s) {
   const n = d.slaid.length; const i = Math.min(Karusel.indeks[s.slug] || 0, n - 1); const sel = 's-' + s.slug;
   return `<section class="seksyen" style="border-top:0;padding-top:0">
     <div class="karusel" role="region" aria-roledescription="karusel" aria-label="${esc(d.tajuk)}" data-karusel="${esc(s.slug)}">
-      <div class="trek" tabindex="0" aria-label="Slaid. Leret atau guna kekunci anak panah.">${d.slaid.map((x, j) => slaidKarusel(x, j, n)).join('')}</div>
+      <div class="trek" tabindex="0" aria-label="Slaid. Leret atau gunakan kekunci anak panah.">${d.slaid.map((x, j) => slaidKarusel(x, j, n)).join('')}</div>
       <div class="kawalan-karusel">
         <button class="btn-tindak" data-act="karusel" data-arah="-1" aria-label="Slaid sebelum"${i === 0 ? ' disabled' : ''}>←</button>
         <div class="titik" role="group" aria-label="Pilih slaid">${d.slaid.map((x, j) => `<button data-act="karusel" data-ke="${j}" aria-label="Slaid ${j + 1}" aria-current="${j === i}"></button>`).join('')}</div>
