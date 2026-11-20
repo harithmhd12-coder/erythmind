@@ -687,7 +687,7 @@ const pilihMenu = (b, c) => b === 'kopi' ? (c === 'ringan' ? 'classic' : c === '
 function kotakKuizMenu(hasil) {
   if (hasil) { const p = PROD[hasil]; return `<div class="kuiz-hasil">${kotakBotol(p)}<div style="display:grid;gap:10px;align-content:center;min-width:0"><span class="eyebrow">Cadangan kami</span><h3 style="font-size:1.7rem">${esc(p.nama)}</h3><span class="harga">${rm(p.harga)}</span><p style="color:var(--kelabu)">${esc(p.nota)}</p><div class="butang-format"><button class="btn kecil" data-act="tambah-satu" data-id="${p.id}">Tambah ke troli</button><button class="btn kecil garis" data-act="kuiz-menu" data-v="">Cuba lagi</button></div></div></div>`; }
   if (!KUIZ_MENU.asas) return `<p class="meta"><span>Soalan 1 daripada 2</span></p><h3 class="soalan-menu">Anda teringin yang mana?</h3><div class="pilihan-menu">${KATEGORI_MENU.map(k => `<button data-act="kuiz-menu" data-v="${k.id}">${k.n}</button>`).join('')}</div>`;
-  return `<p class="meta"><span>Soalan 2 daripada 2</span></p><h3 class="soalan-menu">Macam mana rasa yang anda suka?</h3><div class="pilihan-menu"><button data-act="kuiz-rasa" data-v="ringan">Ringan dan tidak terlalu manis</button><button data-act="kuiz-rasa" data-v="manis">Manis dan berkrim</button><button data-act="kuiz-rasa" data-v="pekat">Pekat dan kaw</button></div>`;
+  return `<p class="meta"><span>Soalan 2 daripada 2</span></p><h3 class="soalan-menu">Rasa yang bagaimanakah anda suka?</h3><div class="pilihan-menu"><button data-act="kuiz-rasa" data-v="ringan">Ringan dan tidak terlalu manis</button><button data-act="kuiz-rasa" data-v="manis">Manis dan berkrim</button><button data-act="kuiz-rasa" data-v="pekat">Pekat dan kaw</button></div>`;
 }
 
 V.kopi = () => {
