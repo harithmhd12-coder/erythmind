@@ -176,6 +176,8 @@ const shots = process.env.SHOTS || '';
     const prosa4 = await page.locator('#prosa').innerText();
     for (const isi of [/Nvidia/, /minyak sawit terbesar ke Israel/, /colouring the map blue/, /Lumumba/, /Financial Times/, /MSCI/, /AOPIG/, /75 tahun/, /konflik di Afrika/, /Snouck Hurgronje/]) assert.match(prosa4, isi, `Dakwaan dalam isi: ${isi}`);
     assert.equal(await page.locator('#integriti ol.dakwaan li').count(), 11, 'Kad integriti menyenaraikan 11 dakwaan');
+    assert.equal(await page.locator('#integriti ol.dakwaan li a[href*="&t="]').count(), 11, 'Setiap dakwaan ada pautan minit');
+    assert.match(await page.locator('#integriti ol.dakwaan li', { hasText: /AOPIG/ }).innerText(), /minit 1:19:00/);
     assert.equal(await page.locator('#integriti .dakwaan-fakta').count(), 0, 'Tiada dakwaan berlabel fakta tanpa sumber');
     assert.equal(await page.locator('#integriti ol.dakwaan li', { hasText: /Moderator:/ }).count(), 2, 'Dakwaan moderator dinisbahkan kepada moderator');
     assert.doesNotMatch(await page.locator('#integriti').innerText(), /belum disemak/i);
