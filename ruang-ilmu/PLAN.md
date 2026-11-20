@@ -41,3 +41,4 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 - Sahkan nama penuh penceramah ("Prof. Farish" seperti disebut dalam rakaman).
 - [x] 11 dakwaan dalam rakaman disemak pemilik (17 Nov 2026) dan dimasukkan ke dalam isi; kotak "belum disemak" dibuang (jalan pintas: perubahan kecil diminta terus). Dilabel `tafsiran`; untuk label `fakta`, sumber bertulis setiap dakwaan diperlukan.
 - Ujian belum meliputi laluan kotak "belum disemak" (episod sumber luar tanpa `disemak`); tambah ujian apabila sumber luar baharu dimasukkan.
+- Dakwaan Kuliah 4 yang disemak dideploy melalui PR #18 (20 Nov 2026), bersama gabungan Kuliah 5 Alatas daripada `main`; cache `ruang-ilmu-9`. Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
