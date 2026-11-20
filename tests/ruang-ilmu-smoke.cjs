@@ -270,7 +270,7 @@ const shots = process.env.SHOTS || '';
     const kini = laras.capJari(dilindungi);
     for (const [k, v] of Object.entries(simpanan)) assert.equal(kini[k], v, `Matan, terjemahan atau rujukan berubah dalam ${k}`);
     // Bahan yang belum disunting dalam pelan laras (PLAN.md tugasan 14-17). Senarai ini mesti kosong pada akhirnya.
-    const BELUM_DISUNTING = ['sifat-malu', 'kehormatan-diri', 'sombong-menolak-kebenaran', 'mengulangi-alasan-orang-terdahulu', 'benci-kepada-kebenaran'];
+    const BELUM_DISUNTING = ['sifat-malu'];
     const isu = laras.semakTeks(teks.filter(([k]) => !BELUM_DISUNTING.includes(k)));
     assert.deepEqual(isu, [], 'Laras bahasa ikut GAYA.md');
     // Teks UI pada halaman utama aplikasi (tanpa blok ayat/hadis yang dilindungi)
