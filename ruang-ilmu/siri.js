@@ -12,7 +12,8 @@
    SEMAK     { [slugSiri]: { kitab, pengenalan: [p], kumpulan: [{ tajuk, item: [{ t, hlm, dalil?: { j, ar, maksud, ruj } }] }], doa } }
    KARUSEL   { [slugSiri]: { tajuk, slaid: [{ label, tajuk, besar?, ar?, maksud?, ruj?, isi?: [p], nama?: [[ar, latin]], butir?: [[k, v]], langkah?: [p], alur?: [p], nota?: [tajuk, teks], petik?, ruj2? }] } }
    Kuliah    Disimpan sebagai EPISOD dengan siri kuliah-pemikiran; soalan.label = "Sebab N" atau "Amalan", tarikh kosong.
-             Sumber luar: luar { tajuk, sesi, penceramah, saluran, url, nota }, soalan[].mula (saat), dakwaan [{ t, j, mula, oleh?: 'moderator' }], bacaan [teks], kategori? (menggantikan kategori siri). */
+             Sumber luar: luar { tajuk, sesi, penceramah, saluran, url, nota }, soalan[].mula (saat), dakwaan [{ t, j, mula, oleh?: 'moderator' }], bacaan [teks], kategori? (menggantikan kategori siri),
+             disemak? (tarikh pemilik menyemak dakwaan; tanpanya dakwaan dipaparkan dalam kotak "belum disemak"). */
 
 const SIRI = [
   { slug: 'tadabbur-al-mukminun', nama: 'Tadabbur Surah al-Mukminun', jenis: 'soal-jawab', kategori: 'agama',
@@ -483,31 +484,35 @@ EPISOD.push(
    Soal jawab penonton yang tidak jelas dan ramalan tentang individu sebenar tidak dimasukkan.
    mula = saat dalam rakaman (untuk pautan minit ke YouTube). */
 EPISOD.push({
-  slug: 'kolonial-kapitalis-neoliberalisme', siri: 'kuliah-pemikiran', kategori: 'sejarah', tarikh: '', julat: 'Sumber luar · rakaman 2 jam 12 minit',
+  slug: 'kolonial-kapitalis-neoliberalisme', siri: 'kuliah-pemikiran', kategori: 'sejarah', tarikh: '', disemak: '2026-11-17', julat: 'Sumber luar · rakaman 2 jam 12 minit',
   tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', tag: ['kolonialisme', 'kapitalisme', 'neoliberalisme', 'teknofeudalisme', 'geopolitik'],
   luar: {
     tajuk: 'WUI 1.0: Kolonial Kapitalis, Neo Liberalisme', sesi: 'Projek Israelisasi di Asia Tenggara',
     penceramah: 'Prof. Farish', saluran: 'Abdul Razak', url: 'https://www.youtube.com/watch?v=4uPTvYYC9bw',
-    nota: 'Nota ini ringkasan Ruang Ilmu daripada rakaman, bukan transkrip. Pandangan ialah pandangan penceramah. Tonton rakaman asal untuk kata-kata sebenar.'
+    nota: 'Nota ini ringkasan Ruang Ilmu daripada rakaman, bukan transkrip. Pandangan ialah pandangan penceramah. Dakwaan dalam rakaman telah disemak pemilik pada 17 Nov 2026. Tonton rakaman asal untuk kata-kata sebenar.'
   },
   soalan: [
     { s: 'Kolonialisme baharu bermula dengan modal', label: 'Bahagian 1', mula: 0, blok: [
       { j: 'teks', t: 'Menurut penceramah, membincangkan Zionisme di rantau ini bermakna membincangkan kolonialisme baharu. Penjajahan moden berbeza daripada empayar klasik seperti Rom, Assyria atau Mesir. Ia ialah kolonial kapitalisme yang muncul sejak abad ke-17.' },
       { j: 'teks', t: 'Soalan asasnya: bagaimana beberapa ribu orang Belanda boleh menguasai Indonesia selama lebih 200 tahun, dan beberapa ribu orang Inggeris menguasai India? Jawapan penceramah: kehebatan kolonial kapitalisme ialah ia membuka ruang untuk masyarakat yang dijajah mengambil bahagian dalam penjajahan mereka sendiri.' },
       { j: 'teks', t: 'Pengaruh hari ini masuk melalui modal dan lobi perniagaan, bukan lobi politik. Soalan yang perlu ditanya: sudahkah kita mencapai kedaulatan ekonomi, atau kita bergantung kepada struktur global yang tidak kita kawal?' },
-      { j: 'teks', t: 'Syarikat India Timur Inggeris, kata penceramah, sangat dibenci di Parlimen Inggeris sendiri kerana ia beroperasi di luar batas perlembagaan dan menguntungkan golongan oligarki, bukan rakyat Inggeris. Untuk zaman ini beliau mencadangkan tulisan dan syarahan Yanis Varoufakis tentang teknofeudalisme.' }
+      { j: 'teks', t: 'Syarikat India Timur Inggeris, kata penceramah, sangat dibenci di Parlimen Inggeris sendiri kerana ia beroperasi di luar batas perlembagaan dan menguntungkan golongan oligarki, bukan rakyat Inggeris. Untuk zaman ini beliau mencadangkan tulisan dan syarahan Yanis Varoufakis tentang teknofeudalisme.' },
+      { j: 'teks', t: "Penceramah memberi contoh Nvidia: syarikat itu mempunyai kaitan dengan Israel, dan pelaburannya di Malaysia membawa pengaruh itu masuk ke universiti, teknologi dan ekonomi kita." },
+      { j: 'teks', t: "Di Indonesia pula, menurut penceramah, desakan untuk normalisasi dengan Israel datang daripada lobi perniagaan. Indonesia antara pengeksport minyak sawit terbesar ke Israel." }
     ]},
     { s: 'Adakah kolonialisme sudah tamat?', label: 'Bahagian 2', mula: 420, blok: [
       { j: 'teks', t: 'Moderator memperkenalkan tajuk sesi, "Projek Israelisasi di Asia Tenggara": wacana tentang Zionisme tidak harus tertumpu di Asia Barat sahaja kerana pengaruhnya juga bergerak di rantau ini.' },
       { j: 'teks', t: 'Penceramah mempersoalkan istilah "pascakolonial". Ia memberi gambaran seolah-olah kolonialisme telah tamat. Sejarah tidak bergerak secara episodik seperti siri Netflix (prakolonial, kolonial, pascakolonial). Ia bergerak ke pelbagai arah dan boleh berulang.' },
-      { j: 'teks', t: 'Masyarakat pascakolonial cenderung mengingati keganasan zaman penjajahan: perang, pembunuhan, pengeboman. Yang lebih kekal ialah struktur dan institusi yang dibawa penjajah.' }
+      { j: 'teks', t: 'Masyarakat pascakolonial cenderung mengingati keganasan zaman penjajahan: perang, pembunuhan, pengeboman. Yang lebih kekal ialah struktur dan institusi yang dibawa penjajah.' },
+      { j: 'teks', t: "Moderator mengingatkan bahawa kira-kira lapan tahun lalu Netanyahu memaparkan peta dan berkata \"we are colouring the map blue\"." }
     ]},
     { s: 'Struktur kolonial kapitalisme: pasaran tawanan dan kontrak', label: 'Bahagian 3', mula: 720, blok: [
       { j: 'teks', t: 'Penceramah merujuk istilah "kolonial kapitalisme" yang digunakan Syed Hussein Alatas: kolonialisme moden tidak boleh difahami tanpa kapitalisme kerana keduanya saling menyokong. Belanda tidak datang ke Indonesia untuk bercuti di Bali. Tujuannya membina sistem ekonomi yang menjadikan tanah jajahan bergantung.' },
       { j: 'teks', t: 'Pasaran tawanan (captive market): ambil sumber tanah jajahan, proses di negara penjajah, kemudian jual semula. Contohnya getah dibawa ke England, dijadikan tayar, dan tayar dijual semula kepada kita.' },
       { j: 'teks', t: 'Tentera kolonial di India dan Indonesia (KNIL) kebanyakannya anak tempatan. Kenapa mereka sanggup? Kerana kolonial kapitalisme membawa sesuatu yang baharu: kontrak. Penceramah memetik episod dalam tulisan Munsyi Abdullah ketika tentera Syarikat India Timur berkumpul di Melaka sebelum menyerang Jawa (1811–1816). Askar India yang ditanya menjawab bahawa di bawah raja mereka dikerah tanpa gaji, sedangkan syarikat memberi gaji tetap, bekalan, senjata dan jaminan untuk keluarga jika mereka mati.' },
       { j: 'teks', t: 'Selepas merdeka, negara-negara bekas jajahan mewarisi peta dan sempadan yang dilukis di London, The Hague, Paris dan Madrid. Gagasan menyatukan semula wilayah seperti Melayu Raya, Indonesia Raya dan Maphilindo semuanya gagal. Penceramah mencadangkan buku Basil Davidson, The Black Man\'s Burden: Africa and the Curse of the Nation-State.' },
-      { j: 'teks', t: 'Negara baharu masuk ke pentas antarabangsa yang peraturan dan normanya telah ditetapkan kuasa kolonial. Kita juga menerima konsep negara bangsa seolah-olah ia jatuh dari langit, padahal ia hasil proses kuasa.' }
+      { j: 'teks', t: 'Negara baharu masuk ke pentas antarabangsa yang peraturan dan normanya telah ditetapkan kuasa kolonial. Kita juga menerima konsep negara bangsa seolah-olah ia jatuh dari langit, padahal ia hasil proses kuasa.' },
+      { j: 'teks', t: "Pemimpin anti-kolonial tahun 1960-an seperti Patrice Lumumba dan Kwame Nkrumah, kata penceramah, dibunuh atau digulingkan." }
     ]},
     { s: 'Pembangunan dan neoliberalisme', label: 'Bahagian 4', mula: 1560, blok: [
       { j: 'teks', t: 'Menurut penceramah, "pembangunan" ialah konsep abad ke-19 yang lahir bersama kapitalisme. Pertumbuhan 4% sering bermakna 4% lagi alam dimusnahkan, tetapi ia tetap dianggap positif kerana kita semua patuh kepada logik yang sama.' },
@@ -525,7 +530,10 @@ EPISOD.push({
       { j: 'teks', t: 'Penceramah bimbang dengan kebergantungan rantau ini kepada media sosial sebagai sumber maklumat. Analisis politik di rantau ini juga sering melihat sejarah sebagai tarikh dan nama, sedangkan sejarah ialah proses.' },
       { j: 'teks', t: 'Pendidikan politik diperlukan, terutama untuk aktivis muda. Ia memerlukan kefahaman tentang ekonomi baharu dan teknologi, termasuk daripada orang yang pernah bekerja di dalam syarikat teknologi.' },
       { j: 'teks', t: 'Universiti di negara Selatan, kata penceramah, mengejar KPI dan kedudukan antarabangsa mengikut standard Barat. Beliau belum bertemu "universiti Selatan" yang mengajar teori kebergantungan atau bagaimana kemiskinan dan ketidaksamaan dihasilkan oleh struktur. Di Indonesia, teknokrat yang dilatih di Amerika dan dikenali sebagai "Berkeley Mafia" membawa pulang model ekonomi yang sama.' },
-      { j: 'teks', t: 'Kapitalisme juga boleh menjadi inklusif apabila ada peluang keuntungan. Penceramah memberi contoh muzik jazz dan Michael Jackson, juga ekonomi hijab. Yang tidak diterima ialah gerakan yang anti-hegemoni dan anti-kapitalis, lalu dilabel ekstremis. Peraturannya mudah: kamu boleh masuk ke dalam sistem, tetapi mesti patuh.' }
+      { j: 'teks', t: 'Kapitalisme juga boleh menjadi inklusif apabila ada peluang keuntungan. Penceramah memberi contoh muzik jazz dan Michael Jackson, juga ekonomi hijab. Yang tidak diterima ialah gerakan yang anti-hegemoni dan anti-kapitalis, lalu dilabel ekstremis. Peraturannya mudah: kamu boleh masuk ke dalam sistem, tetapi mesti patuh.' },
+      { j: 'teks', t: "Penceramah memetik satu laporan zaman Covid: Indonesia, Thailand dan Filipina mempunyai kadar penggunaan media sosial tertinggi di dunia, lebih 8 jam sehari, berbanding Jepun sekitar 1 jam 40 minit." },
+      { j: 'teks', t: "Beliau juga mengingati editorial Financial Times sekitar 1996 yang menyambut Taliban menawan Kabul kerana ia membuka jalan untuk saluran paip minyak dan gas." },
+      { j: 'teks', t: "Penurunan taraf Indonesia oleh MSCI pula, menurut beliau, ialah amaran politik terhadap reformasi kerajaan. Dahulu kuasa besar memakai meriam; kini sistem penarafan sudah cukup." }
     ]},
     { s: 'Kebergantungan dan keretakan masyarakat', label: 'Bahagian 7', mula: 3600, blok: [
       { j: 'teks', t: 'Negara seperti Malaysia bergantung kepada pihak lain untuk payung keselamatan dan senjata, jadi ia boleh dikenakan sekatan atau dikambinghitamkan. Penceramah bimbang krisis ekonomi akan memecahkan keretakan sedia ada dalam masyarakat, seperti yang berlaku di Indonesia pada 1998.' },
@@ -535,13 +543,16 @@ EPISOD.push({
     { s: 'Garis merah dan persaingan kuasa kapitalis', label: 'Bahagian 8', mula: 4260, blok: [
       { j: 'teks', t: 'Menurut penceramah, ada "garis merah" bagi pemimpin Dunia Ketiga. Sesetengah musuh dikekalkan kerana berguna, dan seseorang menjadi sasaran apabila kepentingan ekonomi menjadi lebih penting. Konflik yang dilaporkan media antarabangsa mungkin seperti wayang kulit: ada kepentingan lain di belakangnya.' },
       { j: 'teks', t: 'Beliau tidak bersetuju bahawa dunia kembali kepada Perang Dingin. China dan Rusia kini mengamalkan kapitalisme (China dalam bentuk kapitalisme autoritarian), jadi persaingan hari ini ialah antara kuasa-kuasa kapitalis seperti abad ke-19.' },
-      { j: 'teks', t: 'Pelaburan tidak percuma; ia datang dengan syarat. Kerana itu kita perlu memahami apa yang sebenarnya berlaku apabila modal asing masuk. Penceramah juga menggalakkan kita belajar tentang Afrika terus daripada orang Afrika, bukan melalui saluran berita Barat.' }
+      { j: 'teks', t: 'Pelaburan tidak percuma; ia datang dengan syarat. Kerana itu kita perlu memahami apa yang sebenarnya berlaku apabila modal asing masuk. Penceramah juga menggalakkan kita belajar tentang Afrika terus daripada orang Afrika, bukan melalui saluran berita Barat.' },
+      { j: 'teks', t: "Penceramah menceritakan African Oil Policy Initiative Group (AOPIG), yang ditubuhkan di Washington selepas Perang Teluk untuk menguasai minyak Afrika, dengan kepentingan Israel di belakangnya." },
+      { j: 'teks', t: "Menurut beliau, minyak dan gas sesetengah negara Afrika telah dijual untuk tempoh 75 tahun ketika ia masih di dalam bumi." }
     ]},
     { s: 'Pembodohan masyarakat dan agama yang dijinakkan', label: 'Bahagian 9', mula: 5040, blok: [
       { j: 'teks', t: 'Penceramah memetik Dietrich Bonhoeffer tentang kebodohan: individu yang jahil tidak berdosa, tetapi masyarakat boleh diperbodohkan secara sengaja. Dahulu melalui propaganda, kini melalui hiburan. Media sosial, kata beliau, ialah senjata yang memudahkan masyarakat dilaga-lagakan.' },
       { j: 'teks', t: 'Melawan dengan meniru tidak mengubah apa-apa. Penceramah memberi contoh "Mecca Cola" dan "Zam Zam Cola": hujungnya tetap cola. Yang kurang ialah solidariti dengan rakyat biasa di Barat yang juga ditindas oleh sistem yang sama. Jawapannya ialah meningkatkan kefahaman rasional, sama seperti melawan kepercayaan karut dengan sains.' },
       { j: 'teks', t: 'Kekayaan itu relatif dan ditentukan masyarakat. Seorang diri di pulau dengan 500 tan emas tidak kaya dan tidak miskin. Konsep asas seperti kuasa, kekayaan dan rasuah boleh diajar dengan mudah di surau dan madrasah. Penceramah juga menyebut bahawa wacana kuasa dan hegemoni sudah ada dalam tradisi Islam: "dari Ibn Khaldun ke Gramsci tidak jauh".' },
-      { j: 'teks', t: 'Legasi kolonial: politik, ekonomi dan keselamatan dipegang penjajah, manakala agama dan adat diserahkan kepada raja-raja. Akibatnya, menurut penceramah, agama dikecilkan kepada ritual dan dipisahkan daripada politik. Pengaruh luar pula tidak perlu hadir secara fizikal; ia boleh dikawal dari jauh, seperti Mesir di bawah Inggeris.' }
+      { j: 'teks', t: 'Legasi kolonial: politik, ekonomi dan keselamatan dipegang penjajah, manakala agama dan adat diserahkan kepada raja-raja. Akibatnya, menurut penceramah, agama dikecilkan kepada ritual dan dipisahkan daripada politik. Pengaruh luar pula tidak perlu hadir secara fizikal; ia boleh dikawal dari jauh, seperti Mesir di bawah Inggeris.' },
+      { j: 'teks', t: "Banyak konflik di Afrika, kata penceramah, dirancang dari luar untuk mengekalkan kelemahan negara-negara Afrika." }
     ]},
     { s: 'Gen Z, negara broker dan kemandirian sains', label: 'Bahagian 10', mula: 6000, blok: [
       { j: 'teks', t: 'Penceramah mencadangkan isu Palestin dilihat sebagai isu kemanusiaan dan isu Dunia Ketiga, bukan semata-mata isu agama, supaya solidariti lebih luas.' },
@@ -551,21 +562,22 @@ EPISOD.push({
     ]},
     { s: 'Penutup moderator: Surah al-Kahfi dan wang', label: 'Penutup', mula: 7560, blok: [
       { j: 'teks', t: 'Pandangan moderator: wacana agama hari ini masih memakai kerangka zaman kolonial, sehingga isu kuasa dan penjajahan jarang dibincangkan di surau.' },
-      { j: 'teks', t: 'Moderator melihat Surah al-Kahfi sebagai surah untuk berdepan zaman fitnah. Empat kisahnya menyentuh soal harta: Ashabul Kahfi membawa bekal wang, pemilik dua kebun (monopoli harta), Nabi Musa dan Khidir (upah), dan Zulqarnain (cukai). Menurutnya, wang menentukan sama ada kita dijajah atau berdikari.' }
+      { j: 'teks', t: 'Moderator melihat Surah al-Kahfi sebagai surah untuk berdepan zaman fitnah. Empat kisahnya menyentuh soal harta: Ashabul Kahfi membawa bekal wang, pemilik dua kebun (monopoli harta), Nabi Musa dan Khidir (upah), dan Zulqarnain (cukai). Menurutnya, wang menentukan sama ada kita dijajah atau berdikari.' },
+      { j: 'teks', t: "Moderator juga menyatakan bahawa kerangka fardu ain yang sempit dan istilah \"lingkaran syaitan\" berasal daripada Snouck Hurgronje, yang menyamar sebagai kiai untuk melemahkan penentangan Aceh terhadap Belanda." }
     ]}
   ],
   dakwaan: [
-    { t: 'Nvidia mempunyai kaitan dengan Israel, dan pelaburan Nvidia di Malaysia membawa pengaruh itu masuk ke universiti, teknologi dan ekonomi.', j: 'dibahas', mula: 120 },
-    { t: 'Lobi normalisasi dengan Israel di Indonesia datang daripada lobi perniagaan; Indonesia antara pengeksport minyak sawit terbesar ke Israel.', j: 'dibahas', mula: 120 },
-    { t: 'Kira-kira lapan tahun lalu Netanyahu memaparkan peta dan berkata "we are colouring the map blue".', j: 'dibahas', mula: 480, oleh: 'moderator' },
-    { t: 'Pemimpin anti-kolonial tahun 1960-an seperti Lumumba dan Nkrumah dibunuh atau digulingkan.', j: 'dibahas', mula: 780 },
-    { t: 'Indonesia, Thailand dan Filipina mempunyai kadar penggunaan media sosial tertinggi di dunia (lebih 8 jam sehari), berbanding Jepun sekitar 1 jam 40 minit.', j: 'dibahas', mula: 2780 },
-    { t: 'Sekitar 1996, editorial Financial Times menyambut Taliban menawan Kabul kerana ia membuka jalan untuk saluran paip minyak dan gas.', j: 'dibahas', mula: 3480 },
-    { t: 'Penurunan taraf Indonesia oleh MSCI ialah amaran politik terhadap reformasi kerajaan.', j: 'pendapat', mula: 3540 },
-    { t: 'African Oil Policy Initiative Group (AOPIG) ditubuhkan di Washington selepas Perang Teluk untuk menguasai minyak Afrika, dengan kepentingan Israel di belakangnya.', j: 'dibahas', mula: 4740 },
-    { t: 'Minyak dan gas sesetengah negara Afrika telah dijual untuk tempoh 75 tahun.', j: 'dibahas', mula: 4900 },
-    { t: 'Banyak konflik di Afrika dirancang dari luar untuk mengekalkan kelemahan negara-negara Afrika.', j: 'pendapat', mula: 5160 },
-    { t: 'Kerangka fardu ain yang sempit dan istilah "lingkaran syaitan" berasal daripada Snouck Hurgronje.', j: 'dibahas', mula: 7560, oleh: 'moderator' }
+    { t: 'Nvidia mempunyai kaitan dengan Israel, dan pelaburan Nvidia di Malaysia membawa pengaruh itu masuk ke universiti, teknologi dan ekonomi.', j: 'tafsiran', mula: 120 },
+    { t: 'Lobi normalisasi dengan Israel di Indonesia datang daripada lobi perniagaan; Indonesia antara pengeksport minyak sawit terbesar ke Israel.', j: 'tafsiran', mula: 120 },
+    { t: 'Kira-kira lapan tahun lalu Netanyahu memaparkan peta dan berkata "we are colouring the map blue".', j: 'tafsiran', mula: 480, oleh: 'moderator' },
+    { t: 'Pemimpin anti-kolonial tahun 1960-an seperti Lumumba dan Nkrumah dibunuh atau digulingkan.', j: 'tafsiran', mula: 780 },
+    { t: 'Indonesia, Thailand dan Filipina mempunyai kadar penggunaan media sosial tertinggi di dunia (lebih 8 jam sehari), berbanding Jepun sekitar 1 jam 40 minit.', j: 'tafsiran', mula: 2780 },
+    { t: 'Sekitar 1996, editorial Financial Times menyambut Taliban menawan Kabul kerana ia membuka jalan untuk saluran paip minyak dan gas.', j: 'tafsiran', mula: 3480 },
+    { t: 'Penurunan taraf Indonesia oleh MSCI ialah amaran politik terhadap reformasi kerajaan.', j: 'tafsiran', mula: 3540 },
+    { t: 'African Oil Policy Initiative Group (AOPIG) ditubuhkan di Washington selepas Perang Teluk untuk menguasai minyak Afrika, dengan kepentingan Israel di belakangnya.', j: 'tafsiran', mula: 4740 },
+    { t: 'Minyak dan gas sesetengah negara Afrika telah dijual untuk tempoh 75 tahun.', j: 'tafsiran', mula: 4900 },
+    { t: 'Banyak konflik di Afrika dirancang dari luar untuk mengekalkan kelemahan negara-negara Afrika.', j: 'tafsiran', mula: 5160 },
+    { t: 'Kerangka fardu ain yang sempit dan istilah "lingkaran syaitan" berasal daripada Snouck Hurgronje.', j: 'tafsiran', mula: 7560, oleh: 'moderator' }
   ],
   bacaan: [
     'Yanis Varoufakis, Technofeudalism (dan syarahan dalam talian beliau)',
