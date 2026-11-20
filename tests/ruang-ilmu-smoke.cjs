@@ -257,6 +257,25 @@ const shots = process.env.SHOTS || '';
     assert.deepEqual(errors, [], 'Tiada ralat konsol (jam)');
     await ctx.close();
   }
+  // Laras bahasa (GAYA.md): matan, terjemahan dan rujukan tidak berubah; tiada pola terlarang
+  {
+    const laras = require('./ruang-ilmu-laras.cjs');
+    const ctx = await browser.newContext({ serviceWorkers: 'block', timezoneId: 'Asia/Kuala_Lumpur' });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const page = await ctx.newPage();
+    await page.clock.setFixedTime(new Date('2026-11-27T09:00:00+08:00'));
+    await page.goto(origin); await page.waitForTimeout(300);
+    const { dilindungi, teks } = await page.evaluate(laras.kumpul);
+    const simpanan = JSON.parse(require('node:fs').readFileSync(laras.FAIL_CAP_JARI, 'utf8'));
+    const kini = laras.capJari(dilindungi);
+    for (const [k, v] of Object.entries(simpanan)) assert.equal(kini[k], v, `Matan, terjemahan atau rujukan berubah dalam ${k}`);
+    // Bahan yang belum disunting dalam pelan laras (PLAN.md tugasan 14-17). Senarai ini mesti kosong pada akhirnya.
+    const BELUM_DISUNTING = ['sifat-malu', 'kehormatan-diri', 'sombong-menolak-kebenaran', 'mengulangi-alasan-orang-terdahulu', 'benci-kepada-kebenaran'];
+    const isu = laras.semakTeks(teks.filter(([k]) => !BELUM_DISUNTING.includes(k)));
+    assert.deepEqual(isu, [], 'Laras bahasa ikut GAYA.md');
+    await ctx.close();
+  }
+
   // Mod gelap, keadaan kosong (pengguna baharu) dan service worker
   {
     const ctx = await browser.newContext({ timezoneId: 'Asia/Kuala_Lumpur', colorScheme: 'dark', viewport: { width: 400, height: 860 } });
