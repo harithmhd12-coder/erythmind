@@ -607,3 +607,9 @@ a.siri-kad:hover { border-color: var(--dakwat); }
 .prosa-buku .soal { scroll-margin-top: 90px; }
 .prosa-buku .huraian { white-space: pre-line; overflow-wrap: anywhere; }
 .halaman-buku { justify-self: start; margin-block-start: 8px; }
+
+.istilah-ekonomi { color: var(--dakwat); background: transparent; font-weight: 700; text-decoration: underline; text-decoration-color: var(--merah); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.huraian sup .pautan { padding: 0 3px; font-size: .75rem; }
+.nota-istilah { border-top: 1px solid var(--garis); padding-block-start: 12px; font-size: .9rem; }
+.nota-istilah h3 { font-size: 1rem; }
+.nota-istilah li + li { margin-block-start: 8px; }

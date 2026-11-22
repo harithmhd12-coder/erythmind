@@ -1012,6 +1012,8 @@ V.s = slug => {
   <section class="seksyen">${bahan.length ? `<ul class="senarai-baris">${bahan.map((a, i) => `<li><div class="baris"><span class="no">${String(i + 1).padStart(2, '0')}</span><div class="tajuk-baris"><a href="${pautanBahan(a)}">${esc(a.tajuk)}</a><span class="meta">${a.episod ? `<span>${a.episod.soalan.length} ${unitSiri(s.slug)[1]}</span>${a.episod.julat ? `<span>${esc(a.episod.julat)}</span>` : ''}${a.episod.tarikh ? `<span>${tarikh(a.terbit)}</span>` : ''}` : `<span>${minit(a).baca} min baca</span>`}</span></div>${selesai(a.slug) ? '<span class="cip selesai">Selesai</span>' : a === lepas ? '<span class="cip merah">Seterusnya</span>' : '<span class="cip">Belum</span>'}</div></li>`).join('')}</ul>` : '<p class="kosong">Episod sedang disediakan.</p>'}</section></div>`;
 };
 const blokEpisod = b => {
+  if (b.j === 'penanda') return `<span class="kecil-nota halaman-buku">${esc(b.t)}</span>`;
+  if (b.j === 'subtajuk') return `<h3>${esc(b.t)}</h3>`;
   if (b.j === 'halaman') return `<a class="pautan kecil-nota halaman-buku" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.t)} · buka imbasan asal">${esc(b.t)} ↗</a>`;
   if (b.j === 'teks') return `<p class="huraian">${esc(b.t)}</p>`;
   const label = b.j === 'hadis' ? '<span class="eyebrow">Hadis</span>' : b.j === 'petikan' ? '<span class="eyebrow">Petikan kitab</span>' : '';
@@ -1027,6 +1029,35 @@ function tambahanLuar(e) {
   return `${e.disemak ? '' : `<section class="kotak dakwaan-luar" aria-label="Dakwaan dalam rakaman yang belum disemak"><span class="eyebrow">Dakwaan dalam rakaman yang belum disemak</span><p class="kecil-nota">Dakwaan ini disebut dalam rakaman tanpa sumber. Ruang Ilmu belum menyemaknya. Jangan kongsi sebagai fakta.</p>
     <ol class="dakwaan">${(e.dakwaan || []).map(d => `<li><span class="cip dakwaan-${esc(d.j)}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> <b>${d.oleh === 'moderator' ? 'Moderator' : 'Penceramah'}:</b> ${esc(d.t)} <a class="pautan kecil-nota" href="${esc(pautanMinit(e.luar, d.mula))}" target="_blank" rel="noopener noreferrer">minit ${minitRakaman(d.mula)} ↗</a></li>`).join('')}</ol></section>`}
   ${(e.bacaan || []).length ? `<section class="kotak" aria-label="Bacaan yang disyorkan penceramah"><span class="eyebrow">Bacaan yang disyorkan penceramah</span><ul class="bacaan-luar">${e.bacaan.map(b => `<li>${esc(b)}</li>`).join('')}</ul></section>` : ''}`;
+}
+function paparanBlokBacaan(blok, istilah, bab) {
+  if (!istilah) return blok.map(blokEpisod).join('');
+  const pola = Object.keys(istilah).sort((a, b) => b.length - a.length)
+    .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const padanan = new RegExp(`\\b(${pola})\\b`, 'gi');
+  const istilahNota = new Map();
+  const isi = blok.map(b => {
+    if (b.j !== 'teks') return blokEpisod(b);
+    let selepas = 0;
+    let teks = '';
+    for (const jumpa of b.t.matchAll(padanan)) {
+      const nama = jumpa[0].toLowerCase();
+      if (istilahNota.has(nama)) continue;
+      const no = istilahNota.size + 1;
+      istilahNota.set(nama, no);
+      const id = `nota-istilah-${bab}-${no}`;
+      teks += esc(b.t.slice(selepas, jumpa.index));
+      teks += `<mark class="istilah-ekonomi">${esc(jumpa[0])}</mark><sup><button class="pautan" type="button" data-act="nota-istilah" data-sasaran="${id}" id="rujuk-${id}" aria-label="Nota kaki ${no}: ${esc(jumpa[0])}">${no}</button></sup>`;
+      selepas = jumpa.index + jumpa[0].length;
+    }
+    return `<p class="huraian">${teks}${esc(b.t.slice(selepas))}</p>`;
+  }).join('');
+  if (!istilahNota.size) return isi;
+  const nota = [...istilahNota].map(([nama, no]) => {
+    const id = `nota-istilah-${bab}-${no}`;
+    return `<li id="${id}" tabindex="-1"><b>${esc(nama)}</b> — ${esc(istilah[nama])} <button class="pautan" type="button" data-act="nota-istilah" data-sasaran="rujuk-${id}" aria-label="Kembali ke istilah ${esc(nama)}">↩</button></li>`;
+  }).join('');
+  return `${isi}<aside class="nota-istilah" aria-label="Nota kaki istilah ekonomi"><h3>Nota kaki istilah ekonomi</h3><ol>${nota}</ol></aside>`;
 }
 function paparanEpisod(a) {
   const e = a.episod; const s = SIRI_OF[e.siri]; const m = minit(a); const [unit, bhg] = unitSiri(e.siri); const unitKecil = unit.toLowerCase();
@@ -1047,8 +1078,8 @@ function paparanEpisod(a) {
       <button class="btn-tindak" data-act="kongsi" aria-label="Salin pautan">${IKON.kongsi}</button>
       <button class="btn-tindak" data-act="tetapan-baca" aria-label="Tetapan bacaan" aria-expanded="false">${IKON.aa}</button>
     </div>
-    ${e.isiBuku ? `<p class="kecil-nota">Teks bacaan berdasarkan imbasan edisi 1989 dengan suntingan laras bahasa. Pilih nombor halaman untuk menyemak imbasan asal.</p><details class="kotak isi-buku"><summary>Isi kandungan buku</summary><ol>${e.soalan.map((q, n) => `<li><a href="#e.${a.slug}" data-act="bab" data-bab="${n}">${esc(q.s)}</a></li>`).join('')}</ol></details>` : ''}
-    <div id="prosa" class="soal-jawab${e.isiBuku ? ' prosa-buku' : ''}">${e.soalan.map((q, n) => `<section class="soalan-ep" aria-labelledby="bab-${n}"><span class="no-soal">${esc(q.label || `Soalan ${n + 1}`)}</span><h2 id="bab-${n}" class="soal">${esc(q.s)}</h2>${e.luar && q.mula != null ? `<a class="pautan kecil-nota tonton" href="${esc(pautanMinit(e.luar, q.mula))}" target="_blank" rel="noopener noreferrer">Tonton bahagian ini (minit ${minitRakaman(q.mula)}) ↗</a>` : ''}${q.blok.map(blokEpisod).join('')}</section>`).join('')}</div>
+    ${e.isiBuku ? `<p class="kecil-nota">${esc(e.notaPenyunting || 'Teks bacaan berdasarkan imbasan edisi 1989 dengan suntingan laras bahasa. Pilih nombor halaman untuk menyemak imbasan asal.')}</p><details class="kotak isi-buku"><summary>Isi kandungan buku</summary><ol>${e.soalan.map((q, n) => `<li><a href="#e.${a.slug}" data-act="bab" data-bab="${n}">${esc(q.s)}</a></li>`).join('')}</ol></details>` : ''}
+    <div id="prosa" class="soal-jawab${e.isiBuku ? ' prosa-buku' : ''}">${e.soalan.map((q, n) => `<section class="soalan-ep" aria-labelledby="bab-${n}"><span class="no-soal">${esc(q.label || `Soalan ${n + 1}`)}</span><h2 id="bab-${n}" class="soal">${esc(q.s)}</h2>${e.luar && q.mula != null ? `<a class="pautan kecil-nota tonton" href="${esc(pautanMinit(e.luar, q.mula))}" target="_blank" rel="noopener noreferrer">Tonton bahagian ini (minit ${minitRakaman(q.mula)}) ↗</a>` : ''}${paparanBlokBacaan(q.blok, e.istilah, n)}</section>`).join('')}</div>
     ${tambahanLuar(e)}
     <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center">
       <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem">${selesai(a.slug) ? `${unit} ini telah kau selesaikan.` : 'Sudah faham?'}</b><span class="kecil-nota">${selesai(a.slug) ? `Ditanda pada ${tarikh(S.selesai[a.slug])}.` : 'Tanda selesai untuk mengemas kini kemajuan siri.'}</span></div>
@@ -1339,6 +1370,12 @@ A['laporan-status'] = el => { const l = S.laporan.find(x => x.id === el.dataset.
 A['laporan-betulkan'] = el => {
   const l = S.laporan.find(x => x.id === el.dataset.id); if (!l) return; const a = cari(l.slug);
   bukaModal('Terbitkan pembetulan', `<form class="borang-grid" data-borang="betul" data-id="${l.id}"><p class="kecil-nota">Untuk: <b>${esc(a?.tajuk || l.slug)}</b>. Laporan pembaca: "${esc(l.teks)}"</p><div class="medan"><label for="bTeks">Apa yang dibetulkan (dipaparkan di atas artikel dan kepada pembaca asal)</label><textarea id="bTeks" rows="3" required placeholder="Contoh: Tarikh terbitan kajian dibetulkan daripada 1948 kepada 1949."></textarea></div><button class="btn" type="submit">Terbitkan pembetulan</button></form>`);
+};
+A['nota-istilah'] = el => {
+  const sasaran = document.getElementById(el.dataset.sasaran);
+  if (!sasaran) return;
+  sasaran.focus({ preventScroll: true });
+  sasaran.scrollIntoView({ block: 'center' });
 };
 A.bab = el => { const h = $('#bab-' + el.dataset.bab); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 A['draf-baru'] = () => bukaModal('Draf baharu', borangDraf(null));
