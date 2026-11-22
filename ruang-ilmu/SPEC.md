@@ -121,3 +121,44 @@ KARUSEL = { [slug]: { tajuk, slaid: [{ label, tajuk, ar?, maksud?, ruj?, isi?, n
 17. Ujian laras automatik: tiada pola terlarang (*telahpun*, *adalah merupakan*, *adalah dengan*, *karena*, *online*, *syubhah*, *Al-Quran* di tengah ayat, *AS* sebagai singkatan) dalam teks yang dipaparkan daripada `app.js`, `data.js` dan `siri.js`.
 18. Matan Arab, terjemahan ayat/hadis dan rujukan sama seperti sebelum suntingan (ujian membandingkan cap jari setiap blok `ayat`/`hadis`/`petikan`).
 19. Semua ujian sedia ada lulus; carian "benci kebenaran" dan "sifat malu" masih menemui episod.
+
+---
+
+# Tambahan: Mod fokus bacaan (palet kertas hangat, tema Sepia/Malam, rehat mata)
+
+## Matlamat
+- Kurangkan keletihan mata dan gangguan untuk sesi bacaan panjang (30 minit ke atas).
+- Kejujuran: tiada warna yang menghalang rasa mengantuk. Yang dibina ialah kontras selesa, latar tidak silau, tipografi lapang, gangguan dikurangkan, dan peringatan rehat mata (peraturan 20-20-20).
+
+## Keputusan pemilik
+- Palet **Kertas hangat** menggantikan "Modern Clean & Academic" untuk tema terang; mod gelap menjadi **Gelap hangat**.
+- Tema baharu dalam tetapan Aa dan Profil: **Sepia** dan **Malam** (gelap, kontras lebih rendah, tiada aksen biru).
+- **Peringatan rehat mata setiap 20 minit** bacaan aktif, boleh dimatikan dalam Profil.
+- Skop: seluruh app, dengan tipografi bacaan dan pengepala yang menyorok pada halaman artikel dan episod.
+
+## Token warna
+| Tema | Latar | Permukaan | Teks | Kelabu | Aksen | Sorotan |
+|---|---|---|---|---|---|---|
+| Terang (kertas hangat) | #FAF7F0 | #F2EDE2 | #2A2622 | #6B635A | #2F5D8A | #F3E3B5 |
+| Sepia | #F4ECD8 | #EADFC6 | #3B2F22 | #6E5E4B | #7A4E2D | #E8D59E |
+| Gelap (hangat) | #1C1B19 | #252320 | #E6E1D8 | #A49D92 | #8FB4D9 | #4A4128 |
+| Malam | #14110E | #1D1915 | #CDBFA8 | #8E8270 | #D4A373 | #3D3222 |
+
+Jalur gelap Sip 'n Go kekal sebagai identiti jenama.
+
+## Tipografi dan susun atur bacaan
+- Prosa dan huraian episod: jarak baris 1.78, lajur maksimum 36rem (sekitar 65 aksara).
+- Pengepala atas menyorok apabila menatal ke bawah pada halaman artikel/episod, dan muncul semula apabila menatal ke atas.
+- Animasi dihormati mengikut `prefers-reduced-motion`.
+
+## Rehat mata
+- Masa bacaan aktif dikira hanya apabila tab kelihatan, pengguna berada di halaman artikel, episod atau siri, dan ada aktiviti dalam 60 saat terakhir.
+- Selepas 20 minit, jalur kecil (`role="status"`) muncul: "Rehatkan mata 20 saat. Pandang sesuatu sejauh 6 meter." dengan butang "Baik". Jalur tidak menghalang bacaan.
+- Tetapan "Peringatan rehat mata" dalam Profil (lalai: hidup), disimpan dalam `S.tetapan.rehatMata`.
+
+## Kriteria penerimaan
+20. Kontras teks utama terhadap latar: sekurang-kurangnya 7:1 dalam keempat-empat tema; teks kelabu sekurang-kurangnya 4.5:1; teks utama tema terang tidak melebihi 16:1 (kurang silau berbanding hitam pada putih).
+21. Tetapan Aa dan Profil menawarkan Sistem, Terang, Sepia, Gelap dan Malam; pilihan kekal selepas muat semula; `meta theme-color` mengikut tema.
+22. Dengan `page.clock`, jalur rehat mata muncul selepas 20 minit bacaan aktif di halaman episod, hilang apabila "Baik" ditekan, dan tidak muncul jika tetapan dimatikan.
+23. Pengepala menyorok semasa menatal ke bawah pada halaman episod dan muncul semula apabila menatal ke atas.
+24. Tiada limpahan mendatar dan tiada ralat konsol dalam keempat-empat tema pada 400px dan 1366px.
