@@ -315,6 +315,34 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     await ctx.close();
   }
 
+  // Rehat mata setiap 20 minit bacaan aktif (Tugasan 21)
+  {
+    const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.clock.install({ time: new Date('2026-11-27T09:00:00+08:00') });
+    const baca = async minit => { for (let i = 0; i < minit; i++) { await page.mouse.move(100 + (i % 2) * 10, 300); await page.clock.runFor(60_000); } };
+    await page.goto(origin + '#e.benci-kepada-kebenaran'); await page.waitForTimeout(300);
+    await baca(19);
+    assert.equal(await page.locator('#rehatMata').count(), 0, 'Tiada peringatan sebelum 20 minit');
+    await baca(2);
+    assert.match(await page.locator('#rehatMata[role="status"]').innerText(), /Rehatkan mata 20 saat\.\s*Pandang sesuatu sejauh 6 meter\./, 'Peringatan muncul selepas 20 minit');
+    await tiadaLimpahanUntuk(page, 'rehat mata');
+    await page.click('[data-act="rehat-mata-tutup"]');
+    assert.equal(await page.locator('#rehatMata').count(), 0, 'Butang Baik menutup peringatan');
+    await page.clock.runFor(25 * 60_000);
+    assert.equal(await page.locator('#rehatMata').count(), 0, 'Tiada peringatan tanpa aktiviti membaca');
+    await page.goto(origin + '#profil'); await page.waitForTimeout(250);
+    await page.click('[data-act="suis"][data-k="rehatMata"]');
+    assert.equal(await page.locator('[data-act="suis"][data-k="rehatMata"]').getAttribute('aria-checked'), 'false', 'Tetapan rehat mata boleh dimatikan');
+    await page.goto(origin + '#e.benci-kepada-kebenaran'); await page.waitForTimeout(300);
+    await baca(21);
+    assert.equal(await page.locator('#rehatMata').count(), 0, 'Tiada peringatan apabila tetapan dimatikan');
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (rehat mata)');
+    await ctx.close();
+  }
+
   // Laras bahasa (GAYA.md): matan, terjemahan dan rujukan tidak berubah; tiada pola terlarang
   {
     const laras = require('./ruang-ilmu-laras.cjs');

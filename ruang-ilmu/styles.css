@@ -89,6 +89,15 @@ mark { background: linear-gradient(transparent 12%, var(--sorot) 12%, var(--soro
 /* Halaman bacaan: pengepala menyorok semasa menatal ke bawah supaya ruang teks lebih lapang, muncul semula apabila menatal ke atas. */
 body.kepala-sorok .kepala { transform: translateY(calc(-100% - env(safe-area-inset-top, 0px))); }
 @media (prefers-reduced-motion: reduce) { .kepala { transition: none; } }
+/* Jalur rehat mata: di atas tab bar telefon, tidak menutup teks lebih daripada perlu. */
+.rehat-mata { position: fixed; left: 12px; right: 12px; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); z-index: 70; max-width: 460px; margin: 0 auto;
+  display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--permukaan); color: var(--dakwat);
+  border: 1px solid var(--garis); box-shadow: 0 6px 20px rgba(0, 0, 0, .12); font-size: .92rem; line-height: 1.4; }
+.rehat-mata svg { width: 22px; height: 22px; flex: none; color: var(--merah); }
+.rehat-mata div { flex: 1; min-width: 0; }
+.rehat-mata .btn { flex: none; }
+.pemain:not([hidden]) ~ .rehat-mata { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 960px) { .rehat-mata { bottom: 24px; } .pemain:not([hidden]) ~ .rehat-mata { bottom: 100px; } }
 .kepala .bekas { display: flex; align-items: center; gap: 20px; min-height: 64px; }
 .jenama { display: flex; align-items: baseline; gap: 10px; text-decoration: none; flex-shrink: 0; }
 .jenama b { font-family: var(--serif); font-weight: 600; font-size: 1.55rem; letter-spacing: -.01em; }
