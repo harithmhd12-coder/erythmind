@@ -65,3 +65,5 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 ### Susulan mod fokus bacaan
 - Dideploy melalui PR #20 (23 Nov 2026), cache `ruang-ilmu-12`. Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
 - Kosmetik: dalam grid tema (Aa), sel kosong selepas "Malam" berwarna garis; boleh diisi atau disusun 5 lajur di skrin lebar.
+
+- Tajuk utama "Hidup akhir zaman keras, hadapi zaman fitnah dengan Ilmu & Iman" dideploy melalui PR #21 (cache `ruang-ilmu-13`); disahkan di laman sebenar.
