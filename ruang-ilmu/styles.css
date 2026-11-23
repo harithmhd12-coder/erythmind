@@ -1,27 +1,28 @@
 /* Ruang Ilmu · gaya.
-   Arah: palet "Modern Clean & Academic". Latar putih keabu-abuan yang sejuk, teks slate gelap yang tajam,
-   dan biru royal sebagai satu-satunya warna aksen untuk pautan, butang dan kemajuan. Sorotan teks
-   menggunakan biru muda. Kopi Sip 'n Go mengekalkan jalur gelap jenamanya supaya jualan terasing daripada bacaan.
-   Susun atur: lajur bacaan ~66 aksara, grid kandungan yang runtuh ke satu lajur di telefon. */
+   Arah: mod fokus bacaan untuk sesi panjang. Latar "kertas hangat" (putih gading, bukan putih kebiruan),
+   teks hitam kecoklatan yang tidak pekat, dan satu aksen biru tua yang redup. Kontras teks utama 7:1 ke atas
+   tetapi tidak setajam hitam pada putih, supaya kurang silau. Tema: Terang (kertas hangat), Sepia, Gelap (hangat)
+   dan Malam (kontras lebih rendah, tiada aksen biru). Kopi Sip 'n Go mengekalkan jalur gelap jenamanya.
+   Susun atur: lajur bacaan ~65 aksara, grid kandungan yang runtuh ke satu lajur di telefon. */
 :root {
-  --kertas: #F8FAFC;
-  --permukaan: #F1F5F9;
-  --dakwat: #0F172A;
-  --kelabu: #475569;
-  --garis: #E2E8F0;
-  --merah: #2563EB;
-  --merah-lembut: #DBEAFE;
-  --sorot: #DBEAFE;
-  --sorot-dakwat: #0F172A;
-  --pentas: #0F172A;
-  --pentas-dakwat: #F8FAFC;
-  --pentas-kelabu: #94A3B8;
-  --pentas-aksen: #60A5FA;
+  --kertas: #FAF7F0;
+  --permukaan: #F2EDE2;
+  --dakwat: #2A2622;
+  --kelabu: #6B635A;
+  --garis: #E5DED1;
+  --merah: #2F5D8A;
+  --merah-lembut: #E3ECF4;
+  --sorot: #F3E3B5;
+  --sorot-dakwat: #2A2622;
+  --pentas: #1F1B17;
+  --pentas-dakwat: #F5EFE6;
+  --pentas-kelabu: #A89F92;
+  --pentas-aksen: #8FB4D9;
   --jalur: #17110D;
   --jalur-dakwat: #F3EBDF;
   --jalur-kelabu: #b5a998;
   --jalur-garis: #33271e;
-  --baik: #15803D;
+  --baik: #2F7D4F;
   --sng-latte: #D9A66B;
   --sng-krim: #EFE6D8;
   --sng-ceri: #C9452F;
@@ -29,24 +30,37 @@
   --sans: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --fs-bacaan: 1.2rem;
+  --lh-bacaan: 1.78;
   --lebar: 1180px;
-  --lajur: 40rem;
+  --lajur: 36rem;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --kertas: #0B1120; --permukaan: #111A2E; --dakwat: #E2E8F0; --kelabu: #94A3B8; --garis: #1E293B;
-    --merah: #60A5FA; --merah-lembut: #172554; --sorot: #1E3A8A; --sorot-dakwat: #F8FAFC;
-    --pentas: #020617; --pentas-dakwat: #F8FAFC; --pentas-kelabu: #94A3B8; --pentas-aksen: #60A5FA;
-    --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #4ADE80;
+  :root:not([data-theme="light"]):not([data-theme="sepia"]):not([data-theme="malam"]) {
+    --kertas: #1C1B19; --permukaan: #252320; --dakwat: #E6E1D8; --kelabu: #A49D92; --garis: #34312D;
+    --merah: #8FB4D9; --merah-lembut: #22303D; --sorot: #4A4128; --sorot-dakwat: #F2ECE2;
+    --pentas: #141311; --pentas-dakwat: #F2ECE2; --pentas-kelabu: #A49D92; --pentas-aksen: #8FB4D9;
+    --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #7BC896;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --kertas: #0B1120; --permukaan: #111A2E; --dakwat: #E2E8F0; --kelabu: #94A3B8; --garis: #1E293B;
-  --merah: #60A5FA; --merah-lembut: #172554; --sorot: #1E3A8A; --sorot-dakwat: #F8FAFC;
-  --pentas: #020617; --pentas-dakwat: #F8FAFC; --pentas-kelabu: #94A3B8; --pentas-aksen: #60A5FA;
-  --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #4ADE80;
+  --kertas: #1C1B19; --permukaan: #252320; --dakwat: #E6E1D8; --kelabu: #A49D92; --garis: #34312D;
+  --merah: #8FB4D9; --merah-lembut: #22303D; --sorot: #4A4128; --sorot-dakwat: #F2ECE2;
+  --pentas: #141311; --pentas-dakwat: #F2ECE2; --pentas-kelabu: #A49D92; --pentas-aksen: #8FB4D9;
+  --jalur: #0c0a08; --jalur-dakwat: #f3ece2; --jalur-kelabu: #b0a291; --jalur-garis: #2b221c; --baik: #7BC896;
+  color-scheme: dark;
+}
+:root[data-theme="sepia"] {
+  --kertas: #F4ECD8; --permukaan: #EADFC6; --dakwat: #3B2F22; --kelabu: #6E5E4B; --garis: #DCCFB2;
+  --merah: #7A4E2D; --merah-lembut: #EADBC0; --sorot: #E8D59E; --sorot-dakwat: #3B2F22; --baik: #4F6B2F;
+  color-scheme: light;
+}
+:root[data-theme="malam"] {
+  --kertas: #14110E; --permukaan: #1D1915; --dakwat: #CDBFA8; --kelabu: #8E8270; --garis: #2B251F;
+  --merah: #D4A373; --merah-lembut: #2E2418; --sorot: #3D3222; --sorot-dakwat: #E6D8C0;
+  --pentas: #0F0D0B; --pentas-dakwat: #E6D8C0; --pentas-kelabu: #8E8270; --pentas-aksen: #D4A373;
+  --jalur: #0c0a08; --jalur-dakwat: #e6d8c0; --jalur-kelabu: #9c8d78; --jalur-garis: #2b221c; --baik: #A8B87A;
   color-scheme: dark;
 }
 
@@ -306,6 +320,8 @@ textarea:focus, .medan input:focus, .medan select:focus { border-color: var(--da
 .segmen { display: flex; border: 1px solid var(--garis); border-radius: 6px; overflow: hidden; }
 .segmen button { flex: 1; border: 0; background: var(--kertas); padding: 8px; font-size: .85rem; }
 .segmen button + button { border-left: 1px solid var(--garis); }
+.segmen[aria-label="Tema"] { display: grid; grid-template-columns: repeat(auto-fit, minmax(4.4rem, 1fr)); gap: 1px; background: var(--garis); }
+.segmen[aria-label="Tema"] button + button { border-left: 0; }
 .segmen button[aria-pressed="true"] { background: var(--dakwat); color: var(--kertas); }
 
 /* ---------- Pemain visual (Lihat) ---------- */

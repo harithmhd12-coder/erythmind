@@ -865,7 +865,7 @@ V.profil = () => {
   ${S.pesanan.length ? `<section class="seksyen">${kepalaSeksyen('Sip \'n Go', 'Pesanan kopi', '', '<a class="pautan" href="#troli">Troli</a>')}<ul class="senarai-baris">${S.pesanan.slice(0, 5).map(o => `<li><div class="baris"><span class="no">${tarikh(o.masa).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#o.${o.id}">${esc(o.id)}</a><span class="meta"><span>${rm(o.jumlah)} · dihantar ke WhatsApp</span></span></div><button class="btn kecil garis" data-act="pesan-semula" data-id="${o.id}">Order semula</button></div></li>`).join('')}</ul></section>` : ''}
 
   <section class="seksyen">${kepalaSeksyen('Tetapan', 'Pengalaman kau, peraturan kau', '')}<div class="tetapan-senarai">
-    <div class="tetapan-baris"><div><b>Tema</b><small>Ikut sistem, terang atau gelap.</small></div><div class="segmen" role="group" aria-label="Tema">${[['sistem', 'Sistem'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div></div>
+    <div class="tetapan-baris"><div><b>Tema</b><small>Sepia untuk bacaan siang yang panjang; Malam untuk bacaan sebelum tidur.</small></div><div class="segmen" role="group" aria-label="Tema">${TEMA.map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Saiz teks bacaan</b></div><div class="segmen" role="group" aria-label="Saiz teks">${['S', 'M', 'L', 'XL'].map((n, i) => `<button data-act="fon" data-v="${i}" aria-pressed="${S.tetapan.fon === i}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Kekerapan peringatan</b><small>Kau yang tentukan. Tiada peringatan bertubi-tubi.</small></div><div class="segmen" role="group" aria-label="Notifikasi">${[['tiada', 'Tiada'], ['mingguan', 'Mingguan'], ['harian', 'Harian']].map(([v, n]) => `<button data-act="notifikasi" data-v="${v}" aria-pressed="${S.tetapan.notifikasi === v}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Paparkan siri hari</b><small>Matikan jika siri hari membuatkan kau berasa tertekan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.siri}" data-act="suis" data-k="siri" aria-label="Paparkan siri hari"></button></div>
@@ -1265,8 +1265,13 @@ setInterval(() => {
 ['scroll', 'pointermove', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, () => { window.__gerak = Date.now(); }, { passive: true }));
 
 /* ================= Tema ================= */
+/* Tema: sistem ikut peranti; pilihan lain ditetapkan pada <html data-theme>. theme-color mengikut latar tema. */
+const TEMA = [['sistem', 'Sistem'], ['light', 'Terang'], ['sepia', 'Sepia'], ['dark', 'Gelap'], ['malam', 'Malam']];
+const WARNA_TEMA = { light: '#FAF7F0', sepia: '#F4ECD8', dark: '#1C1B19', malam: '#14110E' };
 function terapTetapan() {
+  if (!TEMA.some(([v]) => v === S.tetapan.tema)) S.tetapan.tema = 'sistem';
   const t = S.tetapan.tema; if (t === 'sistem') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+  $$('meta[name="theme-color"]').forEach(m => { m.dataset.asal ||= m.content; m.content = WARNA_TEMA[t] || m.dataset.asal; });
   document.documentElement.style.setProperty('--fs-bacaan', ['1.05rem', '1.2rem', '1.35rem', '1.5rem'][S.tetapan.fon] || '1.2rem');
 }
 
@@ -1302,7 +1307,7 @@ A['tetapan-baca'] = el => {
   const ada = $('.popover'); if (ada) { ada.remove(); el.setAttribute('aria-expanded', 'false'); return; }
   el.setAttribute('aria-expanded', 'true');
   const d = document.createElement('div'); d.className = 'popover'; d.style.right = '0'; d.style.top = '100%';
-  d.innerHTML = `<b>Tetapan bacaan</b><div class="segmen" role="group" aria-label="Saiz teks">${['S', 'M', 'L', 'XL'].map((n, i) => `<button data-act="fon" data-v="${i}" aria-pressed="${S.tetapan.fon === i}">${n}</button>`).join('')}</div><div class="segmen" role="group" aria-label="Tema">${[['sistem', 'Sistem'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div>`;
+  d.innerHTML = `<b>Tetapan bacaan</b><div class="segmen" role="group" aria-label="Saiz teks">${['S', 'M', 'L', 'XL'].map((n, i) => `<button data-act="fon" data-v="${i}" aria-pressed="${S.tetapan.fon === i}">${n}</button>`).join('')}</div><div class="segmen" role="group" aria-label="Tema">${TEMA.map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div>`;
   el.parentElement.appendChild(d);
 };
 A.fon = el => { S.tetapan.fon = +el.dataset.v; simpan(); terapTetapan(); $$('[data-act="fon"]').forEach(b => b.setAttribute('aria-pressed', b === el || +b.dataset.v === S.tetapan.fon)); };

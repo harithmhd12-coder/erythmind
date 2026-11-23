@@ -6,6 +6,8 @@ const { chromium } = require('playwright');
 const origin = (process.env.TEST_ORIGIN || 'http://127.0.0.1:8000') + '/ruang-ilmu/';
 const shots = process.env.SHOTS || '';
 
+const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, `Limpahan mendatar pada ${h}`);
+
 (async () => {
   const browser = await chromium.launch();
   for (const [nama, viewport] of [['tel', { width: 400, height: 860 }], ['desk', { width: 1366, height: 900 }]]) {
@@ -267,6 +269,42 @@ const shots = process.env.SHOTS || '';
     assert.deepEqual(errors, [], 'Tiada ralat konsol (jam)');
     await ctx.close();
   }
+  // Mod fokus bacaan: kontras tema dan pilihan tema (Tugasan 19)
+  {
+    const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    const rgb = s => s.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number);
+    const lum = c => { const [r, g, b] = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const kontras = (a, b) => { const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+    await page.goto(origin + '#e.benci-kepada-kebenaran'); await page.waitForTimeout(300);
+    for (const tema of ['light', 'sepia', 'dark', 'malam']) {
+      await page.evaluate(t => { const s = JSON.parse(localStorage.getItem('ruangilmu.v1') || '{}'); s.tetapan = Object.assign(s.tetapan || {}, { tema: t }); localStorage.setItem('ruangilmu.v1', JSON.stringify(s)); }, tema);
+      await page.reload(); await page.waitForTimeout(300);
+      assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), tema, `Tema ${tema} kekal selepas muat semula`);
+      const w = await page.evaluate(() => { const c = getComputedStyle(document.body); const k = document.createElement('span'); k.style.color = 'var(--kelabu)'; document.body.appendChild(k); const kel = getComputedStyle(k).color; k.remove();
+        return { latar: c.backgroundColor, teks: getComputedStyle(document.querySelector('.huraian')).color, kelabu: kel, meta: [...document.querySelectorAll('meta[name="theme-color"]')].map(m => m.content) }; });
+      const kt = kontras(w.teks, w.latar), kk = kontras(w.kelabu, w.latar);
+      assert.ok(kt >= 7, `Kontras teks tema ${tema} ${kt.toFixed(1)} >= 7`);
+      assert.ok(kk >= 4.5, `Kontras teks kelabu tema ${tema} ${kk.toFixed(1)} >= 4.5`);
+      if (tema === 'light') assert.ok(kt <= 16, `Tema terang tidak terlalu tajam (${kt.toFixed(1)})`);
+      assert.ok(w.meta.every(m => rgb(w.latar).join() === [1, 3, 5].map(i => parseInt(m.slice(i, i + 2), 16)).join()), `theme-color ikut latar tema ${tema}`);
+      await tiadaLimpahanUntuk(page, `tema ${tema}`);
+    }
+    await page.click('[data-act="tetapan-baca"]');
+    assert.deepEqual(await page.locator('.popover [data-act="tema"]').allInnerTexts(), ['Sistem', 'Terang', 'Sepia', 'Gelap', 'Malam'], 'Lima pilihan tema dalam Aa');
+    assert.equal(await page.evaluate(() => [...document.querySelectorAll('.popover [data-act="tema"]')].filter(b => b.scrollWidth > b.clientWidth + 1).length), 0, 'Label tema tidak terpotong');
+    await page.click('.popover [data-act="tema"][data-v="sepia"]');
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'sepia');
+    await page.goto(origin + '#profil'); await page.waitForTimeout(250);
+    assert.equal(await page.locator('.tetapan-baris [data-act="tema"]').count(), 5, 'Lima pilihan tema dalam Profil');
+    assert.equal(await page.locator('.tetapan-baris [data-act="tema"][data-v="sepia"]').getAttribute('aria-pressed'), 'true');
+    await tiadaLimpahanUntuk(page, 'profil sepia');
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (tema)');
+    await ctx.close();
+  }
+
   // Laras bahasa (GAYA.md): matan, terjemahan dan rujukan tidak berubah; tiada pola terlarang
   {
     const laras = require('./ruang-ilmu-laras.cjs');
