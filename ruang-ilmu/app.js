@@ -1202,6 +1202,7 @@ function render() {
   $$('[data-nav]').forEach(a => { if (a.dataset.nav === NAV_ATAS[r.nav || r.v]) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   $$('[data-tab]').forEach(a => { if (a.dataset.tab === (NAV_TAB[r.nav || r.v] || '')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   $('#kemajuanBaca').hidden = r.v !== 'a';
+  document.body.classList.remove('kepala-sorok'); tatalLepas = 0;
   selepasRender(r, lama);
 }
 function tajukHalaman(r) {
@@ -1238,6 +1239,17 @@ function pasangBacaan(slug) {
     tajuk.forEach(t => pemerhati.observe(t));
   }
 }
+/* Pengepala menyorok di halaman bacaan (artikel dan episod) apabila menatal ke bawah. */
+let tatalLepas = 0;
+const kemasKepala = () => {
+  const y = scrollY, bacaan = CURR.v === 'a' && !$('.lapik') && !$('.popover');
+  const kelas = document.body.classList;
+  if (!bacaan || y <= 160) kelas.remove('kepala-sorok');
+  else if (y > tatalLepas + 4) kelas.add('kepala-sorok');
+  else if (y < tatalLepas - 4) kelas.remove('kepala-sorok');
+  tatalLepas = y;
+};
+window.addEventListener('scroll', kemasKepala, { passive: true });
 window.addEventListener('scroll', () => {
   if (CURR.v !== 'a') return;
   const pro = $('#prosa'); if (!pro) return;

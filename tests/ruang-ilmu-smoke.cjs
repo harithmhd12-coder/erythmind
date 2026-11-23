@@ -301,6 +301,16 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     assert.equal(await page.locator('.tetapan-baris [data-act="tema"]').count(), 5, 'Lima pilihan tema dalam Profil');
     assert.equal(await page.locator('.tetapan-baris [data-act="tema"][data-v="sepia"]').getAttribute('aria-pressed'), 'true');
     await tiadaLimpahanUntuk(page, 'profil sepia');
+    // Pengepala menyorok semasa menatal ke bawah di halaman bacaan (Tugasan 20)
+    await page.goto(origin + '#e.benci-kepada-kebenaran'); await page.waitForTimeout(300);
+    const kepalaAtas = () => page.evaluate(() => Math.round(document.querySelector('.kepala').getBoundingClientRect().bottom));
+    await page.mouse.wheel(0, 900); await page.waitForTimeout(450);
+    assert.ok(await kepalaAtas() <= 0, 'Pengepala menyorok apabila menatal ke bawah');
+    await page.mouse.wheel(0, -200); await page.waitForTimeout(450);
+    assert.ok(await kepalaAtas() > 0, 'Pengepala muncul apabila menatal ke atas');
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.huraian')).lineHeight.endsWith('px') && parseFloat(getComputedStyle(document.querySelector('.huraian')).lineHeight) / parseFloat(getComputedStyle(document.querySelector('.huraian')).fontSize) > 1.75), true, 'Jarak baris bacaan lapang');
+    await page.goto(origin + '#siri'); await page.waitForTimeout(250); await page.mouse.wheel(0, 900); await page.waitForTimeout(450);
+    assert.ok(await kepalaAtas() > 0, 'Pengepala kekal di halaman bukan bacaan');
     assert.deepEqual(errors, [], 'Tiada ralat konsol (tema)');
     await ctx.close();
   }
