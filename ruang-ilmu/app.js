@@ -40,7 +40,7 @@ const asal = () => ({
   xp: 0, hari: {}, laluanSiap: {}, rehat: 0, laporan: [], draf: [], troli: {}, pesanan: [],
   peristiwa: [], pembetulan: {}, lihatBetul: {}, semak: {},
   surat: null, akaun: null, ahli: null,
-  tetapan: { tema: 'sistem', fon: 1, notifikasi: 'mingguan', sorokKopi: false, matlamat: 10, siri: true }
+  tetapan: { tema: 'sistem', fon: 1, notifikasi: 'mingguan', sorokKopi: false, matlamat: 10, siri: true, rehatMata: true }
 });
 let S = (() => {
   try {
@@ -865,10 +865,11 @@ V.profil = () => {
   ${S.pesanan.length ? `<section class="seksyen">${kepalaSeksyen('Sip \'n Go', 'Pesanan kopi', '', '<a class="pautan" href="#troli">Troli</a>')}<ul class="senarai-baris">${S.pesanan.slice(0, 5).map(o => `<li><div class="baris"><span class="no">${tarikh(o.masa).split(' ').slice(0, 2).join(' ')}</span><div class="tajuk-baris"><a href="#o.${o.id}">${esc(o.id)}</a><span class="meta"><span>${rm(o.jumlah)} · dihantar ke WhatsApp</span></span></div><button class="btn kecil garis" data-act="pesan-semula" data-id="${o.id}">Order semula</button></div></li>`).join('')}</ul></section>` : ''}
 
   <section class="seksyen">${kepalaSeksyen('Tetapan', 'Pengalaman kau, peraturan kau', '')}<div class="tetapan-senarai">
-    <div class="tetapan-baris"><div><b>Tema</b><small>Ikut sistem, terang atau gelap.</small></div><div class="segmen" role="group" aria-label="Tema">${[['sistem', 'Sistem'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div></div>
+    <div class="tetapan-baris"><div><b>Tema</b><small>Sepia untuk bacaan siang yang panjang; Malam untuk bacaan sebelum tidur.</small></div><div class="segmen" role="group" aria-label="Tema">${TEMA.map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Saiz teks bacaan</b></div><div class="segmen" role="group" aria-label="Saiz teks">${['S', 'M', 'L', 'XL'].map((n, i) => `<button data-act="fon" data-v="${i}" aria-pressed="${S.tetapan.fon === i}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Kekerapan peringatan</b><small>Kau yang tentukan. Tiada peringatan bertubi-tubi.</small></div><div class="segmen" role="group" aria-label="Notifikasi">${[['tiada', 'Tiada'], ['mingguan', 'Mingguan'], ['harian', 'Harian']].map(([v, n]) => `<button data-act="notifikasi" data-v="${v}" aria-pressed="${S.tetapan.notifikasi === v}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Paparkan siri hari</b><small>Matikan jika siri hari membuatkan kau berasa tertekan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.siri}" data-act="suis" data-k="siri" aria-label="Paparkan siri hari"></button></div>
+    <div class="tetapan-baris"><div><b>Peringatan rehat mata</b><small>Setiap 20 minit membaca, pandang sesuatu sejauh 6 meter selama 20 saat.</small></div><button class="suis" role="switch" aria-checked="${!!S.tetapan.rehatMata}" data-act="suis" data-k="rehatMata" aria-label="Peringatan rehat mata"></button></div>
     <div class="tetapan-baris"><div><b>Sembunyikan promosi kopi</b><small>Buang jalur Sip 'n Go dan cadangan kopi daripada halaman bacaan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.sorokKopi}" data-act="suis" data-k="sorokKopi" aria-label="Sembunyikan promosi kopi"></button></div>
     <div class="tetapan-baris"><div><b>Pasang sebagai app</b><small>Buka Ruang Ilmu dari skrin utama telefon atau komputer.</small></div><button class="btn kecil garis" data-act="pasang">Pasang app</button></div>
     <div class="tetapan-baris"><div><b>Padam data dalam peranti ini</b><small>Kemajuan, nota, troli dan pesanan akan dipadam.</small></div><button class="btn kecil garis" data-act="padam-data">Padam data</button></div>
@@ -1202,6 +1203,7 @@ function render() {
   $$('[data-nav]').forEach(a => { if (a.dataset.nav === NAV_ATAS[r.nav || r.v]) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   $$('[data-tab]').forEach(a => { if (a.dataset.tab === (NAV_TAB[r.nav || r.v] || '')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   $('#kemajuanBaca').hidden = r.v !== 'a';
+  document.body.classList.remove('kepala-sorok'); tatalLepas = 0;
   selepasRender(r, lama);
 }
 function tajukHalaman(r) {
@@ -1238,6 +1240,17 @@ function pasangBacaan(slug) {
     tajuk.forEach(t => pemerhati.observe(t));
   }
 }
+/* Pengepala menyorok di halaman bacaan (artikel dan episod) apabila menatal ke bawah. */
+let tatalLepas = 0;
+const kemasKepala = () => {
+  const y = scrollY, bacaan = CURR.v === 'a' && !$('.lapik') && !$('.popover');
+  const kelas = document.body.classList;
+  if (!bacaan || y <= 160) kelas.remove('kepala-sorok');
+  else if (y > tatalLepas + 4) kelas.add('kepala-sorok');
+  else if (y < tatalLepas - 4) kelas.remove('kepala-sorok');
+  tatalLepas = y;
+};
+window.addEventListener('scroll', kemasKepala, { passive: true });
 window.addEventListener('scroll', () => {
   if (CURR.v !== 'a') return;
   const pro = $('#prosa'); if (!pro) return;
@@ -1264,9 +1277,28 @@ setInterval(() => {
 }, 5000);
 ['scroll', 'pointermove', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, () => { window.__gerak = Date.now(); }, { passive: true }));
 
+/* Rehat mata (peraturan 20-20-20): selepas 20 minit bacaan aktif di halaman artikel, episod atau siri,
+   paparkan jalur kecil yang tidak menghalang bacaan. Dikira hanya ketika tab kelihatan dan ada aktiviti dalam 60 saat terakhir. */
+const RehatMata = { saat: 0, HAD: 20 * 60, LANGKAH: 15 };
+setInterval(() => {
+  if (!S.tetapan.rehatMata || document.visibilityState !== 'visible') return;
+  if (!['a', 's'].includes(CURR.v) || Date.now() - (window.__gerak || 0) >= 60000 || $('#rehatMata')) return;
+  RehatMata.saat += RehatMata.LANGKAH;
+  if (RehatMata.saat < RehatMata.HAD) return;
+  RehatMata.saat = 0;
+  const e = document.createElement('div'); e.id = 'rehatMata'; e.className = 'rehat-mata'; e.setAttribute('role', 'status');
+  e.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/></svg><div><b>Rehatkan mata 20 saat.</b> Pandang sesuatu sejauh 6 meter.</div><button class="btn kecil garis" data-act="rehat-mata-tutup">Baik</button>`;
+  document.body.appendChild(e);
+}, RehatMata.LANGKAH * 1000);
+
 /* ================= Tema ================= */
+/* Tema: sistem ikut peranti; pilihan lain ditetapkan pada <html data-theme>. theme-color mengikut latar tema. */
+const TEMA = [['sistem', 'Sistem'], ['light', 'Terang'], ['sepia', 'Sepia'], ['dark', 'Gelap'], ['malam', 'Malam']];
+const WARNA_TEMA = { light: '#FAF7F0', sepia: '#F4ECD8', dark: '#1C1B19', malam: '#14110E' };
 function terapTetapan() {
+  if (!TEMA.some(([v]) => v === S.tetapan.tema)) S.tetapan.tema = 'sistem';
   const t = S.tetapan.tema; if (t === 'sistem') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+  $$('meta[name="theme-color"]').forEach(m => { m.dataset.asal ||= m.content; m.content = WARNA_TEMA[t] || m.dataset.asal; });
   document.documentElement.style.setProperty('--fs-bacaan', ['1.05rem', '1.2rem', '1.35rem', '1.5rem'][S.tetapan.fon] || '1.2rem');
 }
 
@@ -1302,7 +1334,7 @@ A['tetapan-baca'] = el => {
   const ada = $('.popover'); if (ada) { ada.remove(); el.setAttribute('aria-expanded', 'false'); return; }
   el.setAttribute('aria-expanded', 'true');
   const d = document.createElement('div'); d.className = 'popover'; d.style.right = '0'; d.style.top = '100%';
-  d.innerHTML = `<b>Tetapan bacaan</b><div class="segmen" role="group" aria-label="Saiz teks">${['S', 'M', 'L', 'XL'].map((n, i) => `<button data-act="fon" data-v="${i}" aria-pressed="${S.tetapan.fon === i}">${n}</button>`).join('')}</div><div class="segmen" role="group" aria-label="Tema">${[['sistem', 'Sistem'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div>`;
+  d.innerHTML = `<b>Tetapan bacaan</b><div class="segmen" role="group" aria-label="Saiz teks">${['S', 'M', 'L', 'XL'].map((n, i) => `<button data-act="fon" data-v="${i}" aria-pressed="${S.tetapan.fon === i}">${n}</button>`).join('')}</div><div class="segmen" role="group" aria-label="Tema">${TEMA.map(([v, n]) => `<button data-act="tema" data-v="${v}" aria-pressed="${S.tetapan.tema === v}">${n}</button>`).join('')}</div>`;
   el.parentElement.appendChild(d);
 };
 A.fon = el => { S.tetapan.fon = +el.dataset.v; simpan(); terapTetapan(); $$('[data-act="fon"]').forEach(b => b.setAttribute('aria-pressed', b === el || +b.dataset.v === S.tetapan.fon)); };
@@ -1347,6 +1379,7 @@ A['rehat-set'] = () => { Rehat.set(); render(); };
 A.ahli = el => { S.ahli = el.dataset.pakej; simpan(); toast(`Kau dalam senarai menunggu ${S.ahli}. Tiada caj dikenakan.`); render(); };
 A.matlamat = el => { S.tetapan.matlamat = +el.dataset.n; simpan(); render(); };
 A.notifikasi = el => { S.tetapan.notifikasi = el.dataset.v; simpan(); toast('Kekerapan peringatan dikemas kini'); render(); };
+A['rehat-mata-tutup'] = () => { $('#rehatMata')?.remove(); RehatMata.saat = 0; };
 A.suis = el => { const k = el.dataset.k; S.tetapan[k] = !S.tetapan[k]; simpan(); render(); };
 A['padam-data'] = () => bukaModal('Padam semua data?', `<p>Kemajuan, XP, nota, simpanan, troli, pesanan dan draf Studio dalam peranti ini akan dipadam. Tindakan ini tidak boleh dibatalkan.</p><div class="butang-format"><button class="btn merah" data-act="padam-sah">Ya, padam</button><button class="btn garis" data-act="tutup-modal">Batal</button></div>`);
 A['padam-sah'] = () => { S = asal(); simpan(); INDEKS = null; tutupModal(); terapTetapan(); toast('Data dipadam'); render(); };
