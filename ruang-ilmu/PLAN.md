@@ -56,8 +56,12 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 - Bahan baharu mesti mengikut `GAYA.md`; ujian laras akan gagal jika pola tidak baku muncul semula.
 - Jika matan, terjemahan atau rujukan sengaja diubah, jana semula cap jari: `node tests/ruang-ilmu-laras.cjs --cap-jari`.
 
-## Tambahan: Mod fokus bacaan (diluluskan pemilik)
+## Tambahan: Mod fokus bacaan (diluluskan pemilik, dideploy)
 19. [x] **Palet dan tema**: token Kertas hangat, Gelap hangat, Sepia, Malam; pilihan tema dalam Aa dan Profil; `meta theme-color`. Fail: `styles.css`, `app.js`, `index.html`. Ujian: kontras setiap tema, pilihan kekal selepas muat semula.
 20. [x] **Tipografi bacaan dan pengepala menyorok**. Fail: `styles.css`, `app.js`. Ujian: pengepala menyorok/muncul, tiada limpahan 400px/1366px.
 21. [x] **Rehat mata 20 minit**: pengiraan masa aktif, jalur status, tetapan Profil. Fail: `app.js`, `styles.css`. Ujian: `page.clock` 20 minit, butang Baik, tetapan mati.
 22. [x] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-12`).
+
+### Susulan mod fokus bacaan
+- Dideploy melalui PR #20 (23 Nov 2026), cache `ruang-ilmu-12`. Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
+- Kosmetik: dalam grid tema (Aa), sel kosong selepas "Malam" berwarna garis; boleh diisi atau disusun 5 lajur di skrin lebar.
