@@ -227,6 +227,7 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     assert.match(await page.locator('#hasilCari a[href^="#e."]').first().getAttribute('href'), /^#e\./, 'Kad carian membuka paparan episod');
     await buka('utama');
     assert.match(await page.locator('#kandungan').innerText(), /Siri terkini/i);
+    assert.equal((await page.locator('h1.h-besar').innerText()).replace(/\s+/g, ' ').trim(), 'Hidup akhir zaman keras, hadapi zaman fitnah dengan Ilmu & Iman', 'Tajuk utama halaman Utama');
     await buka('e.kuasa-mutlak-allah');
     await page.click('[data-act="dengar"][data-slug="kuasa-mutlak-allah"]');
     await page.waitForTimeout(600);

@@ -455,7 +455,7 @@ V.utama = () => {
     <section class="hero">
       <div class="hero-teks">
         <span class="eyebrow">Surat Ilmu · setiap pagi Ahad</span>
-        <h1 class="h-besar">Ilmu yang tahan zaman, <em>dihidangkan ketika rehat.</em></h1>
+        <h1 class="h-besar">Hidup akhir zaman keras, <em>hadapi zaman fitnah dengan Ilmu &amp; Iman</em></h1>
         <p class="lede">Baca, lihat dan dengar ilmu yang disemak sumbernya: agama, psikologi, sejarah dan sains. Lima minit sehari, tanpa iklan yang mengganggu bacaan.</p>
         <div id="surat-borang">${borangSurat('emelHero')}</div>
         <div class="format-strip"><span><b>Baca</b>artikel 2–15 min</span><span><b>Lihat</b>video penerangan</span><span><b>Dengar</b>audio sambil bergerak</span></div>
