@@ -1031,7 +1031,7 @@ function tambahanLuar(e) {
     <ol class="dakwaan">${(e.dakwaan || []).map(d => `<li><span class="cip dakwaan-${esc(d.j)}">${JENIS_DAKWAAN[d.j] || 'Belum dilabel'}</span> <b>${d.oleh === 'moderator' ? 'Moderator' : 'Penceramah'}:</b> ${esc(d.t)} <a class="pautan kecil-nota" href="${esc(pautanMinit(e.luar, d.mula))}" target="_blank" rel="noopener noreferrer">minit ${minitRakaman(d.mula)} ↗</a></li>`).join('')}</ol></section>`}
   ${(e.bacaan || []).length ? `<section class="kotak" aria-label="Bacaan yang disyorkan penceramah"><span class="eyebrow">Bacaan yang disyorkan penceramah</span><ul class="bacaan-luar">${e.bacaan.map(b => `<li>${esc(b)}</li>`).join('')}</ul></section>` : ''}`;
 }
-function paparanBlokBacaan(blok, istilah, bab) {
+function paparanBlokBacaan(blok, istilah, bab, tajukNota = 'Nota kaki istilah ekonomi') {
   if (!istilah) return blok.map(blokEpisod).join('');
   const pola = Object.keys(istilah).sort((a, b) => b.length - a.length)
     .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
@@ -1058,7 +1058,7 @@ function paparanBlokBacaan(blok, istilah, bab) {
     const id = `nota-istilah-${bab}-${no}`;
     return `<li id="${id}" tabindex="-1"><b>${esc(nama)}</b> — ${esc(istilah[nama])} <button class="pautan" type="button" data-act="nota-istilah" data-sasaran="rujuk-${id}" aria-label="Kembali ke istilah ${esc(nama)}">↩</button></li>`;
   }).join('');
-  return `${isi}<aside class="nota-istilah" aria-label="Nota kaki istilah ekonomi"><h3>Nota kaki istilah ekonomi</h3><ol>${nota}</ol></aside>`;
+  return `${isi}<aside class="nota-istilah" aria-label="${esc(tajukNota)}"><h3>${esc(tajukNota)}</h3><ol>${nota}</ol></aside>`;
 }
 function paparanEpisod(a) {
   const e = a.episod; const s = SIRI_OF[e.siri]; const m = minit(a); const [unit, bhg] = unitSiri(e.siri); const unitKecil = unit.toLowerCase();
@@ -1080,7 +1080,7 @@ function paparanEpisod(a) {
       <button class="btn-tindak" data-act="tetapan-baca" aria-label="Tetapan bacaan" aria-expanded="false">${IKON.aa}</button>
     </div>
     ${e.isiBuku ? `<p class="kecil-nota">${esc(e.notaPenyunting || 'Teks bacaan berdasarkan imbasan edisi 1989 dengan suntingan laras bahasa. Pilih nombor halaman untuk menyemak imbasan asal.')}</p><details class="kotak isi-buku"><summary>Isi kandungan buku</summary><ol>${e.soalan.map((q, n) => `<li><a href="#e.${a.slug}" data-act="bab" data-bab="${n}">${esc(q.s)}</a></li>`).join('')}</ol></details>` : ''}
-    <div id="prosa" class="soal-jawab${e.isiBuku ? ' prosa-buku' : ''}">${e.soalan.map((q, n) => `<section class="soalan-ep" aria-labelledby="bab-${n}"><span class="no-soal">${esc(q.label || `Soalan ${n + 1}`)}</span><h2 id="bab-${n}" class="soal">${esc(q.s)}</h2>${e.luar && q.mula != null ? `<a class="pautan kecil-nota tonton" href="${esc(pautanMinit(e.luar, q.mula))}" target="_blank" rel="noopener noreferrer">Tonton bahagian ini (minit ${minitRakaman(q.mula)}) ↗</a>` : ''}${paparanBlokBacaan(q.blok, e.istilah, n)}</section>`).join('')}</div>
+    <div id="prosa" class="soal-jawab${e.isiBuku ? ' prosa-buku' : ''}">${e.soalan.map((q, n) => `<section class="soalan-ep" aria-labelledby="bab-${n}"><span class="no-soal">${esc(q.label || `Soalan ${n + 1}`)}</span><h2 id="bab-${n}" class="soal">${esc(q.s)}</h2>${e.luar && q.mula != null ? `<a class="pautan kecil-nota tonton" href="${esc(pautanMinit(e.luar, q.mula))}" target="_blank" rel="noopener noreferrer">Tonton bahagian ini (minit ${minitRakaman(q.mula)}) ↗</a>` : ''}${paparanBlokBacaan(q.blok, e.istilah, n, e.tajukNotaIstilah)}</section>`).join('')}</div>
     ${tambahanLuar(e)}
     <div class="kotak isi" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center">
       <div style="display:grid;gap:4px;min-width:0"><b style="font-family:var(--serif);font-size:1.2rem">${selesai(a.slug) ? `${unit} ini telah kau selesaikan.` : 'Sudah faham?'}</b><span class="kecil-nota">${selesai(a.slug) ? `Ditanda pada ${tarikh(S.selesai[a.slug])}.` : 'Tanda selesai untuk mengemas kini kemajuan siri.'}</span></div>
