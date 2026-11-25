@@ -140,13 +140,13 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
 
     // Kuliah Pemikiran (Tugasan 8)
     await buka('s.kuliah-pemikiran');
-    assert.equal(await page.locator('.senarai-baris li').count(), 6, 'Enam kuliah');
+    assert.equal(await page.locator('.senarai-baris li').count(), 7, 'Tujuh kuliah');
     assert.match(await page.locator('.halaman-kepala').innerText(), /Mula kuliah 1/i);
     const kuliah = await page.evaluate(() => SIRI.find(s => s.slug === 'kuliah-pemikiran').episod);
     let jumlahSebab = 0;
     for (const [i, slug] of kuliah.slice(0, 3).entries()) {
       await buka('e.' + slug);
-      assert.match(await page.locator('.artikel-kepala').innerText(), new RegExp(`Kuliah ${i + 1} daripada 6`, 'i'));
+      assert.match(await page.locator('.artikel-kepala').innerText(), new RegExp(`Kuliah ${i + 1} daripada 7`, 'i'));
       jumlahSebab += await page.locator('.no-soal', { hasText: /^Sebab \d+$/ }).count();
       assert.ok(await page.locator('.ayat.petikan .ar[dir="rtl"]').count() >= 1, `Matan kitab dalam ${slug}`);
       assert.equal(await page.locator('.ayat .ruj, .ayat .tiada-ruj').count(), await page.locator('.ayat').count(), `Rujukan setiap blok dalam ${slug}`);
@@ -160,7 +160,7 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
 
     await buka('e.perangai-bangsa-melayu');
     assert.equal(await page.locator('h1').innerText(), 'Perangai Bangsa Melayu');
-    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 5 daripada 6/i);
+    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 5 daripada 7/i);
     assert.match(await page.locator('.soalan-ep').first().innerText(), /Syed Hussein Alatas/);
     assert.match(await page.locator('#sumber').innerText(), /Dewan Bahasa dan Pustaka, 1989/);
     assert.equal(await page.locator('.soalan-ep').count(), 18, 'Halaman awal, 12 bab, penutup, bibliografi dan indeks');
@@ -177,13 +177,27 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
 
     await buka('e.evolusi-kolonialisme');
     assert.equal(await page.locator('h1').innerText(), 'Evolusi Kolonialisme');
-    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 6 daripada 6/i);
+    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 6 daripada 7/i);
     const notaAwan = page.getByRole('button', { name: /^Nota kaki \d+: modal awan$/i }).first();
     await notaAwan.click();
     assert.match(await page.locator(':focus').innerText(), /infrastruktur digital/);
     await page.locator(':focus').getByRole('button', { name: 'Kembali ke istilah modal awan' }).click();
     assert.equal(await notaAwan.evaluate(el => document.activeElement === el), true);
     await tiadaLimpahan('evolusi-kolonialisme');
+
+    await buka('e.membangun-sebaik-baik-tamadun');
+    assert.equal(await page.locator('h1').innerText(), 'Membangun Sebaik-baik Tamadun');
+    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 7 daripada 7/i);
+    const halamanFarabi = await page.locator('#prosa .halaman-buku').allTextContents();
+    assert.equal(halamanFarabi.length, 101, 'Semua halaman berisi teks dalam naskhah al-Farabi');
+    assert.equal(halamanFarabi.at(-1), 'PDF 106');
+    assert.match(await page.locator('#sumber').innerText(), /Ali Abd al-Wahid Wafi/);
+    const notaAkal = page.getByRole('button', { name: /^Nota kaki \d+: akal aktif$/i }).first();
+    await notaAkal.click();
+    assert.match(await page.locator(':focus').innerText(), /akal kesepuluh/);
+    await page.locator(':focus').getByRole('button', { name: 'Kembali ke istilah akal aktif' }).click();
+    assert.equal(await notaAkal.evaluate(el => document.activeElement === el), true);
+    await tiadaLimpahan('membangun-sebaik-baik-tamadun');
 
     // Kuliah 4: sumber luar WUI 1.0 (Tugasan 10–11)
     const mintaLuar = []; const catatLuar = r => { if (/youtube|ytimg|googlevideo/.test(r.url())) mintaLuar.push(r.url()); };
@@ -192,7 +206,7 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     page.off('request', catatLuar);
     assert.deepEqual(mintaLuar, [], 'Tiada permintaan ke YouTube semasa halaman dibuka');
     assert.equal(await page.locator('iframe').count(), 0, 'Tiada video dibenam');
-    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 4 daripada 6/i);
+    assert.match(await page.locator('.artikel-kepala').innerText(), /Kuliah 4 daripada 7/i);
     const kredit = await page.locator('.kredit-luar').innerText();
     assert.match(kredit, /Sumber luar/i); assert.match(kredit, /Prof\. Farish/); assert.match(kredit, /Abdul Razak/);
     assert.equal(await page.locator('.kredit-luar a').getAttribute('href'), 'https://www.youtube.com/watch?v=4uPTvYYC9bw');
@@ -388,9 +402,9 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
       const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, gagal) => setTimeout(() => gagal(new Error('service worker tidak aktif')), 10000))]);
       const nama = (await caches.keys()).find(k => k.startsWith('ruang-ilmu-'));
       const c = await caches.open(nama);
-      return { nama, siri: !!(await c.match('./siri.js')), alatas: !!(await c.match('./alatas.js')), tekno: !!(await c.match('./teknofeudalisme.js')), aktif: !!reg.active };
+      return { nama, siri: !!(await c.match('./siri.js')), alatas: !!(await c.match('./alatas.js')), tekno: !!(await c.match('./teknofeudalisme.js')), farabi: !!(await c.match('./al-farabi.js')), aktif: !!reg.active };
     });
-    assert.ok(cache.aktif && cache.siri && cache.alatas && cache.tekno, `Service worker menyimpan kandungan siri untuk luar talian (${cache.nama})`);
+    assert.ok(cache.aktif && cache.siri && cache.alatas && cache.tekno && cache.farabi, `Service worker menyimpan kandungan siri untuk luar talian (${cache.nama})`);
     assert.deepEqual(errors, [], 'Tiada ralat konsol (gelap)');
     await ctx.close();
   }
