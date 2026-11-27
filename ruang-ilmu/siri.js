@@ -618,7 +618,7 @@ EPISOD.push({
   "soalan": BACAAN_ALATAS
 });
 
-EPISOD.push(BACAAN_TEKNOFEUDALISME);
+EPISOD.push(BACAAN_TEKNOFEUDALISME, BACAAN_AL_FARABI);
 
 /* Kenali Munafik: senarai semak muhasabah, disusun daripada analisis pemilik atas kitab
    Zahirat al-Nifaq wa Khaba'ith al-Munafiqin fi al-Tarikh (al-Maydani). "hlm." = halaman PDF kitab.
