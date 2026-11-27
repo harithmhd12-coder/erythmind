@@ -355,7 +355,7 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     }, sels);
     for (const tema of ['light', 'sepia', 'dark', 'malam']) {
       await page.evaluate(t => { const s = JSON.parse(localStorage.getItem('ruangilmu.v1') || '{}'); s.tetapan = Object.assign(s.tetapan || {}, { tema: t }); localStorage.setItem('ruangilmu.v1', JSON.stringify(s)); }, tema);
-      for (const [h, sels] of [['siri', ['.kulit-siri h3', '.kulit-siri .eyebrow', '.siri-kad p', '.nav a']], ['teroka', ['.penapis button[aria-pressed="true"]', '.penapis button[aria-pressed="false"]']], ['utama', ['.btn', '.btn.merah']]]) {
+      for (const [h, sels] of [['siri', ['.kulit-siri h3', '.kulit-siri .eyebrow', '.siri-kad p', '.nav a']], ['teroka', ['.penapis button[aria-pressed="true"]', '.penapis button[aria-pressed="false"]']], ['utama', ['.btn', '.btn.merah', '.kulit-buku b', '.kulit-buku small', '.lencana-buku b', '.lencana-buku span', '.petikan-ayat .maksud', '.petikan-ayat .eyebrow', '.stat-bulat b', '.stat-bulat span', '.tonggak p', '.panel-hari .eyebrow', '.panel-hari h2 a', '.panel-hari .meta span', '.panel-hari .btn', '.jalur-siri .eyebrow', '.jalur-siri p', '.jalur-siri .pil', '.penapis.tengah button[aria-pressed="true"]', '.penapis.tengah button[aria-pressed="false"]']]]) {
         await page.goto(origin + '#' + h); await page.reload(); await page.waitForTimeout(250);
         for (const [sel, k] of await kontrasSemua(sels)) assert.ok(k >= 4.5, `Kontras ${sel} tema ${tema} #${h}: ${k} >= 4.5`);
         for (const vp of [{ width: 400, height: 860 }, { width: 1366, height: 900 }]) { await page.setViewportSize(vp); await tiadaLimpahanUntuk(page, `#${h} tema ${tema} ${vp.width}px`); }
@@ -363,6 +363,21 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
         if (shots && tema === 'light') await page.screenshot({ path: `${shots}/gaya-${h}.png`, fullPage: true });
       }
     }
+    // Utama gaya halaman buku (Tugasan 25, kriteria 29)
+    await page.goto(origin + '#utama'); await page.waitForTimeout(250);
+    const data = await page.evaluate(() => { const hari = new Date().toLocaleDateString('en-CA'); const EP = EPISOD.filter(e => e.tarikh <= hari).sort((x, y) => x.tarikh.localeCompare(y.tarikh)); return { bahan: KANDUNGAN.length, siri: SIRI.filter(s => s.jenis !== 'akan-datang').length, ep: EP.length, siriAkhir: EP.at(-1).siri, jenis: SIRI.filter(s => s.jenis !== 'akan-datang').map(s => s.jenis) }; });
+    assert.deepEqual(await page.locator('.stat-bulat b').allInnerTexts(), [String(data.bahan), String(data.siri), String(data.ep)], 'Statistik dikira daripada data');
+    assert.equal(await page.locator('a.buku').getAttribute('href'), '#s.' + data.siriAkhir, 'Kulit buku memaut ke siri terbaru');
+    assert.equal(await page.locator('.petikan-ayat .ar').getAttribute('dir'), 'rtl');
+    assert.match(await page.locator('.petikan-ayat').innerText(), /Surah Taha, ayat 114/i);
+    assert.equal(await page.locator('#gridSiriPilihan > .siri-kad').count(), data.siri, 'Semua siri dalam Siri pilihan');
+    await page.click('[data-act="tapis-siri"][data-j="kuliah"]');
+    assert.equal(await page.locator('#gridSiriPilihan > .siri-kad:visible').count(), data.jenis.filter(j => j === 'kuliah').length, 'Pil Kuliah menapis kad');
+    assert.equal(await page.locator('[data-act="tapis-siri"][data-j="kuliah"]').getAttribute('aria-pressed'), 'true');
+    await page.click('[data-act="tapis-siri"][data-j=""]');
+    assert.equal(await page.locator('#gridSiriPilihan > .siri-kad:visible').count(), data.siri, 'Pil Semua memaparkan semua kad');
+    assert.equal(await page.locator('.jalur-siri .pil').count(), data.siri, 'Jalur memaut ke setiap siri');
+    assert.equal((await page.locator('h1.h-besar').innerText()).replace(/\s+/g, ' ').trim(), 'Hidup akhir zaman keras, hadapi zaman fitnah dengan Ilmu & Iman');
     assert.deepEqual(errors, [], 'Tiada ralat konsol (gaya)');
     await ctx.close();
   }

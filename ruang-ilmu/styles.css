@@ -182,6 +182,64 @@ main { min-height: 60vh; padding-bottom: 88px; }
 .kad-hari h2 a { text-decoration: none; }
 .kad-hari h2 a:hover { color: var(--merah); }
 .kad-hari .enam-puluh { font-family: var(--serif); font-size: 1.05rem; line-height: 1.5; }
+
+/* ===== Utama gaya halaman buku ===== */
+.hero-buku { justify-items: center; text-align: center; padding-block: 40px 48px; }
+.hero-buku .hero-teks { justify-items: center; }
+.hero-buku .borang-surat { justify-content: center; }
+/* Kulit buku dilukis dengan CSS: separuh atas permukaan, separuh bawah aksen; lencana bulat di tepi. */
+.buku { position: relative; display: block; width: 220px; height: 300px; text-decoration: none; color: var(--dakwat); }
+.kulit-buku { position: absolute; inset: 0 34px 0 0; border-radius: 4px 12px 12px 4px; padding: 20px 16px 20px 24px; display: grid; align-content: start; gap: 8px; text-align: left;
+  background: var(--permukaan) linear-gradient(165deg, var(--permukaan) 0 52%, var(--merah) 52%); border: 1px solid var(--garis);
+  box-shadow: inset 8px 0 0 color-mix(in srgb, var(--dakwat) 14%, transparent), 14px 20px 34px color-mix(in srgb, var(--dakwat) 26%, transparent); transition: transform .3s; }
+.buku:hover .kulit-buku { transform: translateY(-4px) rotate(-1deg); }
+.kulit-buku small { font-family: var(--sans); font-size: .6rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--kelabu); }
+.kulit-buku b { font-family: var(--klasik); font-size: 1.7rem; font-weight: 600; line-height: 1.02; }
+.lencana-buku { position: absolute; right: 0; bottom: 56px; width: 106px; height: 106px; border-radius: 50%; background: var(--dakwat); color: var(--kertas); border: 4px solid var(--kertas);
+  display: grid; place-content: center; text-align: center; line-height: 1.15; box-shadow: 0 10px 24px color-mix(in srgb, var(--dakwat) 25%, transparent); }
+.lencana-buku b { font-family: var(--klasik); font-size: 2.1rem; font-weight: 500; line-height: 1; }
+.lencana-buku span { font-family: var(--klasik); font-size: .9rem; }
+@media (prefers-reduced-motion: reduce) { .kulit-buku { transition: none; } }
+@media (min-width: 900px) {
+  .hero.hero-buku { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); justify-items: start; text-align: left; padding-block: 64px; }
+  .hero-buku .buku { justify-self: center; width: 270px; height: 370px; }
+  .hero-buku .kulit-buku b { font-size: 2.1rem; }
+  .hero-buku .hero-teks { justify-items: start; }
+  .hero-buku .borang-surat { justify-content: start; }
+}
+.petikan-ayat { display: grid; gap: 12px; justify-items: center; text-align: center; padding-block: 44px; border-top: 1px solid var(--garis); }
+.petikan-ayat .ar { margin: 0; font-family: "Amiri", "Scheherazade New", "Noto Naskh Arabic", serif; font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.8; color: var(--dakwat); }
+.petikan-ayat .maksud { margin: 0; font-family: var(--klasik); font-style: italic; font-size: clamp(1.3rem, 3vw, 1.7rem); line-height: 1.4; max-width: 32rem; }
+.stat-bulat { display: flex; justify-content: center; gap: clamp(10px, 6vw, 72px); padding-block: 4px 48px; }
+.stat-bulat div { width: 108px; height: 108px; flex: none; border-radius: 50%; border: 1.5px solid var(--dakwat); display: grid; place-content: center; text-align: center; gap: 2px; }
+.stat-bulat b { font-family: var(--klasik); font-size: 2.1rem; font-weight: 500; line-height: 1; color: var(--merah); font-variant-numeric: lining-nums; }
+.stat-bulat span { font-size: .64rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding-inline: 8px; line-height: 1.25; }
+@media (max-width: 359px) { .stat-bulat div { width: 92px; height: 92px; } .stat-bulat b { font-size: 1.7rem; } }
+.tonggak { display: grid; gap: 26px; text-align: center; padding-block: 8px 52px; }
+.tonggak h2 { font-size: clamp(1.7rem, 3.4vw, 2.2rem); font-weight: 600; }
+.tonggak div { display: grid; gap: 6px; justify-items: center; }
+.tonggak svg { width: 28px; height: 28px; color: var(--merah); }
+.tonggak b { font-family: var(--klasik); font-size: 1.3rem; font-weight: 600; }
+.tonggak p { color: var(--kelabu); font-family: var(--klasik); font-size: 1.05rem; max-width: 18rem; }
+@media (min-width: 900px) { .tonggak { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tonggak h2 { grid-column: 1 / -1; } }
+/* Panel gelap "Satu ilmu untuk hari ini": warna dakwat/kertas diterbalikkan supaya kontras kekal dalam semua tema. */
+.panel-hari { background: var(--dakwat); color: var(--kertas); border: 0; border-radius: 22px; padding: clamp(24px, 4vw, 40px); overflow: hidden; isolation: isolate; box-shadow: 0 22px 50px color-mix(in srgb, var(--dakwat) 22%, transparent); }
+.panel-hari::after { content: ""; position: absolute; inset: -40% -25% auto auto; width: 360px; height: 360px; border: 0; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--merah) 55%, transparent) 0, transparent 70%); z-index: -1; }
+.panel-hari .eyebrow { color: var(--kertas); }
+.panel-hari h2 { font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 500; }
+.panel-hari h2 a { color: var(--kertas); }
+.panel-hari h2 a:hover { color: var(--kertas); text-decoration: underline; }
+.panel-hari .meta, .panel-hari .meta span { color: var(--kertas); }
+.panel-hari .btn { background: var(--kertas); color: var(--dakwat); border-color: var(--kertas); box-shadow: none; }
+.panel-hari .btn.garis { background: transparent; color: var(--kertas); border-color: color-mix(in srgb, var(--kertas) 55%, transparent); }
+.siri-pilihan { padding-block: 56px 8px; }
+.penapis.tengah { justify-content: center; margin-bottom: 24px; }
+.jalur-siri { margin-block: 40px 8px; background: var(--merah); color: var(--kertas); border-radius: 18px; padding: 28px 20px; text-align: center; display: grid; gap: 8px; justify-items: center; }
+.jalur-siri .eyebrow { color: var(--kertas); }
+.jalur-siri p { font-family: var(--klasik); font-style: italic; font-size: 1.25rem; margin: 0 0 6px; }
+.jalur-siri div { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.jalur-siri .pil { background: var(--kertas); color: var(--merah); border-color: var(--kertas); }
+.jalur-siri .pil:hover { border-color: var(--dakwat); }
 .butang-format { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ---------- Senarai artikel ---------- */

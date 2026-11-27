@@ -71,6 +71,6 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 ## Tambahan: Sambung membaca dan reka bentuk gabungan (menunggu "ya" pemilik)
 23. [x] **Sambung membaca**: `S.terakhir`, simpanan semasa tatal, lencongan sekali sesi semasa app dibuka, jalur "Disambung dari tempat terakhir", kad Utama, tetapan Profil. Fail: `app.js`, `styles.css`. Ujian: kriteria 25–28 (muat semula dalam konteks baharu, pautan terus, tetapan mati, `page.clock` 14 hari, 95%).
 24. [x] **Komponen gaya A**: EB Garamond dalam `index.html`, token fon klasik, menu serif bergaris bawah, butang, pil, tajuk seksyen tengah, kad siri kulit buku. Fail: `index.html`, `styles.css`, `app.js` (`kadSiri`). Ujian: kriteria 30–32 pada halaman Siri, Teroka dan Utama.
-25. [ ] **Utama gaya B**: hero kulit buku dan lencana, petikan Taha 114, statistik, tiga tonggak, panel ilmu hari ini, siri pilihan dengan pil penapis, jalur "Mula dengan satu siri". Fail: `app.js`, `styles.css`. Ujian: kriteria 29, 31, 32; tangkapan skrin 400px dan 1366px dalam lima tema.
+25. [x] **Utama gaya B**: hero kulit buku dan lencana, petikan Taha 114, statistik, tiga tonggak, panel ilmu hari ini, siri pilihan dengan pil penapis, jalur "Mula dengan satu siri". Fail: `app.js`, `styles.css`. Ujian: kriteria 29, 31, 32; tangkapan skrin 400px dan 1366px dalam lima tema.
 26. [ ] **Release prep, Security review, Final review, PR** (cache melebihi versi di `main`, kini `ruang-ilmu-14`).
 
