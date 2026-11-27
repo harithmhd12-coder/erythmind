@@ -40,7 +40,7 @@ const asal = () => ({
   xp: 0, hari: {}, laluanSiap: {}, rehat: 0, laporan: [], draf: [], troli: {}, pesanan: [],
   peristiwa: [], pembetulan: {}, lihatBetul: {}, semak: {},
   surat: null, akaun: null, ahli: null,
-  tetapan: { tema: 'sistem', fon: 1, notifikasi: 'mingguan', sorokKopi: false, matlamat: 10, siri: true, rehatMata: true }
+  tetapan: { tema: 'sistem', fon: 1, notifikasi: 'mingguan', sorokKopi: false, matlamat: 10, siri: true, rehatMata: true, sambungAuto: true }
 });
 let S = (() => {
   try {
@@ -170,6 +170,15 @@ function episodKeBahan(e) {
 const BAHAN_SIRI = EP.map(episodKeBahan);
 const semua = () => KANDUNGAN.concat(BAHAN_SIRI, S.draf.filter(d => d.langkah >= 6).map(drafKeArtikel));
 const cari = slug => semua().find(a => a.slug === slug);
+/* Sambung membaca: halaman bacaan terakhir { hash, peratus, masa }. Hanya artikel (a.), episod (e.) dan siri (s.) yang masih wujud. */
+const HASH_BACAAN = /^([aes])\.([a-z0-9-]+)$/;
+const terakhirSah = () => {
+  const t = S.terakhir;
+  if (!t || typeof t !== 'object' || typeof t.hash !== 'string' || !Number.isFinite(t.peratus) || !Number.isFinite(t.masa)) return null;
+  const m = HASH_BACAAN.exec(t.hash); if (!m) return null;
+  if (m[1] === 's') { const s = Object.hasOwn(SIRI_OF, m[2]) && SIRI_OF[m[2]]; return s && s.jenis !== 'akan-datang' ? { ...t, tajuk: s.nama, sub: 'Siri' } : null; }
+  const a = cari(m[2]); return a ? { ...t, tajuk: a.tajuk, sub: a.episod ? a.dek : (KAT[a.kategori]?.nama || '') } : null;
+};
 const teksPenuh = a => [a.ringkas60, ...a.bahagian.flatMap(b => b.p)].join(' ');
 const minit = a => {
   const w = kiraPerkataan(teksPenuh(a));
@@ -450,7 +459,12 @@ V.utama = () => {
   const h = ilmuHariIni(); const m = minit(h);
   const sambung = Object.entries(S.akses).sort((x, y) => y[1] - x[1]).map(([s]) => cari(s)).filter(a => a && !selesai(a.slug)).slice(0, 3);
   const rek = rekodHari(); const minitHari = Math.floor(rek.saat / 60);
+  const akhir = terakhirSah();
   return `
+  ${akhir && akhir.peratus < 95 ? `<div class="bekas"><section class="kad-sambung" aria-label="Sambung membaca">
+    <div class="kad-sambung-teks"><span class="eyebrow">Sambung membaca</span><b>${esc(akhir.tajuk)}</b>${akhir.sub ? `<small>${esc(akhir.sub)}</small>` : ''}
+      <div class="bar" role="progressbar" aria-label="Kemajuan bacaan" aria-valuenow="${akhir.peratus}" aria-valuemin="0" aria-valuemax="100"><i style="width:${akhir.peratus}%"></i></div></div>
+    <a class="btn kecil" href="#${akhir.hash}" data-act="sambung-terakhir">Sambung</a></section></div>` : ''}
   <div class="bekas">
     <section class="hero">
       <div class="hero-teks">
@@ -870,6 +884,7 @@ V.profil = () => {
     <div class="tetapan-baris"><div><b>Kekerapan peringatan</b><small>Kau yang tentukan. Tiada peringatan bertubi-tubi.</small></div><div class="segmen" role="group" aria-label="Notifikasi">${[['tiada', 'Tiada'], ['mingguan', 'Mingguan'], ['harian', 'Harian']].map(([v, n]) => `<button data-act="notifikasi" data-v="${v}" aria-pressed="${S.tetapan.notifikasi === v}">${n}</button>`).join('')}</div></div>
     <div class="tetapan-baris"><div><b>Paparkan siri hari</b><small>Matikan jika siri hari membuatkan kau berasa tertekan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.siri}" data-act="suis" data-k="siri" aria-label="Paparkan siri hari"></button></div>
     <div class="tetapan-baris"><div><b>Peringatan rehat mata</b><small>Setiap 20 minit membaca, pandang sesuatu sejauh 6 meter selama 20 saat.</small></div><button class="suis" role="switch" aria-checked="${!!S.tetapan.rehatMata}" data-act="suis" data-k="rehatMata" aria-label="Peringatan rehat mata"></button></div>
+    <div class="tetapan-baris"><div><b>Sambung dari tempat terakhir</b><small>Bila app dibuka semula, terus ke halaman terakhir yang kau baca.</small></div><button class="suis" role="switch" aria-checked="${!!S.tetapan.sambungAuto}" data-act="suis" data-k="sambungAuto" aria-label="Sambung dari tempat terakhir"></button></div>
     <div class="tetapan-baris"><div><b>Sembunyikan promosi kopi</b><small>Buang jalur Sip 'n Go dan cadangan kopi daripada halaman bacaan.</small></div><button class="suis" role="switch" aria-checked="${S.tetapan.sorokKopi}" data-act="suis" data-k="sorokKopi" aria-label="Sembunyikan promosi kopi"></button></div>
     <div class="tetapan-baris"><div><b>Pasang sebagai app</b><small>Buka Ruang Ilmu dari skrin utama telefon atau komputer.</small></div><button class="btn kecil garis" data-act="pasang">Pasang app</button></div>
     <div class="tetapan-baris"><div><b>Padam data dalam peranti ini</b><small>Kemajuan, nota, troli dan pesanan akan dipadam.</small></div><button class="btn kecil garis" data-act="padam-data">Padam data</button></div>
@@ -1195,6 +1210,7 @@ function bacaHash() {
 function render() {
   const r = bacaHash();
   const lama = CURR; CURR = r;
+  if (lama.v !== r.v || lama.p !== r.p) $('#notaSambung')?.remove();
   if (lama.v === 'v' && (r.v !== 'v' || r.p !== lama.p)) Video.henti();
   const fn = V[r.v] || V.tiada;
   const main = $('#kandungan');
@@ -1218,6 +1234,8 @@ function selepasRender(r, lama) {
   if (!samaHalaman) window.scrollTo(0, 0);
   if (r.v === 'surat') { const e = $('#emelHero'); const s = $('#surat-borang'); if (s) s.scrollIntoView({ block: 'center' }); if (e) e.focus({ preventScroll: true }); }
   if (r.v === 'a') pasangBacaan(r.p);
+  catatTerakhir();
+  if (tatalTertunda && tatalTertunda.hash === hashSemasa()) { const p = tatalTertunda.peratus; tatalTertunda = null; tatalKe(p); }
   if (r.v === 'v') { if (Video.slug !== r.p || !samaHalaman) Video.sedia(r.p); Video.lukis(); }
   if (r.v === 'rehat') { Rehat.lukis(); }
   if (r.v === 's' && Object.hasOwn(KARUSEL, r.p)) Karusel.pasang(r.p);
@@ -1266,6 +1284,36 @@ window.addEventListener('scroll', () => {
   }, 400);
 }, { passive: true });
 
+/* Sambung membaca: catat halaman bacaan terakhir dan kedudukan tatalnya. */
+let tatalTertunda = null, terakhirT;
+const hashSemasa = () => decodeURIComponent(location.hash.replace(/^#/, ''));
+const peratusTatal = () => Math.max(0, Math.min(100, Math.round(scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight) * 100)));
+const tatalKe = p => requestAnimationFrame(() => window.scrollTo(0, Math.round((document.documentElement.scrollHeight - innerHeight) * p / 100)));
+function catatTerakhir(peratus) {
+  const h = hashSemasa(); if (!HASH_BACAAN.test(h) || !['a', 's'].includes(CURR.v)) return;
+  if (peratus === undefined) { if (S.terakhir?.hash === h) { S.terakhir.masa = Date.now(); simpan(); return; } peratus = 0; }
+  S.terakhir = { hash: h, peratus, masa: Date.now() }; simpan();
+}
+window.addEventListener('scroll', () => { clearTimeout(terakhirT); terakhirT = setTimeout(() => catatTerakhir(peratusTatal()), 400); }, { passive: true });
+/* Semasa app dibuka (sekali bagi setiap sesi), pergi ke halaman terakhir jika pembaca bermula di Utama. */
+function lencongSambung() {
+  let sudah = false;
+  try { sudah = sessionStorage.getItem('ruangilmu.sambung') === '1'; sessionStorage.setItem('ruangilmu.sambung', '1'); } catch (e) { /* storan disekat */ }
+  const h = hashSemasa();
+  if (sudah || !S.tetapan.sambungAuto || (h && h !== 'utama')) return null;
+  const t = terakhirSah();
+  if (!t || t.peratus >= 95 || Date.now() - t.masa > 14 * 864e5) return null;
+  history.replaceState(null, '', '#' + t.hash);
+  tatalTertunda = { hash: t.hash, peratus: t.peratus };
+  return t;
+}
+function notaSambung() {
+  const e = document.createElement('div'); e.id = 'notaSambung'; e.className = 'nota-sambung'; e.setAttribute('role', 'status');
+  e.innerHTML = `<div>Disambung dari tempat terakhir.</div><a class="pautan" href="#utama">Ke Utama</a><button class="ikon-btn" data-act="sambung-tutup" aria-label="Tutup nota">${IKON.tutup}</button>`;
+  document.body.appendChild(e);
+  setTimeout(() => e.remove(), 8000);
+}
+
 /* Masa ritual: dikira hanya ketika halaman kelihatan dan pengguna sedang membaca, menonton atau mendengar. */
 setInterval(() => {
   if (document.visibilityState !== 'visible' && !Pemain.main) return;
@@ -1304,6 +1352,12 @@ function terapTetapan() {
 
 /* ================= Aksi ================= */
 const A = {};
+A['sambung-terakhir'] = el => {
+  const t = terakhirSah(); if (!t) return;
+  tatalTertunda = { hash: t.hash, peratus: t.peratus };
+  if (hashSemasa() === t.hash) { tatalTertunda = null; tatalKe(t.peratus); } else location.hash = t.hash;
+};
+A['sambung-tutup'] = () => $('#notaSambung')?.remove();
 A['tutup-modal'] = tutupModal;
 A.dengar = el => { const s = el.dataset.slug; if (Pemain.slug === s) Pemain.togol(); else Pemain.mula(s); };
 A['pemain-togol'] = () => Pemain.togol();
@@ -1515,5 +1569,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 terapTetapan();
 kaki();
 window.addEventListener('hashchange', render);
+const disambung = lencongSambung();
 render();
+if (disambung) notaSambung();
 })();

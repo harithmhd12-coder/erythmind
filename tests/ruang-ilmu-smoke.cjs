@@ -358,6 +358,80 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     await ctx.close();
   }
 
+  // Sambung membaca: app dibuka semula ke halaman dan kedudukan terakhir (Tugasan 23)
+  {
+    const ctx = await browser.newContext({ serviceWorkers: 'block', timezoneId: 'Asia/Kuala_Lumpur', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const errors = []; const T = new Date('2026-11-27T09:00:00+08:00').getTime();
+    await ctx.clock.install({ time: T });
+    // Event tatal dan hashchange ialah tugasan pelayar biasa: beri masa sebenar sebelum memajukan jam palsu.
+    const tunggu = async (p, ms = 500) => { await p.waitForTimeout(60); await p.clock.runFor(ms); await p.waitForTimeout(30); };
+    const tabBaharu = async h => { const p = await ctx.newPage(); p.on('pageerror', e => errors.push(e.message)); await p.goto(origin + (h ? '#' + h : '')); await tunggu(p); return p; };
+    const peratus = p => p.evaluate(() => Math.round(scrollY / (document.documentElement.scrollHeight - innerHeight) * 100));
+    const ubahS = (p, f) => p.evaluate(f => { const s = JSON.parse(localStorage.getItem('ruangilmu.v1')); new Function('s', f)(s); localStorage.setItem('ruangilmu.v1', JSON.stringify(s)); }, f);
+
+    const p1 = await tabBaharu('e.benci-kepada-kebenaran');
+    await p1.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * 0.5));
+    await tunggu(p1, 1000);
+    const t1 = await p1.evaluate(() => JSON.parse(localStorage.getItem('ruangilmu.v1')).terakhir);
+    assert.equal(t1.hash, 'e.benci-kepada-kebenaran', 'Halaman terakhir dicatat');
+    assert.ok(Math.abs(t1.peratus - 50) <= 2, `Kedudukan tatal dicatat (${t1.peratus}%)`);
+    await p1.close();
+
+    // Kriteria 25: buka semula pada #utama dalam tab baharu
+    const p2 = await tabBaharu('utama');
+    assert.equal(await p2.evaluate(() => location.hash), '#e.benci-kepada-kebenaran', 'Dibawa ke halaman terakhir');
+    assert.ok(Math.abs(await peratus(p2) - 50) <= 10, `Kedudukan tatal dipulihkan (${await peratus(p2)}%)`);
+    assert.match(await p2.locator('#notaSambung[role="status"]').innerText(), /Disambung dari tempat terakhir\./);
+    await tiadaLimpahanUntuk(p2, 'nota sambung');
+    if (shots) await p2.screenshot({ path: `${shots}/tel-nota-sambung.png` });
+    // Kriteria 26: Ke Utama kekal di Utama; muat semula dalam sesi yang sama tidak melencong
+    await p2.click('#notaSambung a[href="#utama"]'); await tunggu(p2);
+    assert.equal(await p2.evaluate(() => location.hash), '#utama', 'Ke Utama kekal di Utama');
+    assert.equal(await p2.locator('#notaSambung').count(), 0, 'Nota hilang apabila halaman bertukar');
+    await p2.reload(); await tunggu(p2);
+    assert.equal(await p2.evaluate(() => location.hash), '#utama', 'Lencongan sekali sahaja bagi setiap sesi');
+    // Kriteria 28: kad Sambung membaca di Utama
+    const kad = p2.locator('.kad-sambung');
+    assert.match(await kad.innerText(), /Sambung membaca[\s\S]*Benci kepada Kebenaran[\s\S]*Tadabbur Surah al-Mukminun/i);
+    await tiadaLimpahanUntuk(p2, 'kad sambung');
+    if (shots) await p2.screenshot({ path: `${shots}/tel-kad-sambung.png` });
+    await kad.locator('[data-act="sambung-terakhir"]').click(); await tunggu(p2);
+    assert.equal(await p2.evaluate(() => location.hash), '#e.benci-kepada-kebenaran', 'Kad membawa ke halaman terakhir');
+    assert.ok(Math.abs(await peratus(p2) - 50) <= 10, `Kad memulihkan kedudukan tatal (${await peratus(p2)}%)`);
+    await p2.close();
+
+    // Kriteria 26: pautan terus tidak dilencongkan
+    const p3 = await tabBaharu('baca');
+    assert.equal(await p3.evaluate(() => location.hash), '#baca', 'Pautan terus dihormati');
+    // Kriteria 27: tetapan dimatikan
+    await p3.goto(origin + '#profil'); await tunggu(p3);
+    await p3.click('[data-act="suis"][data-k="sambungAuto"]');
+    assert.equal(await p3.locator('[data-act="suis"][data-k="sambungAuto"]').getAttribute('aria-checked'), 'false', 'Tetapan boleh dimatikan');
+    const p4 = await tabBaharu('utama');
+    assert.equal(await p4.evaluate(() => location.hash), '#utama', 'Tiada lencongan apabila tetapan dimatikan');
+    assert.equal(await p4.locator('.kad-sambung').count(), 1, 'Kad kekal walaupun tetapan dimatikan');
+    await ubahS(p4, 's.tetapan.sambungAuto = true');
+    // 95% ke atas: dianggap habis
+    await ubahS(p4, 's.terakhir.peratus = 96');
+    const p5 = await tabBaharu('');
+    assert.equal(await p5.evaluate(() => location.hash), '', 'Tiada lencongan untuk bacaan yang hampir habis');
+    assert.equal(await p5.locator('.kad-sambung').count(), 0, 'Tiada kad untuk bacaan yang hampir habis');
+    await ubahS(p5, 's.terakhir.peratus = 40');
+    // Lebih 14 hari
+    await ctx.clock.setSystemTime(T + 15 * 864e5);
+    const p6 = await tabBaharu('utama');
+    assert.equal(await p6.evaluate(() => location.hash), '#utama', 'Tiada lencongan selepas 14 hari');
+    // Data rosak tidak dipercayai
+    await ubahS(p6, 's.terakhir = { hash: "a.<img>", peratus: 10, masa: Date.now() }');
+    await ctx.clock.setSystemTime(T);
+    const p7 = await tabBaharu('utama');
+    assert.equal(await p7.evaluate(() => location.hash), '#utama', 'Hash rosak diabaikan');
+    assert.equal(await p7.locator('.kad-sambung').count(), 0);
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (sambung membaca)');
+    await ctx.close();
+  }
+
   // Laras bahasa (GAYA.md): matan, terjemahan dan rujukan tidak berubah; tiada pola terlarang
   {
     const laras = require('./ruang-ilmu-laras.cjs');
