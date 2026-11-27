@@ -65,3 +65,12 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 ### Susulan mod fokus bacaan
 - Dideploy melalui PR #20 (23 Nov 2026), cache `ruang-ilmu-12`. Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
 - Kosmetik: dalam grid tema (Aa), sel kosong selepas "Malam" berwarna garis; boleh diisi atau disusun 5 lajur di skrin lebar.
+
+- Tajuk utama "Hidup akhir zaman keras, hadapi zaman fitnah dengan Ilmu & Iman" dideploy melalui PR #21 (cache `ruang-ilmu-13`); disahkan di laman sebenar.
+
+## Tambahan: Sambung membaca dan reka bentuk gabungan (diluluskan pemilik, 27 Nov 2026)
+23. [x] **Sambung membaca**: `S.terakhir`, simpanan semasa tatal, lencongan sekali sesi semasa app dibuka, jalur "Disambung dari tempat terakhir", kad Utama, tetapan Profil. Fail: `app.js`, `styles.css`. Ujian: kriteria 25–28 (muat semula dalam konteks baharu, pautan terus, tetapan mati, `page.clock` 14 hari, 95%).
+24. [x] **Komponen gaya A**: EB Garamond dalam `index.html`, token fon klasik, menu serif bergaris bawah, butang, pil, tajuk seksyen tengah, kad siri kulit buku. Fail: `index.html`, `styles.css`, `app.js` (`kadSiri`). Ujian: kriteria 30–32 pada halaman Siri, Teroka dan Utama.
+25. [x] **Utama gaya B**: hero kulit buku dan lencana, petikan Taha 114, statistik, tiga tonggak, panel ilmu hari ini, siri pilihan dengan pil penapis, jalur "Mula dengan satu siri". Fail: `app.js`, `styles.css`. Ujian: kriteria 29, 31, 32; tangkapan skrin 400px dan 1366px dalam lima tema.
+26. [x] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-15`).
+

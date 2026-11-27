@@ -330,6 +330,58 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     await ctx.close();
   }
 
+  // Komponen gaya perpustakaan dan Utama baharu: fon, kontras dalam lima tema, tiada limpahan (Tugasan 24–25)
+  {
+    const ctx = await browser.newContext({ serviceWorkers: 'block', timezoneId: 'Asia/Kuala_Lumpur', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.clock.setFixedTime(new Date('2026-11-27T09:00:00+08:00'));
+    const buka = async h => { await page.goto(origin + '#' + h); await page.waitForTimeout(250); };
+    await buka('siri');
+    const fon = sel => page.evaluate(sel => getComputedStyle(document.querySelector(sel)).fontFamily, sel);
+    for (const sel of ['.nav a', '.jenama b', '.halaman-kepala h1', '.siri-kad h3', '.btn']) assert.match(await fon(sel), /^"?EB Garamond/, `${sel} guna EB Garamond`);
+    await buka('a.' + await page.evaluate(() => KANDUNGAN[0].slug));
+    assert.match(await fon('#prosa'), /^"?Newsreader/, 'Prosa artikel kekal Newsreader');
+    assert.match(await fon('#prosa h2'), /^"?Newsreader/, 'Tajuk dalam prosa kekal Newsreader');
+    await buka('siri');
+    assert.match(await page.evaluate(() => getComputedStyle(document.querySelector('.nav a[aria-current="page"]')).textDecorationLine), /underline/, 'Menu aktif bergaris bawah');
+    // Kontras: warna teks berbanding latar pepejal terdekat
+    const kontrasSemua = sels => page.evaluate(sels => {
+      const rgb = s => s.match(/[\d.]+/g).map(Number);
+      const lum = c => { const [r, g, b] = c.slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+      const latar = el => { for (let e = el; e; e = e.parentElement) { const c = getComputedStyle(e).backgroundColor; const v = rgb(c); if (v.length < 4 || v[3] > 0.99) return c; } return 'rgb(255,255,255)'; };
+      return sels.flatMap(sel => [...document.querySelectorAll(sel)].slice(0, 6).map(el => { const [x, y] = [lum(rgb(getComputedStyle(el).color)), lum(rgb(latar(el)))].sort((p, q) => q - p); return [sel, +((x + 0.05) / (y + 0.05)).toFixed(2)]; }));
+    }, sels);
+    for (const tema of ['light', 'sepia', 'dark', 'malam']) {
+      await page.evaluate(t => { const s = JSON.parse(localStorage.getItem('ruangilmu.v1') || '{}'); s.tetapan = Object.assign(s.tetapan || {}, { tema: t }); localStorage.setItem('ruangilmu.v1', JSON.stringify(s)); }, tema);
+      for (const [h, sels] of [['siri', ['.kulit-siri h3', '.kulit-siri .eyebrow', '.siri-kad p', '.nav a']], ['teroka', ['.penapis button[aria-pressed="true"]', '.penapis button[aria-pressed="false"]']], ['utama', ['.btn', '.btn.merah', '.kulit-buku b', '.kulit-buku small', '.lencana-buku b', '.lencana-buku span', '.petikan-ayat .maksud', '.petikan-ayat .eyebrow', '.stat-bulat b', '.stat-bulat span', '.tonggak p', '.panel-hari .eyebrow', '.panel-hari h2 a', '.panel-hari .meta span', '.panel-hari .btn', '.jalur-siri .eyebrow', '.jalur-siri p', '.jalur-siri .pil', '.penapis.tengah button[aria-pressed="true"]', '.penapis.tengah button[aria-pressed="false"]']]]) {
+        await page.goto(origin + '#' + h); await page.reload(); await page.waitForTimeout(250);
+        for (const [sel, k] of await kontrasSemua(sels)) assert.ok(k >= 4.5, `Kontras ${sel} tema ${tema} #${h}: ${k} >= 4.5`);
+        for (const vp of [{ width: 360, height: 800 }, { width: 400, height: 860 }, { width: 1366, height: 900 }]) { await page.setViewportSize(vp); await tiadaLimpahanUntuk(page, `#${h} tema ${tema} ${vp.width}px`); }
+        await page.setViewportSize({ width: 400, height: 860 });
+        if (shots && tema === 'light') await page.screenshot({ path: `${shots}/gaya-${h}.png`, fullPage: true });
+      }
+    }
+    // Utama gaya halaman buku (Tugasan 25, kriteria 29)
+    await page.goto(origin + '#utama'); await page.waitForTimeout(250);
+    const data = await page.evaluate(() => { const hari = new Date().toLocaleDateString('en-CA'); const EP = EPISOD.filter(e => e.tarikh <= hari).sort((x, y) => x.tarikh.localeCompare(y.tarikh)); return { bahan: KANDUNGAN.length, siri: SIRI.filter(s => s.jenis !== 'akan-datang').length, ep: EP.length, siriAkhir: EP.at(-1).siri, jenis: SIRI.filter(s => s.jenis !== 'akan-datang').map(s => s.jenis) }; });
+    assert.deepEqual(await page.locator('.stat-bulat b').allInnerTexts(), [String(data.bahan), String(data.siri), String(data.ep)], 'Statistik dikira daripada data');
+    assert.equal(await page.locator('a.buku').getAttribute('href'), '#s.' + data.siriAkhir, 'Kulit buku memaut ke siri terbaru');
+    assert.equal(await page.locator('.petikan-ayat .ar').getAttribute('dir'), 'rtl');
+    assert.match(await page.locator('.petikan-ayat').innerText(), /Surah Taha, ayat 114/i);
+    assert.equal(await page.locator('#gridSiriPilihan > .siri-kad').count(), data.siri, 'Semua siri dalam Siri pilihan');
+    await page.click('[data-act="tapis-siri"][data-j="kuliah"]');
+    assert.equal(await page.locator('#gridSiriPilihan > .siri-kad:visible').count(), data.jenis.filter(j => j === 'kuliah').length, 'Pil Kuliah menapis kad');
+    assert.equal(await page.locator('[data-act="tapis-siri"][data-j="kuliah"]').getAttribute('aria-pressed'), 'true');
+    await page.click('[data-act="tapis-siri"][data-j=""]');
+    assert.equal(await page.locator('#gridSiriPilihan > .siri-kad:visible').count(), data.siri, 'Pil Semua memaparkan semua kad');
+    assert.equal(await page.locator('.jalur-siri .pil').count(), data.siri, 'Jalur memaut ke setiap siri');
+    assert.equal((await page.locator('h1.h-besar').innerText()).replace(/\s+/g, ' ').trim(), 'Hidup akhir zaman keras, hadapi zaman fitnah dengan Ilmu & Iman');
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (gaya)');
+    await ctx.close();
+  }
+
   // Rehat mata setiap 20 minit bacaan aktif (Tugasan 21)
   {
     const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 400, height: 860 } });
@@ -355,6 +407,83 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     await baca(21);
     assert.equal(await page.locator('#rehatMata').count(), 0, 'Tiada peringatan apabila tetapan dimatikan');
     assert.deepEqual(errors, [], 'Tiada ralat konsol (rehat mata)');
+    await ctx.close();
+  }
+
+  // Sambung membaca: app dibuka semula ke halaman dan kedudukan terakhir (Tugasan 23)
+  {
+    const ctx = await browser.newContext({ serviceWorkers: 'block', timezoneId: 'Asia/Kuala_Lumpur', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const errors = []; const T = new Date('2026-11-27T09:00:00+08:00').getTime();
+    await ctx.clock.install({ time: T });
+    // Event tatal dan hashchange ialah tugasan pelayar biasa: beri masa sebenar sebelum memajukan jam palsu.
+    const tunggu = async (p, ms = 500) => { await p.waitForTimeout(60); await p.clock.runFor(ms); await p.waitForTimeout(30); };
+    const tabBaharu = async h => { const p = await ctx.newPage(); p.on('pageerror', e => errors.push(e.message)); await p.goto(origin + (h ? '#' + h : '')); await tunggu(p); return p; };
+    const peratus = p => p.evaluate(() => Math.round(scrollY / (document.documentElement.scrollHeight - innerHeight) * 100));
+    const ubahS = (p, f) => p.evaluate(f => { const s = JSON.parse(localStorage.getItem('ruangilmu.v1')); new Function('s', f)(s); localStorage.setItem('ruangilmu.v1', JSON.stringify(s)); }, f);
+
+    const p1 = await tabBaharu('e.benci-kepada-kebenaran');
+    await p1.evaluate(() => window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * 0.5));
+    await tunggu(p1, 1000);
+    const t1 = await p1.evaluate(() => JSON.parse(localStorage.getItem('ruangilmu.v1')).terakhir);
+    assert.equal(t1.hash, 'e.benci-kepada-kebenaran', 'Halaman terakhir dicatat');
+    assert.ok(Math.abs(t1.peratus - 50) <= 2, `Kedudukan tatal dicatat (${t1.peratus}%)`);
+    await p1.close();
+
+    // Kriteria 25: buka semula pada #utama dalam tab baharu
+    const p2 = await tabBaharu('utama');
+    assert.equal(await p2.evaluate(() => location.hash), '#e.benci-kepada-kebenaran', 'Dibawa ke halaman terakhir');
+    assert.ok(Math.abs(await peratus(p2) - 50) <= 10, `Kedudukan tatal dipulihkan (${await peratus(p2)}%)`);
+    assert.match(await p2.locator('#notaSambung[role="status"]').innerText(), /Disambung dari tempat terakhir\./);
+    await tiadaLimpahanUntuk(p2, 'nota sambung');
+    if (shots) await p2.screenshot({ path: `${shots}/tel-nota-sambung.png` });
+    // Kriteria 26: Ke Utama kekal di Utama; muat semula dalam sesi yang sama tidak melencong
+    await p2.click('#notaSambung a[href="#utama"]'); await tunggu(p2);
+    assert.equal(await p2.evaluate(() => location.hash), '#utama', 'Ke Utama kekal di Utama');
+    assert.equal(await p2.locator('#notaSambung').count(), 0, 'Nota hilang apabila halaman bertukar');
+    await p2.reload(); await tunggu(p2);
+    assert.equal(await p2.evaluate(() => location.hash), '#utama', 'Lencongan sekali sahaja bagi setiap sesi');
+    // Kriteria 28: kad Sambung membaca di Utama
+    const kad = p2.locator('.kad-sambung');
+    assert.match(await kad.innerText(), /Sambung membaca[\s\S]*Benci kepada Kebenaran[\s\S]*Tadabbur Surah al-Mukminun/i);
+    await tiadaLimpahanUntuk(p2, 'kad sambung');
+    if (shots) await p2.screenshot({ path: `${shots}/tel-kad-sambung.png` });
+    await kad.locator('[data-act="sambung-terakhir"]').click(); await tunggu(p2);
+    assert.equal(await p2.evaluate(() => location.hash), '#e.benci-kepada-kebenaran', 'Kad membawa ke halaman terakhir');
+    assert.ok(Math.abs(await peratus(p2) - 50) <= 10, `Kad memulihkan kedudukan tatal (${await peratus(p2)}%)`);
+    // Membuka indeks siri tanpa membaca tidak memadam tempat terakhir
+    await p2.goto(origin + '#s.tadabbur-al-mukminun'); await tunggu(p2, 1000);
+    assert.equal(await p2.evaluate(() => JSON.parse(localStorage.getItem('ruangilmu.v1')).terakhir.hash), 'e.benci-kepada-kebenaran', 'Halaman yang dibuka seketika tidak menggantikan tempat terakhir');
+    await p2.close();
+
+    // Kriteria 26: pautan terus tidak dilencongkan
+    const p3 = await tabBaharu('baca');
+    assert.equal(await p3.evaluate(() => location.hash), '#baca', 'Pautan terus dihormati');
+    // Kriteria 27: tetapan dimatikan
+    await p3.goto(origin + '#profil'); await tunggu(p3);
+    await p3.click('[data-act="suis"][data-k="sambungAuto"]');
+    assert.equal(await p3.locator('[data-act="suis"][data-k="sambungAuto"]').getAttribute('aria-checked'), 'false', 'Tetapan boleh dimatikan');
+    const p4 = await tabBaharu('utama');
+    assert.equal(await p4.evaluate(() => location.hash), '#utama', 'Tiada lencongan apabila tetapan dimatikan');
+    assert.equal(await p4.locator('.kad-sambung').count(), 1, 'Kad kekal walaupun tetapan dimatikan');
+    await ubahS(p4, 's.tetapan.sambungAuto = true');
+    // 95% ke atas: dianggap habis
+    await ubahS(p4, 's.terakhir.peratus = 96');
+    const p5 = await tabBaharu('');
+    assert.equal(await p5.evaluate(() => location.hash), '', 'Tiada lencongan untuk bacaan yang hampir habis');
+    assert.equal(await p5.locator('.kad-sambung').count(), 0, 'Tiada kad untuk bacaan yang hampir habis');
+    await ubahS(p5, 's.terakhir.peratus = 40');
+    // Lebih 14 hari
+    await ctx.clock.setSystemTime(T + 15 * 864e5);
+    const p6 = await tabBaharu('utama');
+    assert.equal(await p6.evaluate(() => location.hash), '#utama', 'Tiada lencongan selepas 14 hari');
+    // Data rosak tidak dipercayai
+    await ubahS(p6, 's.terakhir = { hash: "a.<img>", peratus: 10, masa: Date.now() }');
+    await ctx.clock.setSystemTime(T);
+    const p7 = await tabBaharu('utama');
+    assert.equal(await p7.evaluate(() => location.hash), '#utama', 'Hash rosak diabaikan');
+    assert.equal(await p7.locator('.kad-sambung').count(), 0);
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (sambung membaca)');
     await ctx.close();
   }
 
