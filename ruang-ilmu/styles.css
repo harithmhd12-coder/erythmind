@@ -214,7 +214,7 @@ main { min-height: 60vh; padding-bottom: 88px; }
 .stat-bulat div { width: 108px; height: 108px; flex: none; border-radius: 50%; border: 1.5px solid var(--dakwat); display: grid; place-content: center; text-align: center; gap: 2px; }
 .stat-bulat b { font-family: var(--klasik); font-size: 2.1rem; font-weight: 500; line-height: 1; color: var(--merah); font-variant-numeric: lining-nums; }
 .stat-bulat span { font-size: .64rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding-inline: 8px; line-height: 1.25; }
-@media (max-width: 359px) { .stat-bulat div { width: 92px; height: 92px; } .stat-bulat b { font-size: 1.7rem; } }
+@media (max-width: 389px) { .stat-bulat div { width: 92px; height: 92px; } .stat-bulat b { font-size: 1.7rem; } }
 .tonggak { display: grid; gap: 26px; text-align: center; padding-block: 8px 52px; }
 .tonggak h2 { font-size: clamp(1.7rem, 3.4vw, 2.2rem); font-weight: 600; }
 .tonggak div { display: grid; gap: 6px; justify-items: center; }

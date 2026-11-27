@@ -358,7 +358,7 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
       for (const [h, sels] of [['siri', ['.kulit-siri h3', '.kulit-siri .eyebrow', '.siri-kad p', '.nav a']], ['teroka', ['.penapis button[aria-pressed="true"]', '.penapis button[aria-pressed="false"]']], ['utama', ['.btn', '.btn.merah', '.kulit-buku b', '.kulit-buku small', '.lencana-buku b', '.lencana-buku span', '.petikan-ayat .maksud', '.petikan-ayat .eyebrow', '.stat-bulat b', '.stat-bulat span', '.tonggak p', '.panel-hari .eyebrow', '.panel-hari h2 a', '.panel-hari .meta span', '.panel-hari .btn', '.jalur-siri .eyebrow', '.jalur-siri p', '.jalur-siri .pil', '.penapis.tengah button[aria-pressed="true"]', '.penapis.tengah button[aria-pressed="false"]']]]) {
         await page.goto(origin + '#' + h); await page.reload(); await page.waitForTimeout(250);
         for (const [sel, k] of await kontrasSemua(sels)) assert.ok(k >= 4.5, `Kontras ${sel} tema ${tema} #${h}: ${k} >= 4.5`);
-        for (const vp of [{ width: 400, height: 860 }, { width: 1366, height: 900 }]) { await page.setViewportSize(vp); await tiadaLimpahanUntuk(page, `#${h} tema ${tema} ${vp.width}px`); }
+        for (const vp of [{ width: 360, height: 800 }, { width: 400, height: 860 }, { width: 1366, height: 900 }]) { await page.setViewportSize(vp); await tiadaLimpahanUntuk(page, `#${h} tema ${tema} ${vp.width}px`); }
         await page.setViewportSize({ width: 400, height: 860 });
         if (shots && tema === 'light') await page.screenshot({ path: `${shots}/gaya-${h}.png`, fullPage: true });
       }
@@ -451,6 +451,9 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     await kad.locator('[data-act="sambung-terakhir"]').click(); await tunggu(p2);
     assert.equal(await p2.evaluate(() => location.hash), '#e.benci-kepada-kebenaran', 'Kad membawa ke halaman terakhir');
     assert.ok(Math.abs(await peratus(p2) - 50) <= 10, `Kad memulihkan kedudukan tatal (${await peratus(p2)}%)`);
+    // Membuka indeks siri tanpa membaca tidak memadam tempat terakhir
+    await p2.goto(origin + '#s.tadabbur-al-mukminun'); await tunggu(p2, 1000);
+    assert.equal(await p2.evaluate(() => JSON.parse(localStorage.getItem('ruangilmu.v1')).terakhir.hash), 'e.benci-kepada-kebenaran', 'Halaman yang dibuka seketika tidak menggantikan tempat terakhir');
     await p2.close();
 
     // Kriteria 26: pautan terus tidak dilencongkan

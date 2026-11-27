@@ -530,7 +530,7 @@ V.utama = () => {
 
   ${pembetulanUntukAku().length ? `<div class="bekas"><section class="seksyen">${kepalaSeksyen('Pembetulan', 'Kemas kini untuk bahan yang pernah kau baca', 'Kami memaklumkan pembetulan kepada pembaca asal, bukan sekadar mengubah artikel secara senyap.')}<ul class="senarai-baris">${pembetulanUntukAku().map(a => { const p = pembetulanBahan(a.slug).at(-1); return `<li><div class="baris" style="grid-template-columns:1fr auto"><div class="tajuk-baris"><a href="#a.${a.slug}">${esc(a.tajuk)}</a><span class="kecil-nota">${tarikh(p.tarikh)}: ${esc(p.teks)}</span></div><a class="btn kecil garis" href="#a.${a.slug}">Baca versi terkini</a></div></li>`; }).join('')}</ul></section></div>` : ''}
 
-  ${sambung.length ? `<div class="bekas"><section class="seksyen">${kepalaSeksyen('Teruskan penerokaan', 'Sambung dari tempat terakhir', `Hari ini: ${minitHari} daripada ${S.tetapan.matlamat} minit ritual ilmu.`, '<a class="pautan" href="#profil">Lihat peta ilmu</a>')}
+  ${sambung.length ? `<div class="bekas"><section class="seksyen">${kepalaSeksyen('Teruskan penerokaan', 'Bahan yang belum selesai', `Hari ini: ${minitHari} daripada ${S.tetapan.matlamat} minit ritual ilmu.`, '<a class="pautan" href="#profil">Lihat peta ilmu</a>')}
     <ul class="senarai-baris">${sambung.map((a, i) => `<li><div class="baris"><span class="no">${String(i + 1).padStart(2, '0')}</span><div class="tajuk-baris"><a href="#a.${a.slug}">${esc(a.tajuk)}</a><span class="meta">${S.posisi[a.slug] ? `<span>Dibaca ${S.posisi[a.slug]}%</span>` : ''}${S.dengar[a.slug] ? `<span>Audio bahagian ${S.dengar[a.slug] + 1}</span>` : ''}${S.lihat[a.slug] ? `<span>Video bab ${S.lihat[a.slug] + 1}</span>` : ''}</span></div><a class="btn kecil garis" href="#a.${a.slug}">Sambung</a></div></li>`).join('')}</ul></section></div>` : ''}
 
   <div class="bekas"><section class="seksyen">${kepalaSeksyen('Untuk rasa ingin tahu kau', 'Pilihan seterusnya', 'Dicadangkan berdasarkan bidang yang kau teroka. Tiada suapan tanpa penghujung: tiga pilihan sudah cukup.')}
@@ -1273,7 +1273,6 @@ function selepasRender(r, lama) {
   if (!samaHalaman) window.scrollTo(0, 0);
   if (r.v === 'surat') { const e = $('#emelHero'); const s = $('#surat-borang'); if (s) s.scrollIntoView({ block: 'center' }); if (e) e.focus({ preventScroll: true }); }
   if (r.v === 'a') pasangBacaan(r.p);
-  catatTerakhir();
   if (tatalTertunda && tatalTertunda.hash === hashSemasa()) { const p = tatalTertunda.peratus; tatalTertunda = null; tatalKe(p); }
   if (r.v === 'v') { if (Video.slug !== r.p || !samaHalaman) Video.sedia(r.p); Video.lukis(); }
   if (r.v === 'rehat') { Rehat.lukis(); }
@@ -1325,19 +1324,22 @@ window.addEventListener('scroll', () => {
 
 /* Sambung membaca: catat halaman bacaan terakhir dan kedudukan tatalnya. */
 let tatalTertunda = null, terakhirT;
-const hashSemasa = () => decodeURIComponent(location.hash.replace(/^#/, ''));
+const hashSemasa = () => { const h = location.hash.replace(/^#/, ''); try { return decodeURIComponent(h); } catch (e) { return h; } };
 const peratusTatal = () => Math.max(0, Math.min(100, Math.round(scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight) * 100)));
-const tatalKe = p => requestAnimationFrame(() => window.scrollTo(0, Math.round((document.documentElement.scrollHeight - innerHeight) * p / 100)));
+/* Tunggu fon selesai dimuat (paling lama 1.5 saat) supaya ketinggian halaman stabil sebelum menatal. */
+const tatalKe = p => Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 1500))]).then(() => requestAnimationFrame(() => window.scrollTo(0, Math.round((document.documentElement.scrollHeight - innerHeight) * p / 100))));
+/* Dicatat hanya apabila pembaca menatal. Halaman lain menggantikan tempat terakhir hanya selepas dibaca sekurang-kurangnya 5%,
+   supaya membuka halaman lain seketika (atau kembali ke indeks siri) tidak memadam kedudukan bacaan. */
 function catatTerakhir(peratus) {
   const h = hashSemasa(); if (!HASH_BACAAN.test(h) || !['a', 's'].includes(CURR.v)) return;
-  if (peratus === undefined) { if (S.terakhir?.hash === h) { S.terakhir.masa = Date.now(); simpan(); return; } peratus = 0; }
+  if (S.terakhir?.hash !== h && peratus < 5) return;
   S.terakhir = { hash: h, peratus, masa: Date.now() }; simpan();
 }
 window.addEventListener('scroll', () => { clearTimeout(terakhirT); terakhirT = setTimeout(() => catatTerakhir(peratusTatal()), 400); }, { passive: true });
 /* Semasa app dibuka (sekali bagi setiap sesi), pergi ke halaman terakhir jika pembaca bermula di Utama. */
 function lencongSambung() {
   let sudah = false;
-  try { sudah = sessionStorage.getItem('ruangilmu.sambung') === '1'; sessionStorage.setItem('ruangilmu.sambung', '1'); } catch (e) { /* storan disekat */ }
+  try { sudah = sessionStorage.getItem('ruangilmu.sambung') === '1'; sessionStorage.setItem('ruangilmu.sambung', '1'); } catch (e) { sudah = true; /* storan sesi disekat: jangan lencong setiap kali dibuka */ }
   const h = hashSemasa();
   if (sudah || !S.tetapan.sambungAuto || (h && h !== 'utama')) return null;
   const t = terakhirSah();
