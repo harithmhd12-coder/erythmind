@@ -74,3 +74,8 @@ Rujuk `SPEC.md`. Ujian dalam `tests/ruang-ilmu-smoke.cjs` (baharu), dihidang den
 25. [x] **Utama gaya B**: hero kulit buku dan lencana, petikan Taha 114, statistik, tiga tonggak, panel ilmu hari ini, siri pilihan dengan pil penapis, jalur "Mula dengan satu siri". Fail: `app.js`, `styles.css`. Ujian: kriteria 29, 31, 32; tangkapan skrin 400px dan 1366px dalam lima tema.
 26. [x] **Release prep, Security review, Final review, PR** (cache `ruang-ilmu-15`).
 
+### Susulan sambung membaca dan reka bentuk gabungan
+- Dideploy melalui PR #23 (27 Nov 2026), cache `ruang-ilmu-15`. Semua fail app di GitHub Pages sepadan dengan `main`; ujian asap lulus terhadap laman sebenar.
+- Sedia ada (bukan daripada PR ini): `bacaHash()` memanggil `decodeURIComponent` tanpa try/catch; hash rosak seperti `#a.%E0` menyebabkan halaman kosong.
+- Dalam tema Gelap dan Malam, panel "Satu ilmu untuk hari ini" menjadi cerah (warna dakwat/kertas diterbalikkan supaya kontras kekal). Boleh ditukar kepada panel permukaan gelap jika pemilik mahu.
+
