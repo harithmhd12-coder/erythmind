@@ -162,3 +162,66 @@ Jalur gelap Sip 'n Go kekal sebagai identiti jenama.
 22. Dengan `page.clock`, jalur rehat mata muncul selepas 20 minit bacaan aktif di halaman episod, hilang apabila "Baik" ditekan, dan tidak muncul jika tetapan dimatikan.
 23. Pengepala menyorok semasa menatal ke bawah pada halaman episod dan muncul semula apabila menatal ke atas.
 24. Tiada limpahan mendatar dan tiada ralat konsol dalam keempat-empat tema pada 400px dan 1366px.
+
+---
+
+# Tambahan: Sambung membaca dan reka bentuk baharu (gabungan)
+
+## Matlamat
+- Pembaca yang kembali ke app terus dibawa ke halaman terakhir yang dibaca, pada kedudukan tatal yang sama.
+- Rupa baharu yang lebih "perpustakaan": halaman Utama ikut gaya halaman buku (rujukan video pemilik), komponen seluruh app ikut gaya Book Haven (rujukan Dribbble). Warna kekal seperti asal dalam kelima-lima tema.
+
+## Bukan matlamat
+- Tiada gambar, logo atau jenama daripada rujukan. Kulit buku dan lencana dilukis dengan CSS.
+- Tiada testimoni atau ulasan pembaca rekaan (bahagian "What Readers Are Saying" dalam video tidak dibina).
+- Halaman bacaan (artikel, episod) kekal dalam mod fokus: tipografi bacaan, Newsreader dan pengepala menyorok tidak berubah.
+- Tiada perubahan pada kandungan, palet atau token warna.
+
+## Keputusan pemilik
+- Arah reka bentuk: **gabungan**. Utama ikut arah B (halaman buku), komponen ikut arah A (Book Haven).
+- Lalai yang dinyatakan dan tidak dibantah: buka terus ke halaman terakhir, dengan nota kecil; kad "Sambung membaca" di Utama; fon serif klasik untuk tajuk, menu dan butang.
+
+## Sambung membaca
+- `S.terakhir = { hash, peratus, masa }` disimpan setiap kali pembaca menatal (bertangguh 400 ms) di halaman artikel (`#a.`), episod (`#e.`) dan siri (`#s.`). `peratus` ialah kedudukan tatal berbanding ketinggian dokumen.
+- Semasa app dibuka (muat pertama sahaja), jika hash kosong atau `#utama`, tetapan "Sambung dari tempat terakhir" hidup, `S.terakhir` wujud, bahannya masih ada, berumur kurang daripada 14 hari dan `peratus` di bawah 95: app pergi ke `S.terakhir.hash` dan tatal ke kedudukan itu.
+- Pautan terus (contohnya `#baca` atau `#a.slug`) dihormati; tiada lencongan.
+- Lencongan berlaku sekali sahaja bagi setiap sesi (`sessionStorage`). Menekan Utama selepas itu kekal di Utama.
+- Selepas lencongan, jalur kecil `role="status"`: "Disambung dari tempat terakhir." dengan pautan "Ke Utama" dan butang tutup. Jalur hilang sendiri selepas 8 saat.
+- Utama memaparkan kad "Sambung membaca" di atas sekali (jika `S.terakhir` sah): tajuk bahan, nama siri jika episod, bar kemajuan dan butang "Sambung". Butang membawa ke halaman dan kedudukan yang sama.
+- Tetapan Profil "Sambung dari tempat terakhir" (lalai: hidup), disimpan dalam `S.tetapan.sambungAuto`. Kad Utama kekal walaupun tetapan dimatikan.
+- Data kekal dalam peranti (localStorage), sama seperti kemajuan bacaan sedia ada.
+
+## Komponen seluruh app (gaya A)
+- Fon serif klasik **EB Garamond** (Google Fonts) untuk logo, menu atas, tajuk halaman dan seksyen, butang dan pil. Label kecil, borang dan meta kekal Public Sans. Prosa bacaan kekal Newsreader.
+- Menu atas: serif, halaman aktif berwarna aksen dengan garis bawah 2px.
+- Butang utama: serif, sudut 8px, bayang lembut. Butang garis kekal.
+- Pil kategori: bulat penuh, latar permukaan, aktif berwarna aksen.
+- Tajuk seksyen utama: tengah, huruf besar, garis bawah aksen.
+- Kad siri bergaya kulit buku: bahagian atas berwarna (aksen atau dakwat, ikut tema) dengan nama siri, bahagian bawah dengan ringkasan, bar kemajuan dan bilangan selesai.
+
+## Halaman Utama (gaya B)
+Susunan dari atas:
+1. Kad "Sambung membaca" (jika ada).
+2. Hero: kulit buku siri pilihan (siri terbaru yang ada episod) dengan lencana bulat bilangan episod, tajuk "Hidup akhir zaman keras, *hadapi zaman fitnah dengan Ilmu & Iman*", lede dan borang langganan. Kulit buku ialah pautan ke siri itu.
+3. Petikan: وَقُل رَّبِّ زِدْنِي عِلْمًا, "Dan berdoalah dengan berkata: 'Wahai Tuhanku, tambahilah ilmuku.'" (Surah Taha, ayat 114; terjemahan mengikut gaya Tafsir Pimpinan ar-Rahman yang digunakan dalam siri).
+4. Tiga bulatan statistik dikira daripada data: bilangan bahan, siri dan episod/kuliah yang sudah terbit.
+5. Tiga tonggak "Ilmu. Iman. Amal.": Ilmu yang disemak, Iman yang tenang, Amal yang konsisten.
+6. Panel gelap "Satu ilmu untuk hari ini" (kandungan sama seperti kad sedia ada, dengan butang Baca/Dengar/Lihat).
+7. Siri pilihan: tajuk tengah bergaris, pil penapis (Semua dan setiap jenis siri), kad siri kulit buku.
+8. Jalur berwarna aksen "Mula dengan satu siri" dengan pil pautan ke setiap siri.
+9. Seksyen sedia ada dikekalkan dengan gaya komponen baharu: Pembetulan, cadangan, bidang ilmu, Siri terkini, Laluan, Audio, jalur Kopi, Baru diterbitkan, Keahlian. Senarai "Teruskan penerokaan" kekal.
+
+## Teks UI penting
+- "Sambung membaca", "Sambung", "Disambung dari tempat terakhir.", "Ke Utama"
+- Profil: "Sambung dari tempat terakhir" / "Bila app dibuka semula, terus ke halaman terakhir yang kau baca."
+- "Ilmu. Iman. Amal.", "Ilmu yang disemak", "Iman yang tenang", "Amal yang konsisten", "Siri pilihan", "Mula dengan satu siri"
+
+## Kriteria penerimaan
+25. Buka episod, tatal ke kira-kira 50%, muat semula pada `#utama` dalam tab baharu: app berada di episod itu dengan kedudukan tatal dalam lingkungan 10% daripada asal, dan jalur "Disambung dari tempat terakhir." kelihatan.
+26. Pautan terus `#baca` tidak dilencongkan. Dalam sesi yang sama, menekan Utama kekal di Utama.
+27. Tiada lencongan apabila tetapan dimatikan, apabila `S.terakhir` berumur lebih 14 hari (diuji dengan `page.clock`), atau apabila `peratus` 95 ke atas.
+28. Kad "Sambung membaca" di Utama membawa ke halaman dan kedudukan yang betul.
+29. Nombor statistik di Utama sama dengan kiraan daripada data; pil penapis siri menapis kad dengan betul.
+30. Menu atas, tajuk, butang dan pil menggunakan EB Garamond; prosa artikel kekal Newsreader.
+31. Teks pada butang, pil aktif, panel gelap dan jalur aksen mencapai kontras sekurang-kurangnya 4.5:1 dalam kelima-lima tema.
+32. Tiada limpahan mendatar dan tiada ralat konsol pada 400px dan 1366px dalam semua tema.
