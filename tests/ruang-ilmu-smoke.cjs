@@ -330,6 +330,43 @@ const tiadaLimpahanUntuk = async (page, h) => assert.equal(await page.evaluate((
     await ctx.close();
   }
 
+  // Komponen gaya perpustakaan dan Utama baharu: fon, kontras dalam lima tema, tiada limpahan (Tugasan 24–25)
+  {
+    const ctx = await browser.newContext({ serviceWorkers: 'block', timezoneId: 'Asia/Kuala_Lumpur', viewport: { width: 400, height: 860 } });
+    await ctx.route('https://fonts.googleapis.com/**', r => r.abort());
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await page.clock.setFixedTime(new Date('2026-11-27T09:00:00+08:00'));
+    const buka = async h => { await page.goto(origin + '#' + h); await page.waitForTimeout(250); };
+    await buka('siri');
+    const fon = sel => page.evaluate(sel => getComputedStyle(document.querySelector(sel)).fontFamily, sel);
+    for (const sel of ['.nav a', '.jenama b', '.halaman-kepala h1', '.siri-kad h3', '.btn']) assert.match(await fon(sel), /^"?EB Garamond/, `${sel} guna EB Garamond`);
+    await buka('a.' + await page.evaluate(() => KANDUNGAN[0].slug));
+    assert.match(await fon('#prosa'), /^"?Newsreader/, 'Prosa artikel kekal Newsreader');
+    assert.match(await fon('#prosa h2'), /^"?Newsreader/, 'Tajuk dalam prosa kekal Newsreader');
+    await buka('siri');
+    assert.match(await page.evaluate(() => getComputedStyle(document.querySelector('.nav a[aria-current="page"]')).textDecorationLine), /underline/, 'Menu aktif bergaris bawah');
+    // Kontras: warna teks berbanding latar pepejal terdekat
+    const kontrasSemua = sels => page.evaluate(sels => {
+      const rgb = s => s.match(/[\d.]+/g).map(Number);
+      const lum = c => { const [r, g, b] = c.slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+      const latar = el => { for (let e = el; e; e = e.parentElement) { const c = getComputedStyle(e).backgroundColor; const v = rgb(c); if (v.length < 4 || v[3] > 0.99) return c; } return 'rgb(255,255,255)'; };
+      return sels.flatMap(sel => [...document.querySelectorAll(sel)].slice(0, 6).map(el => { const [x, y] = [lum(rgb(getComputedStyle(el).color)), lum(rgb(latar(el)))].sort((p, q) => q - p); return [sel, +((x + 0.05) / (y + 0.05)).toFixed(2)]; }));
+    }, sels);
+    for (const tema of ['light', 'sepia', 'dark', 'malam']) {
+      await page.evaluate(t => { const s = JSON.parse(localStorage.getItem('ruangilmu.v1') || '{}'); s.tetapan = Object.assign(s.tetapan || {}, { tema: t }); localStorage.setItem('ruangilmu.v1', JSON.stringify(s)); }, tema);
+      for (const [h, sels] of [['siri', ['.kulit-siri h3', '.kulit-siri .eyebrow', '.siri-kad p', '.nav a']], ['teroka', ['.penapis button[aria-pressed="true"]', '.penapis button[aria-pressed="false"]']], ['utama', ['.btn', '.btn.merah']]]) {
+        await page.goto(origin + '#' + h); await page.reload(); await page.waitForTimeout(250);
+        for (const [sel, k] of await kontrasSemua(sels)) assert.ok(k >= 4.5, `Kontras ${sel} tema ${tema} #${h}: ${k} >= 4.5`);
+        for (const vp of [{ width: 400, height: 860 }, { width: 1366, height: 900 }]) { await page.setViewportSize(vp); await tiadaLimpahanUntuk(page, `#${h} tema ${tema} ${vp.width}px`); }
+        await page.setViewportSize({ width: 400, height: 860 });
+        if (shots && tema === 'light') await page.screenshot({ path: `${shots}/gaya-${h}.png`, fullPage: true });
+      }
+    }
+    assert.deepEqual(errors, [], 'Tiada ralat konsol (gaya)');
+    await ctx.close();
+  }
+
   // Rehat mata setiap 20 minit bacaan aktif (Tugasan 21)
   {
     const ctx = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 400, height: 860 } });

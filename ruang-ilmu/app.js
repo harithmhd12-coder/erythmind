@@ -1009,9 +1009,9 @@ function labelSiri(s) {
   return `${s.episod.length} episod${julat ? ' · ' + julat : ''}`;
 }
 const kadSiri = s => {
-  if (s.jenis === 'akan-datang') return `<div class="siri-kad kosong-siri" aria-label="${esc(s.nama)}, akan datang"><span class="eyebrow">Akan datang</span><h3>${esc(s.nama)}</h3><p>${esc(s.ringkas)}</p></div>`;
+  if (s.jenis === 'akan-datang') return `<div class="siri-kad kosong-siri" aria-label="${esc(s.nama)}, akan datang"><div class="kulit-siri"><span class="eyebrow">Akan datang</span><h3>${esc(s.nama)}</h3></div><div class="isi-siri"><p>${esc(s.ringkas)}</p></div></div>`;
   const k = kemajuanSiri(s);
-  return `<a class="siri-kad" href="#s.${s.slug}"><span class="eyebrow">${esc(labelSiri(s))}</span><h3>${esc(s.nama)}</h3><p>${esc(s.ringkas)}</p><div class="bar" role="progressbar" aria-valuenow="${k.peratus}" aria-valuemin="0" aria-valuemax="100"><i style="width:${k.peratus}%"></i></div><span class="meta"><span>${k.siap}/${k.jumlah} selesai</span></span></a>`;
+  return `<a class="siri-kad" href="#s.${s.slug}"><div class="kulit-siri"><span class="eyebrow">${esc(labelSiri(s))}</span><h3>${esc(s.nama)}</h3></div><div class="isi-siri"><p>${esc(s.ringkas)}</p><div class="bar" role="progressbar" aria-label="Kemajuan siri" aria-valuenow="${k.peratus}" aria-valuemin="0" aria-valuemax="100"><i style="width:${k.peratus}%"></i></div><span class="meta"><span>${k.siap}/${k.jumlah} selesai</span></span></div></a>`;
 };
 V.siri = () => `<div class="bekas"><header class="halaman-kepala"><span class="eyebrow">Siri ilmu</span><h1>Siri</h1><p class="lede">Himpunan soal-jawab, kuliah dan karusel. Ikut satu siri dari mula hingga habis.</p></header>
   <section class="seksyen" style="border-top:0;padding-top:0"><div class="grid-siri">${SIRI.map(kadSiri).join('')}</div></section></div>`;
